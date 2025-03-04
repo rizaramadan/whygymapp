@@ -4,15 +4,56 @@ import { JwtService } from '@nestjs/jwt';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from 'src/users/users.service';
 
+interface OtpCreateResponse {
+  status: boolean;
+  message: string;
+  data?: {
+    deviceId?: string;
+    preAuthSessionId?: string;
+    user?: {
+      id: string;
+      email: string;
+      // Add other user properties as needed
+    };
+    accessToken?: string;
+    refreshToken?: string;
+  };
+}
+
+interface OtpVerifyResponse {
+  status: number; // Changed to number to match the example
+  message: string;
+  data?: {
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      signup: boolean;
+      id: string;
+      email: string;
+      roles: string[]; // Assuming roles is an array of strings
+      fullName: string;
+    };
+  };
+}
+
+interface HttpError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+    status?: number;
+  };
+}
+
 @Injectable()
 export class OtpAuthService {
   private readonly authApiUrl: string;
   private readonly apiKey: string;
-  private usersService: UsersService;
 
   constructor(
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
   ) {
     this.authApiUrl = process.env.AUTH_API_URL || 'https://authapi.com';
     this.apiKey = process.env.API_KEY || '1234567890';
@@ -26,7 +67,7 @@ export class OtpAuthService {
   }> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(
+        this.httpService.post<OtpCreateResponse>(
           `${this.authApiUrl}/v1/auth/otp/create`,
           {
             email,
@@ -44,8 +85,8 @@ export class OtpAuthService {
         return {
           success: true,
           message: 'OTP has been sent to your email',
-          deviceId: response.data.data.deviceId, // Return deviceId
-          preAuthSessionId: response.data.data.preAuthSessionId, // Return preAuthSessionId
+          deviceId: response.data.data?.deviceId || '', // Return deviceId
+          preAuthSessionId: response.data.data?.preAuthSessionId || '', // Return preAuthSessionId
         };
       } else {
         return {
@@ -53,10 +94,11 @@ export class OtpAuthService {
           message: response.data.message || 'Failed to send OTP',
         };
       }
-    } catch (error: any) {
+    } catch (error) {
+      const httpError = error as HttpError; // Cast to HttpError
       throw new HttpException(
-        error?.response?.data?.message || 'Failed to send OTP',
-        error?.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        httpError.response?.data?.message || 'Failed to send OTP',
+        httpError.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -73,34 +115,41 @@ export class OtpAuthService {
         userInputCode: userInputCode,
         expiresIn: 60,
       };
-      console.log('request');
-      console.log(request);
+
       const response = await firstValueFrom(
-        this.httpService.post(`${this.authApiUrl}/v1/auth/otp/verify`, request,{
-          headers: {
+        this.httpService.post<OtpVerifyResponse>(
+          `${this.authApiUrl}/v1/auth/otp/verify`,
+          request,
+          {
+            headers: {
               'x-api-key': this.apiKey, // Add the x-api-key header here
             },
           },
         ),
       );
 
-      console.log('response');
-      console.log(response);
-
       if (response.data.status) {
         // Assuming the external API returns user data upon successful verification
-        
-        if(response.data.user){
-          console.log('user');
-          console.log(response.data);
+        const user = response.data.data?.user;
+        if (user) {
+          console.log('user', user);
         }
+
+        console.log("userService");
+        console.log(this.usersService);
+
+        const userInDb = await this.usersService.findOneWithEmail(
+          response.data.data?.user?.email || '',
+        );
+
+        console.log('userInDb', userInDb);
 
         // Create a JWT token with user information
         const payload = {
-          apiId: "pikirin nanti",
-          accessToken: response.data.data.accessToken,
-          refreshToken: response.data.data.refreshToken,
-          email: response.data.data.user.email,
+          apiId: response.data.data?.user?.id || '',
+          accessToken: response.data.data?.accessToken || '',
+          refreshToken: response.data.data?.refreshToken || '',
+          email: response.data.data?.user?.email || '',
           roles: [],
         };
 
@@ -114,9 +163,10 @@ export class OtpAuthService {
         );
       }
     } catch (error) {
+      const httpError = error as HttpError; // Cast to HttpError
       throw new HttpException(
-        error.response?.data?.message || 'Invalid OTP',
-        error.response?.status || HttpStatus.UNAUTHORIZED,
+        httpError.response?.data?.message || 'Invalid OTP',
+        httpError.response?.status || HttpStatus.UNAUTHORIZED,
       );
     }
   }

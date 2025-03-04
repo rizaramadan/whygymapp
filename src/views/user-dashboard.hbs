@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        #html5-qrcode-button-camera-start, #html5-qrcode-button-camera-stop {
+            display: none; /* Keep this if you want the button hidden initially */
+            background-color: #2c7a7f; /* Deep green color */
+            color: white; /* Text color */
+            padding: 0.5rem 1rem; /* Padding for the button */
+            border-radius: 0.375rem; /* Rounded corners */
+            border: none; /* Remove default border */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+        }
+
+        #html5-qrcode-button-camera-start:hover, #html5-qrcode-button-camera-stop:hover {
+            background-color: #285e61; /* Darker green on hover */
+        }
+
+        #html5-qrcode-button-camera-start:focus, #html5-qrcode-button-camera-stop:focus {
+            outline: 2px solid #2c7a7f; /* Focus outline */
+            outline-offset: 2px; /* Space between outline and button */
+        }
+
+        #qr-reader {
+            border: none !important;
+            background: #f0fdf4 !important; /* Light green background */
+        }
+
+        #qr-reader__scan_region {
+            background: #f0fdf4 !important;
+        }
+
+        #qr-reader__scan_region > img {
+            width: 250px !important;
+            height: auto !important;
+        }
+
+        #qr-reader__dashboard {
+            padding: 0 !important;
+            background: #f0fdf4 !important;
+            border: none !important;
+            margin: 8px 0 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white">
+    <!-- Sidebars -->
+    <div class="hidden lg:block fixed left-0 top-0 h-full w-1/4 bg-green-50/30"></div>
+    <div class="hidden lg:block fixed right-0 top-0 h-full w-1/4 bg-green-50/30"></div>
+
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col px-4 py-8">
+        <!-- Header -->
+        <div class="w-full max-w-4xl mx-auto mb-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-green-800">WhyGym</h1>
+                <button class="px-4 py-2 text-sm text-green-600 hover:text-green-800">Logout</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="w-full max-w-4xl mx-auto">
+            <!-- Welcome Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-2xl font-semibold text-green-800">Welcome back, John!</h2>
+                <p class="text-green-600/80">Your membership is active until March 30, 2024</p>
+            </div>
+
+            <!-- QR Scanner Section -->
+            <div class="w-full max-w-4xl mx-auto mb-8">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="text-xl font-semibold text-green-800 mb-6">Scan to Enter the Gym</h2>
+                    <div class="flex flex-col items-center">
+                        <div id="qr-reader" class="w-full max-w-md rounded-xl overflow-hidden"></div>
+                        <p class="text-sm text-green-600/80 mt-4">Position the QR code within the frame to scan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-medium text-green-800">Workouts</h3>
+                    <p class="text-3xl font-bold text-green-600">12</p>
+                    <p class="text-sm text-green-600/60">This month</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-medium text-green-800">Classes</h3>
+                    <p class="text-3xl font-bold text-green-600">5</p>
+                    <p class="text-sm text-green-600/60">Attended</p>
+                </div>
+            </div>
+
+            <!-- Upcoming Classes -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <h2 class="text-xl font-semibold text-green-800 mb-6">Upcoming Classes</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
+                        <div>
+                            <h3 class="font-medium text-green-800">Yoga Basics</h3>
+                            <p class="text-sm text-green-600">Tomorrow, 9:00 AM</p>
+                        </div>
+                        <button class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700">Join</button>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
+                        <div>
+                            <h3 class="font-medium text-green-800">HIIT Training</h3>
+                            <p class="text-sm text-green-600">Wed, 10:30 AM</p>
+                        </div>
+                        <button class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700">Join</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="w-full max-w-4xl mx-auto mt-8">
+            <p class="text-sm text-green-600/60 text-center">
+                © 2024 WhyGym. All rights reserved.
+            </p>
+        </footer>
+    </div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    function docReady(fn) {
+        // see if DOM is already available
+        if (document.readyState === "complete"
+            || document.readyState === "interactive") {
+            // call on next available tick
+            setTimeout(fn, 1);
+        } else {
+            document.addEventListener("DOMContentLoaded", fn);
+        }
+    }
+
+    docReady(function () {
+        var resultContainer = document.getElementById('qr-reader-results');
+        var lastResult, countResults = 0;
+        function onScanSuccess(decodedText, decodedResult) {
+            if (decodedText !== lastResult) {
+                ++countResults;
+                lastResult = decodedText;
+                // Handle on success condition with the decoded message.
+                console.log(`Scan result ${decodedText}`, decodedResult);
+            }
+        }
+
+        let config = {
+            fps: 10,
+            qrbox:  { width: 250, height: 250 },
+            rememberLastUsedCamera: true,
+            // Only support camera scan type.
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        };
+
+        var html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", config);
+        html5QrcodeScanner.render(onScanSuccess);
+    });
+</script>
+</html>

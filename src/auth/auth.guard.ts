@@ -10,6 +10,20 @@ import { Request } from 'express';
 import { jwtConstants } from './constants';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
+export interface CookiedRequest extends Request {
+  cookies: {
+    [key: string]: string; // Define the type for cookies
+  };
+}
+
+interface JwtPayload {
+  apiId: string;
+  accessToken: string;
+  refreshToken: string;
+  email: string;
+  roles: string[]; // Adjust based on your actual roles structure
+}
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -27,7 +41,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<CookiedRequest>();
     console.log('request cookie:' + request.cookies['access_token']);
 
     let token = this.extractTokenFromHeader(request);
@@ -39,7 +53,7 @@ export class AuthGuard implements CanActivate {
       }
     }
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
       });
       // 💡 We're assigning the payload to the request object here

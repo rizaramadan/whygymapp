@@ -34,7 +34,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: Record<string, any>) {
+  signIn(@Body() signInDto: Record<string, string>) {
     return this.authService.signIn(signInDto.username, signInDto.password);
   }
 
@@ -65,7 +65,7 @@ export class AuthController {
     );
 
     res.cookie('access_token', jwt.access_token);
-    return res.json({ message: 'OTP verified successfully' });
+    return res.redirect('/user-dashboard');
   }
 
   @Get('profile')

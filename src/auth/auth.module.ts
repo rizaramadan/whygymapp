@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -23,7 +23,6 @@ import { RolesGuard } from 'src/roles/roles.guard';
   ],
   providers: [
     AuthService,
-    OtpAuthService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
@@ -32,6 +31,7 @@ import { RolesGuard } from 'src/roles/roles.guard';
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
+    OtpAuthService,
   ],
   controllers: [AuthController],
   exports: [AuthService, OtpAuthService],
