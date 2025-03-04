@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { Role } from 'src/roles/role.enum';
+import { User } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
@@ -24,7 +25,7 @@ export class AuthController {
   }
 
   @Get('profile')
-  getProfile(@Request() req: any) {
+  getProfile(@Request() req: { user: User }) {
     return req.user;
   }
 
