@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Layout Components */
+.auth-layout {
+    @apply min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white;
+}
+
+.auth-sidebar {
+    @apply hidden lg:block fixed top-0 h-full w-1/4 bg-green-50/30;
+}
+
+.auth-container {
+    @apply flex-1 flex items-center justify-center px-4;
+}
+
+/* Card Components */
+.auth-card {
+    @apply w-full max-w-md bg-white rounded-2xl shadow-lg p-8 mx-auto space-y-6;
+}
+
+/* Form Components */
+.auth-form {
+    @apply space-y-6;
+}
+
+.auth-input-group {
+    @apply space-y-2;
+}
+
+.auth-input {
+    @apply w-full rounded-xl border-green-200 shadow-sm 
+           focus:border-green-500 focus:ring-green-500 
+           bg-green-50/30 px-4 py-3;
+}
+
+.auth-button {
+    @apply w-full py-3 px-4 border border-transparent rounded-xl 
+           text-sm font-medium text-white bg-green-600 
+           hover:bg-green-700 focus:outline-none focus:ring-2 
+           focus:ring-offset-2 focus:ring-green-500 
+           transition duration-150 ease-in-out;
+}
+
+/* Typography */
+.auth-title {
+    @apply text-3xl font-bold text-green-800 text-center;
+}
+
+.auth-subtitle {
+    @apply text-2xl font-semibold text-green-800 text-center;
+}
+
+.auth-text {
+    @apply text-sm text-green-600/80 text-center;
+}
+
+.auth-label {
+    @apply block text-sm font-medium text-green-700;
+}
+
+.auth-footer {
+    @apply text-sm text-green-600/60 text-center;
+}

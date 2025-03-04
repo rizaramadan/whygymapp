@@ -39,6 +39,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('otp/create')
+  @Render('auth/otp')
   createOtp(@Body() createOtpDto: { email: string }) {
     return this.otpAuthService.createOtp(createOtpDto.email);
   }

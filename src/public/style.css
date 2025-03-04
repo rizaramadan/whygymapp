@@ -1,0 +1,12 @@
+/* Custom styles for green gradient background */
+.green-gradient {
+    background: linear-gradient(135deg, #e6f5e6 0%, #ffffff 100%);
+}
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
