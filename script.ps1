@@ -1,5 +1,5 @@
 # Perform login and extract the token
-$response = Invoke-RestMethod -Uri "http://localhost:3000/auth/login" -Method Post -Body '{"username": "john", "password": "changeme"}' -Headers @{"Content-Type"="application/json"}
+$response = Invoke-RestMethod -Uri "http://localhost:3000/auth/login" -Method Post -Body '{"username": "johnny", "password": "changeme"}' -Headers @{"Content-Type"="application/json"}
 Write-Output "Login Response: $response"
 
 

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Role } from 'src/roles/role.enum';
-// This should be a real class/interface representing a user entity
+import { getAllUsersRoles } from '../../db/src/query_sql'; // Import the function
+import { Pool } from 'pg';
+
 export type User = {
-  userId: number;
+  id: number;
   username: string;
   password: string;
   roles: Role[];
@@ -10,22 +12,22 @@ export type User = {
 
 @Injectable()
 export class UsersService {
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-      roles: [Role.Admin],
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-      roles: [Role.User],
-    },
-  ];
+  constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
 
   async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.username === username);
+    const usersWithRoles = await getAllUsersRoles(this.pool); // Call the database function
+    const userRow = usersWithRoles.find((user) => user.username === username);
+    console.log(userRow);
+
+    if (userRow) {
+      console.log('userRow', userRow);
+      return {
+        id: userRow.id,
+        username: userRow.username,
+        password: userRow.password,
+        roles: [userRow.role as Role], // Assuming roles are stored as strings in the database
+      };
+    }
+    return undefined;
   }
 }

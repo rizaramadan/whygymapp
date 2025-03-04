@@ -1,0 +1,1 @@
+this folder use CLI tool golang-migrate and sqlc.dev
