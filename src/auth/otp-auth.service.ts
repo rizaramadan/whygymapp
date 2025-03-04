@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from 'src/users/users.service';
+import { JwtPayload } from './auth.interfaces';
 
 interface OtpCreateResponse {
   status: boolean;
@@ -103,16 +104,16 @@ export class OtpAuthService {
     }
   }
 
-  async verifyOtp(
-    deviceId: string,
-    preAuthSessionId: string,
-    userInputCode: string,
-  ): Promise<{ access_token: string }> {
+  async verifyOtp(verifyOtpDto: {
+    deviceId: string;
+    preAuthSessionId: string;
+    userInputCode: string;
+  }): Promise<{ roles: string[]; fullName: string; access_token: string }> {
     try {
       const request = {
-        deviceId: deviceId,
-        preAuthSessionId: preAuthSessionId,
-        userInputCode: userInputCode,
+        deviceId: verifyOtpDto.deviceId,
+        preAuthSessionId: verifyOtpDto.preAuthSessionId,
+        userInputCode: verifyOtpDto.userInputCode,
         expiresIn: 60,
       };
 
@@ -130,30 +131,28 @@ export class OtpAuthService {
 
       if (response.data.status) {
         // Assuming the external API returns user data upon successful verification
-        const user = response.data.data?.user;
-        if (user) {
-          console.log('user', user);
-        }
-
-        console.log("userService");
-        console.log(this.usersService);
-
         const userInDb = await this.usersService.findOneWithEmail(
           response.data.data?.user?.email || '',
         );
 
         console.log('userInDb', userInDb);
+        console.log('verifyOtp user roles', userInDb?.roles);
 
         // Create a JWT token with user information
-        const payload = {
+        const payload: JwtPayload = {
+          id: userInDb?.id.toString() || '',
           apiId: response.data.data?.user?.id || '',
           accessToken: response.data.data?.accessToken || '',
           refreshToken: response.data.data?.refreshToken || '',
           email: response.data.data?.user?.email || '',
-          roles: [],
+          //userInDb?.roles is string "[ 'admin', 'user' ]",
+          roles: userInDb?.roles || [],
+          fullName: response.data.data?.user?.fullName || '',
         };
 
         return {
+          roles: payload.roles,
+          fullName: payload.fullName,
           access_token: await this.jwtService.signAsync(payload),
         };
       } else {

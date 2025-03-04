@@ -13,7 +13,6 @@ import { AuthService } from './auth.service';
 import { OtpAuthService } from './otp-auth.service';
 import { Public } from './decorators/public.decorator';
 import { Roles } from 'src/roles/decorators/roles.decorator';
-import { Role } from 'src/roles/role.enum';
 import { User } from 'src/users/users.service';
 import { Response } from 'express';
 
@@ -58,14 +57,10 @@ export class AuthController {
     },
     @Res() res: Response,
   ) {
-    const jwt = await this.otpAuthService.verifyOtp(
-      verifyOtpDto.deviceId,
-      verifyOtpDto.preAuthSessionId,
-      verifyOtpDto.userInputCode,
-    );
-
+    const jwt = await this.otpAuthService.verifyOtp(verifyOtpDto);
     res.cookie('access_token', jwt.access_token);
-    return res.redirect('/user-dashboard');
+    const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
+    return res.redirect(`/${role}-dashboard`);
   }
 
   @Get('profile')
@@ -80,7 +75,7 @@ export class AuthController {
   }
 
   @Get('find-all-admin')
-  @Roles(Role.Admin)
+  @Roles('admin')
   findAllAdmin() {
     return [];
   }
