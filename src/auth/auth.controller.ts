@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
+import { Roles } from 'src/roles/decorators/roles.decorator';
+import { Role } from 'src/roles/role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +31,12 @@ export class AuthController {
   @Public()
   @Get('find-all')
   findAll() {
+    return [];
+  }
+
+  @Get('find-all-admin')
+  @Roles(Role.Admin)
+  findAllAdmin() {
     return [];
   }
 }
