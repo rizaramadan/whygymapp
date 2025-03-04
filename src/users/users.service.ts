@@ -17,10 +17,23 @@ export class UsersService {
   async findOne(username: string): Promise<User | undefined> {
     const usersWithRoles = await getAllUsersRoles(this.pool); // Call the database function
     const userRow = usersWithRoles.find((user) => user.username === username);
-    console.log(userRow);
 
     if (userRow) {
-      console.log('userRow', userRow);
+      return {
+        id: userRow.id,
+        username: userRow.username,
+        password: userRow.password,
+        roles: [userRow.role as Role], // Assuming roles are stored as strings in the database
+      };
+    }
+    return undefined;
+  }
+
+  async findOneWithEmail(email: string): Promise<User | undefined> {
+    const usersWithRoles = await getAllUsersRoles(this.pool); // Call the database function
+    const userRow = usersWithRoles.find((user) => user.email === email);
+
+    if (userRow) {
       return {
         id: userRow.id,
         username: userRow.username,

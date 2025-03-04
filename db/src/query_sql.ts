@@ -25,6 +25,7 @@ SELECT
     u.id,
     u.username,
     u.password,
+    u.email,
     r.name as role
 FROM
     whygym.users u
@@ -35,6 +36,7 @@ export interface GetAllUsersRolesRow {
     id: number;
     username: string;
     password: string;
+    email: string;
     role: string;
 }
 
@@ -49,7 +51,8 @@ export async function getAllUsersRoles(client: Client): Promise<GetAllUsersRoles
             id: row[0],
             username: row[1],
             password: row[2],
-            role: row[3]
+            email: row[3],
+            role: row[4]
         };
     });
 }

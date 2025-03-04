@@ -19,6 +19,7 @@ SELECT
     u.id,
     u.username,
     u.password,
+    u.email,
     r.name as role
 FROM
     whygym.users u

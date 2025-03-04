@@ -4,27 +4,26 @@
         Enter your OTP code from your email inbox
     </p>
     
-    <form hx-post="/auth/otp/create"
-            hx-target="#otpForm"
-            hx-swap="innerHTML"
-            class="space-y-6">
+    <form action="/auth/otp/verify" method="POST" class="space-y-6">
         <div class="space-y-2">
             <label for="otp" class="block text-sm font-medium text-green-700">
                 OTP Code
             </label>
-            <input type="text" 
-                    name="otp"  
-                    class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
-                    required
-                    placeholder="Enter your OTP here"> 
+            <input class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
+                   type="number" 
+                   name="userInputCode"                
+                   required
+                   placeholder="Enter your OTP here" 
+                   min="0" 
+                   pattern="\d*"> 
         </div>
         
         <!-- Hidden fields for deviceId and preAuthSessionId -->
         <input type="hidden" name="deviceId" id="deviceId" value="{{deviceId}}">
         <input type="hidden" name="preAuthSessionId" id="preAuthSessionId" value="{{preAuthSessionId}}">
 
-        <button type="submit" 
-                class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+        <button class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
+                type="submit">
             Send OTP
         </button>
     </form>

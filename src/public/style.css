@@ -1,12 +1,9 @@
-/* Custom styles for green gradient background */
-.green-gradient {
-    background: linear-gradient(135deg, #e6f5e6 0%, #ffffff 100%);
+.htmx-indicator{
+    display:none;
 }
-/* Hide scrollbar but keep functionality */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
+.htmx-request .htmx-indicator{
+    display:inline;
 }
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+.htmx-request.htmx-indicator{
+    display:inline;
 }

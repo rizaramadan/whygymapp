@@ -7,6 +7,7 @@ import {
   Post,
   Request,
   Render,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OtpAuthService } from './otp-auth.service';
@@ -14,6 +15,7 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { Role } from 'src/roles/role.enum';
 import { User } from 'src/users/users.service';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -47,8 +49,23 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('otp/verify')
-  verifyOtp(@Body() verifyOtpDto: { email: string; otp: string }) {
-    return this.otpAuthService.verifyOtp(verifyOtpDto.email, verifyOtpDto.otp);
+  async verifyOtp(
+    @Body()
+    verifyOtpDto: {
+      deviceId: string;
+      preAuthSessionId: string;
+      userInputCode: string;
+    },
+    @Res() res: Response,
+  ) {
+    const jwt = await this.otpAuthService.verifyOtp(
+      verifyOtpDto.deviceId,
+      verifyOtpDto.preAuthSessionId,
+      verifyOtpDto.userInputCode,
+    );
+
+    res.cookie('access_token', jwt.access_token);
+    return res.json({ message: 'OTP verified successfully' });
   }
 
   @Get('profile')
