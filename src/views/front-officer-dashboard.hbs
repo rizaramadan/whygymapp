@@ -50,21 +50,20 @@
             <div class="flex justify-between items-center mb-8">
                 <h1 class="text-3xl font-bold text-green-800">Visitors Today</h1>
                 <div hx-get="/members/new-visitors" 
-                     hx-trigger="every 1s" 
+                     hx-trigger="every 4s"
                      hx-target="#visitors-list-container" 
                      hx-swap="afterbegin transition:true"
-                     hx-vals='js:{"lastVisitId": document.querySelectorAll(".visit-id")[0]?.innerText || ""}'>
-                    &nbsp;
+                     hx-vals='js:{"lastVisitId": document.querySelectorAll(".visit-id")[0]?.innerText || document.getElementById("last-visit-id").innerText || ""}'>
                 </div>
+                <div id="last-visit-id" style='display: none;'>{{lastVisitId}}</div>
             </div>
 
             <!-- Users List -->
             <div class="bg-white rounded-2xl shadow-lg p-8">
                 <div class="space-y-4" id="visitors-list-container">
-                    {{#each vistors}}
+                    {{#each visitors}}
                     <div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
                         <div class="flex-shrink-0 mr-6">
-                            <div style="display: none;" class="visit-id">{{this.id}}</div>
                             {{#if this.picUrl}}
                             <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
                             {{else}}
@@ -78,10 +77,6 @@
                             <p class="text-sm text-green-500 mt-1">Visited at: {{this.checkInTime}}</p>
                         </div>
                     </div>
-                    {{else}}
-                    <div class="text-center py-8 text-green-600">
-                        No users found.
-                    </div>
                     {{/each}}
                 </div>
             </div>
@@ -94,5 +89,12 @@
             </footer>
         </div>
     </div>
+    <script>
+        document.getElementById('visitors-list-container').addEventListener('htmx:afterSwap', function(evt) {
+            if(evt.detail.xhr.status == 200 && evt.detail.xhr.response.length >=10){
+                document.getElementById("last-visit-id").innerText = document.querySelectorAll(".visit-id")[0]?.innerText
+            }
+        });
+    </script>
 </body>
 </html>

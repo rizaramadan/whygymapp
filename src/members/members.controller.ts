@@ -45,6 +45,14 @@ export class MembersController {
   @Render('members/new-visitors')
   async newVisitors(@Query('lastVisitId') lastVisitId: string) {
     const visitors = await this.membersService.getNewVisitors(lastVisitId);
-    return { visitors };
+    const newLastVisitId = await this.membersService.getLastVisitId();
+    return { visitors, lastVisitId: newLastVisitId?.id || '' };
+  }
+
+  @Get('last-visit-id')
+  @Roles('front-officer')
+  async lastVisitId() {
+    const lastVisitId = await this.membersService.getLastVisitId();
+    return lastVisitId?.id || '';
   }
 }

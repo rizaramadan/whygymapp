@@ -1,6 +1,6 @@
 {{#each visitors}}
-<div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
-    <div class="flex-shrink-0 mr-6">
+<div class='flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30'>
+    <div class='flex-shrink-0 mr-6'>
         <div style="display: none;" class="visit-id">{{this.id}}</div>
         {{#if this.picUrl}}
         <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
@@ -16,4 +16,3 @@
     </div>
 </div>
 {{/each}}
-

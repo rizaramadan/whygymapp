@@ -39,8 +39,8 @@ export class AppController {
     const visitors = await this.membersService.getTodayVisitors();
     const lastVisitId = await this.membersService.getLastVisitId();
     return {
-      vistors: visitors,
-      nextVisitId: lastVisitId,
+      visitors,
+      lastVisitId: lastVisitId?.id,
     };
   }
 
