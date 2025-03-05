@@ -4,9 +4,13 @@ import { Pool } from 'pg';
 
 export type User = {
   id: number;
+  apiId: string;
+  email: string;
   username: string;
   password: string;
   roles: string[];
+  fullName: string;
+  picUrl: string;
 };
 
 @Injectable()
@@ -15,14 +19,18 @@ export class UsersService {
 
   async findOneWithEmail(email: string): Promise<User | undefined> {
     const userInDb = await getUserByEmail(this.pool, { email });
-    console.log('findOneWithEmail userInDb:', userInDb);
 
     if (userInDb) {
       return {
         id: userInDb.id,
+        apiId: '',
+        email: '',
         username: userInDb.username,
         password: userInDb.password,
-        roles: userInDb.roles.split(','), // Assuming roles are stored as strings in the database
+        // Trim spaces from each role after splitting
+        roles: userInDb.roles.split(',').map((role) => role.trim()), // Assuming roles are stored as strings in the database
+        fullName: '',
+        picUrl: '',
       };
     }
     return undefined;

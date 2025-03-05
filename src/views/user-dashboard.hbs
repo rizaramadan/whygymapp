@@ -69,7 +69,7 @@
         <div class="w-full max-w-4xl mx-auto">
             <!-- Welcome Card -->
             <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                <h2 class="text-2xl font-semibold text-green-800">Welcome back, John!</h2>
+                <h2 class="text-2xl font-semibold text-green-800">Welcome back, {{  user.fullName }}</h2>
                 <p class="text-green-600/80">Your membership is active until March 30, 2024</p>
             </div>
 
@@ -167,6 +167,11 @@
                 lastResult = decodedText;
                 // Handle on success condition with the decoded message.
                 console.log(`Scan result ${decodedText}`, decodedResult);
+                if(decodedText == "/members/visit"){
+                    var url = decodedText;
+                    //redirect to url but post request to visit endpoint    
+                    window.location.href = url;
+                }
             }
         }
 

@@ -100,3 +100,159 @@ export async function getUserByEmail(client: Client, args: GetUserByEmailArgs): 
     };
 }
 
+export const getTodayVisitsQuery = `-- name: GetTodayVisits :many
+SELECT id, member_id, email, pic_url, check_in_time
+FROM whygym.visits 
+WHERE check_in_date = CURRENT_DATE
+ORDER BY check_in_time DESC`;
+
+export interface GetTodayVisitsRow {
+    id: string;
+    memberId: number;
+    email: string;
+    picUrl: string;
+    checkInTime: Date;
+}
+
+export async function getTodayVisits(client: Client): Promise<GetTodayVisitsRow[]> {
+    const result = await client.query({
+        text: getTodayVisitsQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            memberId: row[1],
+            email: row[2],
+            picUrl: row[3],
+            checkInTime: row[4]
+        };
+    });
+}
+
+export const createVisitQuery = `-- name: CreateVisit :one
+INSERT INTO whygym.visits (member_id, email, pic_url)
+VALUES ($1, $2, $3)
+RETURNING id, member_id, email, pic_url, check_in_time`;
+
+export interface CreateVisitArgs {
+    memberId: number;
+    email: string;
+    picUrl: string;
+}
+
+export interface CreateVisitRow {
+    id: string;
+    memberId: number;
+    email: string;
+    picUrl: string;
+    checkInTime: Date;
+}
+
+export async function createVisit(client: Client, args: CreateVisitArgs): Promise<CreateVisitRow | null> {
+    const result = await client.query({
+        text: createVisitQuery,
+        values: [args.memberId, args.email, args.picUrl],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        email: row[2],
+        picUrl: row[3],
+        checkInTime: row[4]
+    };
+}
+
+export const getMemberIdByEmailQuery = `-- name: GetMemberIdByEmail :one
+SELECT id FROM whygym.members
+WHERE email = $1
+LIMIT 1`;
+
+export interface GetMemberIdByEmailArgs {
+    email: string;
+}
+
+export interface GetMemberIdByEmailRow {
+    id: number;
+}
+
+export async function getMemberIdByEmail(client: Client, args: GetMemberIdByEmailArgs): Promise<GetMemberIdByEmailRow | null> {
+    const result = await client.query({
+        text: getMemberIdByEmailQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+
+export const getVisitsAfterIdQuery = `-- name: GetVisitsAfterId :many
+SELECT id, member_id, email, pic_url, check_in_time
+FROM whygym.visits 
+WHERE id > $1
+ORDER BY check_in_time DESC`;
+
+export interface GetVisitsAfterIdArgs {
+    id: string;
+}
+
+export interface GetVisitsAfterIdRow {
+    id: string;
+    memberId: number;
+    email: string;
+    picUrl: string;
+    checkInTime: Date;
+}
+
+export async function getVisitsAfterId(client: Client, args: GetVisitsAfterIdArgs): Promise<GetVisitsAfterIdRow[]> {
+    const result = await client.query({
+        text: getVisitsAfterIdQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            memberId: row[1],
+            email: row[2],
+            picUrl: row[3],
+            checkInTime: row[4]
+        };
+    });
+}
+
+export const getLastVisitIdQuery = `-- name: GetLastVisitId :one
+SELECT id FROM whygym.visits
+ORDER BY id DESC
+LIMIT 1`;
+
+export interface GetLastVisitIdRow {
+    id: string;
+}
+
+export async function getLastVisitId(client: Client): Promise<GetLastVisitIdRow | null> {
+    const result = await client.query({
+        text: getLastVisitIdQuery,
+        values: [],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+

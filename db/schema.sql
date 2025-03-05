@@ -42,6 +42,48 @@ CREATE TABLE public.schema_migrations (
 ALTER TABLE public.schema_migrations OWNER TO postgres;
 
 --
+-- Name: members; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.members (
+    id integer NOT NULL,
+    email character varying(100) NOT NULL,
+    nickname character varying(100) NOT NULL,
+    date_of_birth date,
+    phone_number character varying(20),
+    membership_status character varying(20) DEFAULT 'active'::character varying NOT NULL,
+    notes text,
+    additional_data json,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.members OWNER TO postgres;
+
+--
+-- Name: members_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.members_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.members_id_seq OWNER TO postgres;
+
+--
+-- Name: members_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.members_id_seq OWNED BY whygym.members.id;
+
+
+--
 -- Name: roles; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -126,6 +168,52 @@ ALTER SEQUENCE whygym.users_id_seq OWNED BY whygym.users.id;
 
 
 --
+-- Name: visits; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.visits (
+    id bigint NOT NULL,
+    member_id integer NOT NULL,
+    check_in_time timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    check_in_date date DEFAULT CURRENT_DATE NOT NULL,
+    email character varying(100) NOT NULL,
+    pic_url character varying(255) NOT NULL,
+    notes text,
+    additional_data json
+);
+
+
+ALTER TABLE whygym.visits OWNER TO postgres;
+
+--
+-- Name: visits_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.visits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.visits_id_seq OWNER TO postgres;
+
+--
+-- Name: visits_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.visits_id_seq OWNED BY whygym.visits.id;
+
+
+--
+-- Name: members id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.members ALTER COLUMN id SET DEFAULT nextval('whygym.members_id_seq'::regclass);
+
+
+--
 -- Name: roles id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -140,11 +228,26 @@ ALTER TABLE ONLY whygym.users ALTER COLUMN id SET DEFAULT nextval('whygym.users_
 
 
 --
+-- Name: visits id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.visits ALTER COLUMN id SET DEFAULT nextval('whygym.visits_id_seq'::regclass);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: members members_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.members
+    ADD CONSTRAINT members_pkey PRIMARY KEY (id);
 
 
 --
@@ -188,6 +291,28 @@ ALTER TABLE ONLY whygym.users
 
 
 --
+-- Name: visits visits_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.visits
+    ADD CONSTRAINT visits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_members_membership_status; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_members_membership_status ON whygym.members USING btree (membership_status);
+
+
+--
+-- Name: idx_members_user_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_members_user_id ON whygym.members USING btree (email);
+
+
+--
 -- Name: idx_user_roles_role_id; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -209,6 +334,27 @@ CREATE INDEX idx_users_username ON whygym.users USING btree (username);
 
 
 --
+-- Name: idx_visits_check_in_date; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_visits_check_in_date ON whygym.visits USING btree (check_in_date);
+
+
+--
+-- Name: idx_visits_email; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_visits_email ON whygym.visits USING btree (email);
+
+
+--
+-- Name: idx_visits_member_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_visits_member_id ON whygym.visits USING btree (member_id);
+
+
+--
 -- Name: user_roles user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
 --
 
@@ -222,6 +368,14 @@ ALTER TABLE ONLY whygym.user_roles
 
 ALTER TABLE ONLY whygym.user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES whygym.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: visits visits_member_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.visits
+    ADD CONSTRAINT visits_member_id_fkey FOREIGN KEY (member_id) REFERENCES whygym.members(id) ON DELETE CASCADE;
 
 
 --

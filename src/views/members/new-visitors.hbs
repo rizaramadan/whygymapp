@@ -1,0 +1,19 @@
+{{#each visitors}}
+<div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
+    <div class="flex-shrink-0 mr-6">
+        <div style="display: none;" class="visit-id">{{this.id}}</div>
+        {{#if this.picUrl}}
+        <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
+        {{else}}
+        <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+            <span class="text-3xl text-green-600">{{this.email}}</span>
+        </div>
+        {{/if}}
+    </div>
+    <div class="flex-1 min-w-0">
+        <p class="text-lg font-medium text-green-900">{{this.email}}</p>
+        <p class="text-sm text-green-500 mt-1">Visited at: {{this.checkInTime}}</p>
+    </div>
+</div>
+{{/each}}
+

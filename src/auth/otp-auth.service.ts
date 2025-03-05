@@ -33,6 +33,12 @@ interface OtpVerifyResponse {
       email: string;
       roles: string[]; // Assuming roles is an array of strings
       fullName: string;
+      picture: {
+        id: string;
+        url: string;
+        width: number;
+        height: number;
+      };
     };
   };
 }
@@ -148,6 +154,7 @@ export class OtpAuthService {
           //userInDb?.roles is string "[ 'admin', 'user' ]",
           roles: userInDb?.roles || [],
           fullName: response.data.data?.user?.fullName || '',
+          picUrl: response.data.data?.user?.picture?.url || '',
         };
 
         return {

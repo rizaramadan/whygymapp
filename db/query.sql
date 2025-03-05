@@ -39,3 +39,30 @@ FROM
 WHERE u.email = $1
 GROUP BY u.id, u.username
 LIMIT 1;
+
+-- name: GetTodayVisits :many
+SELECT id, member_id, email, pic_url, check_in_time
+FROM whygym.visits 
+WHERE check_in_date = CURRENT_DATE
+ORDER BY check_in_time DESC;
+
+-- name: CreateVisit :one
+INSERT INTO whygym.visits (member_id, email, pic_url)
+VALUES ($1, $2, $3)
+RETURNING id, member_id, email, pic_url, check_in_time;
+
+-- name: GetMemberIdByEmail :one
+SELECT id FROM whygym.members
+WHERE email = $1
+LIMIT 1;
+
+-- name: GetVisitsAfterId :many 
+SELECT id, member_id, email, pic_url, check_in_time
+FROM whygym.visits 
+WHERE id > $1
+ORDER BY check_in_time DESC;
+
+-- name: GetLastVisitId :one
+SELECT id FROM whygym.visits
+ORDER BY id DESC
+LIMIT 1;

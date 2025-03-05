@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Officer Dashboard - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+    @keyframes fade-in {
+        from { opacity: 0; }
+    }
+
+    @keyframes fade-out {
+        to { opacity: 0; }
+    }
+
+    @keyframes slide-from-right {
+        from { transform: translateX(90px); }
+    }
+
+    @keyframes slide-to-left {
+        to { transform: translateX(-90px); }
+    }
+
+    .slide-it {
+        view-transition-name: slide-it;
+    }
+
+    ::view-transition-old(slide-it) {
+        animation: 180ms cubic-bezier(0.4, 0, 1, 1) both fade-out,
+        600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-to-left;
+    }
+    ::view-transition-new(slide-it) {
+        animation: 420ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+        600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+    }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white">
+    <!-- Sidebars -->
+    <div class="hidden lg:block fixed left-0 top-0 h-full w-1/6 bg-green-50/30"></div>
+    <div class="hidden lg:block fixed right-0 top-0 h-full w-1/6 bg-green-50/30"></div>
+
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col px-4 py-4 sm:py-8">
+        <div class="w-full max-w-6xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-green-800">Visitors Today</h1>
+                <div hx-get="/members/new-visitors" 
+                     hx-trigger="every 1s" 
+                     hx-target="#visitors-list-container" 
+                     hx-swap="afterbegin transition:true"
+                     hx-vals='js:{"lastVisitId": document.querySelectorAll(".visit-id")[0]?.innerText || ""}'>
+                    &nbsp;
+                </div>
+            </div>
+
+            <!-- Users List -->
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <div class="space-y-4" id="visitors-list-container">
+                    {{#each vistors}}
+                    <div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
+                        <div class="flex-shrink-0 mr-6">
+                            <div style="display: none;" class="visit-id">{{this.id}}</div>
+                            {{#if this.picUrl}}
+                            <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
+                            {{else}}
+                            <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-3xl text-green-600">{{this.email}}</span>
+                            </div>
+                            {{/if}}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-lg font-medium text-green-900">{{this.email}}</p>
+                            <p class="text-sm text-green-500 mt-1">Visited at: {{this.checkInTime}}</p>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="text-center py-8 text-green-600">
+                        No users found.
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-8">
+                <p class="text-sm text-green-600/60 text-center">
+                    © 2024 WhyGym. All rights reserved.
+                </p>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>

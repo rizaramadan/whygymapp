@@ -6,4 +6,5 @@ export interface JwtPayload {
   email: string;
   roles: string[];
   fullName: string;
+  picUrl: string;
 }
