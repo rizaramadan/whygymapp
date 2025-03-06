@@ -24,35 +24,45 @@
                 <div id="loginForm" class="space-y-6">
                     <h2 class="text-2xl font-semibold text-green-800 text-center">Welcome</h2>
                     <p class="text-sm text-green-600/80 text-center">
-                        Enter your email to receive otp on your email
+                        Enter your username and password to login
                     </p>
                     
-                    <form hx-post="/auth/otp/create"
+                    <form hx-post="/auth/login"
                           hx-target="#loginForm"
                           hx-swap="outerHTML"
                           hx-indicator="#spinner"
                           class="space-y-6">    
                         
                         <div class="space-y-2">
-                            <label for="email" class="block text-sm font-medium text-green-700">
-                                Email address
+                            <label for="username" class="block text-sm font-medium text-green-700">
+                                Username
                             </label>
-                            <input type="email" 
-                                   name="email"
+                            <input type="text" 
+                                   name="username"
                                    class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
                                    required
-                                   placeholder="your@email.com">
+                                   placeholder="your username">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="password" class="block text-sm font-medium text-green-700">
+                                Password
+                            </label>
+                            <input type="password" 
+                                   name="password"
+                                   class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
+                                   required
+                                   placeholder="your password">
                         </div>
                         
                         <button class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
                                 type="submit" >
-                            <span class="htmx-indicator-hide">Send Login Code</span>
+                            <span class="htmx-indicator-hide">Login</span>
                             <img  id="spinner" class="htmx-indicator" src="https://htmx.org/img/bars.svg"/>
                         </button>
                     </form>
                     <p class="text-center mt-4">
-                        <a href="/auth/login-user-pass" class="text-green-600 hover:text-green-800 font-medium">or login with username and password</a>
-                    </p>
+                        <a href="/auth/login" class="text-green-600 hover:text-green-800 font-medium">or login with email</a>
+                    </p>                   
                     <p class="text-sm text-green-600/60 text-center">
                         By continuing, you agree to our Terms of Service
                     </p>

@@ -42,12 +42,52 @@ CREATE TABLE public.schema_migrations (
 ALTER TABLE public.schema_migrations OWNER TO postgres;
 
 --
+-- Name: create_user_requests; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.create_user_requests (
+    id integer NOT NULL,
+    username character varying(100) NOT NULL,
+    password character varying(255) NOT NULL,
+    email character varying(100),
+    status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    approved_by integer,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.create_user_requests OWNER TO postgres;
+
+--
+-- Name: create_user_requests_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.create_user_requests_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.create_user_requests_id_seq OWNER TO postgres;
+
+--
+-- Name: create_user_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.create_user_requests_id_seq OWNED BY whygym.create_user_requests.id;
+
+
+--
 -- Name: members; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
 CREATE TABLE whygym.members (
     id integer NOT NULL,
-    email character varying(100) NOT NULL,
+    email character varying(100),
     nickname character varying(100) NOT NULL,
     date_of_birth date,
     phone_number character varying(20),
@@ -137,7 +177,7 @@ CREATE TABLE whygym.users (
     id integer NOT NULL,
     username character varying(100) NOT NULL,
     password character varying(255) NOT NULL,
-    email character varying(100) NOT NULL,
+    email character varying(100),
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
@@ -176,7 +216,7 @@ CREATE TABLE whygym.visits (
     member_id integer NOT NULL,
     check_in_time timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     check_in_date date DEFAULT CURRENT_DATE NOT NULL,
-    email character varying(100) NOT NULL,
+    email character varying(100),
     pic_url character varying(255) NOT NULL,
     notes text,
     additional_data json
@@ -204,6 +244,13 @@ ALTER TABLE whygym.visits_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE whygym.visits_id_seq OWNED BY whygym.visits.id;
+
+
+--
+-- Name: create_user_requests id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.create_user_requests ALTER COLUMN id SET DEFAULT nextval('whygym.create_user_requests_id_seq'::regclass);
 
 
 --
@@ -240,6 +287,22 @@ ALTER TABLE ONLY whygym.visits ALTER COLUMN id SET DEFAULT nextval('whygym.visit
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: create_user_requests create_user_requests_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.create_user_requests
+    ADD CONSTRAINT create_user_requests_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: create_user_requests create_user_requests_username_key; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.create_user_requests
+    ADD CONSTRAINT create_user_requests_username_key UNIQUE (username);
 
 
 --
@@ -352,6 +415,14 @@ CREATE INDEX idx_visits_email ON whygym.visits USING btree (email);
 --
 
 CREATE INDEX idx_visits_member_id ON whygym.visits USING btree (member_id);
+
+
+--
+-- Name: create_user_requests create_user_requests_approved_by_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.create_user_requests
+    ADD CONSTRAINT create_user_requests_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES whygym.users(id);
 
 
 --

@@ -36,7 +36,7 @@ export interface GetAllUsersRolesRow {
     id: number;
     username: string;
     password: string;
-    email: string;
+    email: string | null;
     role: string;
 }
 
@@ -72,7 +72,7 @@ GROUP BY u.id, u.username
 LIMIT 1`;
 
 export interface GetUserByEmailArgs {
-    email: string;
+    email: string | null;
 }
 
 export interface GetUserByEmailRow {
@@ -109,7 +109,7 @@ ORDER BY check_in_time DESC`;
 export interface GetTodayVisitsRow {
     id: string;
     memberId: number;
-    email: string;
+    email: string | null;
     picUrl: string;
     checkInTime: Date;
 }
@@ -138,14 +138,14 @@ RETURNING id, member_id, email, pic_url, check_in_time`;
 
 export interface CreateVisitArgs {
     memberId: number;
-    email: string;
+    email: string | null;
     picUrl: string;
 }
 
 export interface CreateVisitRow {
     id: string;
     memberId: number;
-    email: string;
+    email: string | null;
     picUrl: string;
     checkInTime: Date;
 }
@@ -175,7 +175,7 @@ WHERE email = $1
 LIMIT 1`;
 
 export interface GetMemberIdByEmailArgs {
-    email: string;
+    email: string | null;
 }
 
 export interface GetMemberIdByEmailRow {
@@ -210,7 +210,7 @@ export interface GetVisitsAfterIdArgs {
 export interface GetVisitsAfterIdRow {
     id: string;
     memberId: number;
-    email: string;
+    email: string | null;
     picUrl: string;
     checkInTime: Date;
 }
@@ -254,5 +254,159 @@ export async function getLastVisitId(client: Client): Promise<GetLastVisitIdRow 
     return {
         id: row[0]
     };
+}
+
+export const createUserRequestQuery = `-- name: CreateUserRequest :one
+INSERT INTO whygym.create_user_requests (username, password, email)
+VALUES ($1, $2, $3)
+RETURNING id, username, password, email, status, created_at, updated_at`;
+
+export interface CreateUserRequestArgs {
+    username: string;
+    password: string;
+    email: string | null;
+}
+
+export interface CreateUserRequestRow {
+    id: number;
+    username: string;
+    password: string;
+    email: string | null;
+    status: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function createUserRequest(client: Client, args: CreateUserRequestArgs): Promise<CreateUserRequestRow | null> {
+    const result = await client.query({
+        text: createUserRequestQuery,
+        values: [args.username, args.password, args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        username: row[1],
+        password: row[2],
+        email: row[3],
+        status: row[4],
+        createdAt: row[5],
+        updatedAt: row[6]
+    };
+}
+
+export const approveUserRequestQuery = `-- name: ApproveUserRequest :one
+UPDATE whygym.create_user_requests
+SET status = 'approved', approved_by = $1
+WHERE id = $2
+RETURNING id, username, password, email, status, created_at, updated_at`;
+
+export interface ApproveUserRequestArgs {
+    approvedBy: number | null;
+    id: number;
+}
+
+export interface ApproveUserRequestRow {
+    id: number;
+    username: string;
+    password: string;
+    email: string | null;
+    status: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function approveUserRequest(client: Client, args: ApproveUserRequestArgs): Promise<ApproveUserRequestRow | null> {
+    const result = await client.query({
+        text: approveUserRequestQuery,
+        values: [args.approvedBy, args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        username: row[1],
+        password: row[2],
+        email: row[3],
+        status: row[4],
+        createdAt: row[5],
+        updatedAt: row[6]
+    };
+}
+
+export const getPendingUserRequestsQuery = `-- name: GetPendingUserRequests :many
+SELECT id, username, password, email, status, created_at, updated_at
+FROM whygym.create_user_requests
+WHERE status = 'pending'`;
+
+export interface GetPendingUserRequestsRow {
+    id: number;
+    username: string;
+    password: string;
+    email: string | null;
+    status: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getPendingUserRequests(client: Client): Promise<GetPendingUserRequestsRow[]> {
+    const result = await client.query({
+        text: getPendingUserRequestsQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            password: row[2],
+            email: row[3],
+            status: row[4],
+            createdAt: row[5],
+            updatedAt: row[6]
+        };
+    });
+}
+
+export const getUserRequestsQuery = `-- name: GetUserRequests :many
+SELECT id, username, password, email, status, created_at, updated_at, approved_by
+FROM whygym.create_user_requests
+ORDER BY created_at DESC`;
+
+export interface GetUserRequestsRow {
+    id: number;
+    username: string;
+    password: string;
+    email: string | null;
+    status: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    approvedBy: number | null;
+}
+
+export async function getUserRequests(client: Client): Promise<GetUserRequestsRow[]> {
+    const result = await client.query({
+        text: getUserRequestsQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            username: row[1],
+            password: row[2],
+            email: row[3],
+            status: row[4],
+            createdAt: row[5],
+            updatedAt: row[6],
+            approvedBy: row[7]
+        };
+    });
 }
 

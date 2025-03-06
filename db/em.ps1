@@ -21,4 +21,3 @@ if (Test-Path "schema.sql") {
 }
 
 pg_dump -U $dbUser -h $dbHost -p $dbPort -d $dbName -s > schema.sql
-

@@ -31,6 +31,13 @@ export class AuthController {
   }
 
   @Public()
+  @Get('login-user-pass')
+  @Render('auth/login-user-pass')
+  getLoginUserPass() {
+    return {};
+  }
+
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: Record<string, string>) {

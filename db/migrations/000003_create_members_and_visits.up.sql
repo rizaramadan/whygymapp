@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS whygym.members (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
     nickname VARCHAR(100) NOT NULL,
     date_of_birth DATE,
     phone_number VARCHAR(20),     
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS whygym.visits (
     member_id INTEGER NOT NULL REFERENCES whygym.members(id) ON DELETE CASCADE,
     check_in_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     check_in_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    email VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
     pic_url VARCHAR(255) NOT NULL,    
     notes TEXT,
     additional_data JSON

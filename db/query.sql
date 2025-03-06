@@ -66,3 +66,24 @@ ORDER BY check_in_time DESC;
 SELECT id FROM whygym.visits
 ORDER BY id DESC
 LIMIT 1;
+
+-- name: CreateUserRequest :one
+INSERT INTO whygym.create_user_requests (username, password, email)
+VALUES ($1, $2, $3)
+RETURNING id, username, password, email, status, created_at, updated_at;
+
+-- name: ApproveUserRequest :one
+UPDATE whygym.create_user_requests
+SET status = 'approved', approved_by = $1
+WHERE id = $2
+RETURNING id, username, password, email, status, created_at, updated_at;
+
+-- name: GetPendingUserRequests :many
+SELECT id, username, password, email, status, created_at, updated_at
+FROM whygym.create_user_requests
+WHERE status = 'pending';
+
+-- name: GetUserRequests :many
+SELECT id, username, password, email, status, created_at, updated_at, approved_by
+FROM whygym.create_user_requests
+ORDER BY created_at DESC;

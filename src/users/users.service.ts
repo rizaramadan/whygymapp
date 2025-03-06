@@ -1,5 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { getUserByEmail } from '../../db/src/query_sql'; // Import the function
+import {
+  ApproveUserRequestArgs,
+  ApproveUserRequestRow,
+  CreateUserRequestArgs,
+  CreateUserRequestRow,
+  getUserByEmail,
+} from '../../db/src/query_sql'; // Import the function from the query_sql file
+import {
+  createUserRequest,
+  getUserRequests,
+  approveUserRequest,
+  getPendingUserRequests,
+  GetUserRequestsRow,
+  GetPendingUserRequestsRow,
+} from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
 
 export type User = {
@@ -34,5 +48,26 @@ export class UsersService {
       };
     }
     return undefined;
+  }
+
+  async createUserRequest(
+    body: CreateUserRequestArgs,
+  ): Promise<CreateUserRequestRow | null> {
+    return await createUserRequest(this.pool, body);
+  }
+
+  async getUserRequests(): Promise<GetUserRequestsRow[] | null> {
+    const data = await getUserRequests(this.pool);
+    return data;
+  }
+
+  async approveUserRequest(
+    body: ApproveUserRequestArgs,
+  ): Promise<ApproveUserRequestRow | null> {
+    return await approveUserRequest(this.pool, body);
+  }
+
+  async getPendingUserRequests(): Promise<GetPendingUserRequestsRow[] | null> {
+    return await getPendingUserRequests(this.pool);
   }
 }
