@@ -31,13 +31,6 @@ export class AuthController {
   }
 
   @Public()
-  @Get('login-user-pass')
-  @Render('auth/login-user-pass')
-  getLoginUserPass() {
-    return {};
-  }
-
-  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: Record<string, string>) {
@@ -65,6 +58,29 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const jwt = await this.otpAuthService.verifyOtp(verifyOtpDto);
+    res.cookie('access_token', jwt.access_token);
+    const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
+    return res.redirect(`/${role}-dashboard`);
+  }
+
+  @Public()
+  @Get('login-user-pass')
+  @Render('auth/login-user-pass')
+  getLoginUserPass() {
+    return {};
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('login-user-pass')
+  async signInUserPass(
+    @Body() signInDto: Record<string, string>,
+    @Res() res: Response,
+  ) {
+    const jwt = await this.authService.signIn(
+      signInDto.username,
+      signInDto.password,
+    );
     res.cookie('access_token', jwt.access_token);
     const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
     return res.redirect(`/${role}-dashboard`);

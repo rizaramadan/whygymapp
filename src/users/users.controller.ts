@@ -1,12 +1,21 @@
-import { Controller, Get, Post, Body, Render } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { Roles } from 'src/roles/decorators/roles.decorator';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Render,
+  Request,
+  Param,
+  Response,
+} from '@nestjs/common';
+import { Response as ExpressResponse } from 'express';
 import {
   CreateUserRequestArgs,
-  GetPendingUserRequestsRow,
-  ApproveUserRequestArgs,
   CreateUserRequestRow,
+  ApproveAndApplyUserArgs,
 } from '../../db/src/query_sql';
+import { Roles } from 'src/roles/decorators/roles.decorator';
+import { User, UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -35,22 +44,34 @@ export class UsersController {
   @Render('users/user-requests')
   async getUserRequests() {
     const userRequests = await this.usersService.getUserRequests();
-    console.log(userRequests);
     return { userRequests };
   }
 
   // approve user request for admin
-  @Post('approve-user-request')
+  @Post('approve-user-request/:id')
   @Roles('admin')
-  async approveUserRequest(@Body() body: ApproveUserRequestArgs) {
-    return this.usersService.approveUserRequest(body);
+  async approveUserRequest(
+    @Request() req: { user: User },
+    @Response() res: ExpressResponse,
+    @Param('id') id: string,
+  ) {
+    const args: ApproveAndApplyUserArgs = {
+      approvedBy: req.user.id,
+      id: parseInt(id),
+    };
+    console.log(args);
+    //set response header HX-Refresh to tru
+    res.setHeader('HX-Refresh', 'true');
+    return this.usersService.approveAndApplyUser(args);
   }
 
   // view pending user requests for admin
   @Get('pending-user-requests')
   @Roles('admin')
   @Render('users/pending-user-requests')
-  async getPendingUserRequests(): Promise<GetPendingUserRequestsRow[] | null> {
-    return this.usersService.getPendingUserRequests();
+  async getPendingUserRequests() {
+    const pendings = await this.usersService.getPendingUserRequests();
+    console.log(pendings);
+    return { pendings };
   }
 }

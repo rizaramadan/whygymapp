@@ -87,3 +87,35 @@ WHERE status = 'pending';
 SELECT id, username, password, email, status, created_at, updated_at, approved_by
 FROM whygym.create_user_requests
 ORDER BY created_at DESC;
+
+-- name: ApproveAndApplyUser :one
+WITH approve_create_user AS
+    (
+        UPDATE whygym.create_user_requests cur
+        SET status = 'approved', approved_by = $1
+        WHERE cur.id = $2
+        RETURNING cur.username, cur.password, cur.email, cur.status, cur.created_at, cur.updated_at, gen_salt('md5') as salt
+    )
+INSERT INTO whygym.users (username, password, email)
+SELECT username, crypt(password, salt), email
+FROM approve_create_user
+RETURNING username, password;
+
+-- name: CheckUserCredentials :one
+SELECT count(*) FROM whygym.users 
+WHERE username = $1 AND password = crypt($2, password) LIMIT 1;
+
+
+-- name: GetUserByUsername :one
+SELECT
+    u.id,
+    u.username,
+    u.password,
+    STRING_AGG(r.name, ', ')::text AS roles
+FROM
+    whygym.users u
+    LEFT JOIN whygym.user_roles ur ON u.id = ur.user_id
+    LEFT JOIN whygym.roles r ON ur.role_id = r.id
+WHERE u.username = $1
+GROUP BY u.id, u.username
+LIMIT 1;

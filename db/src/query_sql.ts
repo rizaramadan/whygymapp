@@ -410,3 +410,113 @@ export async function getUserRequests(client: Client): Promise<GetUserRequestsRo
     });
 }
 
+export const approveAndApplyUserQuery = `-- name: ApproveAndApplyUser :one
+WITH approve_create_user AS
+    (
+        UPDATE whygym.create_user_requests cur
+        SET status = 'approved', approved_by = $1
+        WHERE cur.id = $2
+        RETURNING cur.username, cur.password, cur.email, cur.status, cur.created_at, cur.updated_at, gen_salt('md5') as salt
+    )
+INSERT INTO whygym.users (username, password, email)
+SELECT username, crypt(password, salt), email
+FROM approve_create_user
+RETURNING username, password`;
+
+export interface ApproveAndApplyUserArgs {
+    approvedBy: number | null;
+    id: number;
+}
+
+export interface ApproveAndApplyUserRow {
+    username: string;
+    password: string;
+}
+
+export async function approveAndApplyUser(client: Client, args: ApproveAndApplyUserArgs): Promise<ApproveAndApplyUserRow | null> {
+    const result = await client.query({
+        text: approveAndApplyUserQuery,
+        values: [args.approvedBy, args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        username: row[0],
+        password: row[1]
+    };
+}
+
+export const checkUserCredentialsQuery = `-- name: CheckUserCredentials :one
+SELECT count(*) FROM whygym.users 
+WHERE username = $1 AND password = crypt($2, password) LIMIT 1`;
+
+export interface CheckUserCredentialsArgs {
+    username: string;
+    crypt: string;
+}
+
+export interface CheckUserCredentialsRow {
+    count: string;
+}
+
+export async function checkUserCredentials(client: Client, args: CheckUserCredentialsArgs): Promise<CheckUserCredentialsRow | null> {
+    const result = await client.query({
+        text: checkUserCredentialsQuery,
+        values: [args.username, args.crypt],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        count: row[0]
+    };
+}
+
+export const getUserByUsernameQuery = `-- name: GetUserByUsername :one
+SELECT
+    u.id,
+    u.username,
+    u.password,
+    STRING_AGG(r.name, ', ')::text AS roles
+FROM
+    whygym.users u
+    LEFT JOIN whygym.user_roles ur ON u.id = ur.user_id
+    LEFT JOIN whygym.roles r ON ur.role_id = r.id
+WHERE u.username = $1
+GROUP BY u.id, u.username
+LIMIT 1`;
+
+export interface GetUserByUsernameArgs {
+    username: string;
+}
+
+export interface GetUserByUsernameRow {
+    id: number;
+    username: string;
+    password: string;
+    roles: string;
+}
+
+export async function getUserByUsername(client: Client, args: GetUserByUsernameArgs): Promise<GetUserByUsernameRow | null> {
+    const result = await client.query({
+        text: getUserByUsernameQuery,
+        values: [args.username],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        username: row[1],
+        password: row[2],
+        roles: row[3]
+    };
+}
+

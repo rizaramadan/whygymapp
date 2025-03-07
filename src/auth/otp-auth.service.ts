@@ -141,9 +141,6 @@ export class OtpAuthService {
           response.data.data?.user?.email || '',
         );
 
-        console.log('userInDb', userInDb);
-        console.log('verifyOtp user roles', userInDb?.roles);
-
         // Create a JWT token with user information
         const payload: JwtPayload = {
           id: userInDb?.id.toString() || '',

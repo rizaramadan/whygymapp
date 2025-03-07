@@ -7,75 +7,99 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            background-image: url('/img/login-bg.webp');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .overlay {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.85));
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white">
-    <!-- Sidebars -->
-    <div class="hidden lg:block fixed left-0 top-0 h-full w-1/6 bg-green-50/30"></div>
-    <div class="hidden lg:block fixed right-0 top-0 h-full w-1/6 bg-green-50/30"></div>
-
-    <!-- Main content area -->
-    <div class="flex-1 flex flex-col px-4 py-4 sm:py-8">
-        <!-- Logo -->
-        <div class="w-full max-w-2xl mx-auto">
-            <h1 class="text-3xl font-bold text-green-800 text-center mb-8">WhyGym</h1>
-
-            <!-- Main form container -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-                <div id="loginForm" class="space-y-6">
-                    <h2 class="text-2xl font-semibold text-green-800 text-center">Welcome</h2>
-                    <p class="text-sm text-green-600/80 text-center">
-                        Enter your username and password to login
-                    </p>
-                    
-                    <form hx-post="/auth/login"
-                          hx-target="#loginForm"
-                          hx-swap="outerHTML"
-                          hx-indicator="#spinner"
-                          class="space-y-6">    
+<body class="min-h-screen">
+    <div class="overlay">
+        <div class="content-wrapper px-4 py-4">
+            <div class="w-full max-w-sm">
+                <div id="loginForm" class="space-y-4">
+                    <form action="/auth/login-user-pass"
+                          method="POST"
+                          onsubmit="showSpinner()"
+                          class="space-y-4">    
                         
-                        <div class="space-y-2">
-                            <label for="username" class="block text-sm font-medium text-green-700">
-                                Username
-                            </label>
-                            <input type="text" 
-                                   name="username"
-                                   class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
-                                   required
-                                   placeholder="your username">
-                        </div>
-                        <div class="space-y-2">
-                            <label for="password" class="block text-sm font-medium text-green-700">
-                                Password
-                            </label>
-                            <input type="password" 
-                                   name="password"
-                                   class="w-full rounded-xl border-green-200 shadow-sm focus:border-green-500 focus:ring-green-500 bg-green-50/30 px-4 py-3" 
-                                   required
-                                   placeholder="your password">
-                        </div>
+                        <input type="text" 
+                               name="username"
+                               class="w-full rounded-lg border border-gray-300 px-4 py-2" 
+                               required
+                               placeholder="your username">
                         
-                        <button class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
-                                type="submit" >
-                            <span class="htmx-indicator-hide">Login</span>
-                            <img  id="spinner" class="htmx-indicator" src="https://htmx.org/img/bars.svg"/>
+                        <input type="password" 
+                               name="password"
+                               class="w-full rounded-lg border border-gray-300 px-4 py-2" 
+                               required
+                               placeholder="your password">
+                        
+                        <button class="w-full py-2 px-4 rounded-lg text-white bg-green-600 font-medium"
+                                type="submit">
+                            <span id="buttonText">Login</span>
+                            <img id="spinner" src="https://htmx.org/img/bars.svg" style="display: none;"/>
                         </button>
                     </form>
-                    <p class="text-center mt-4">
-                        <a href="/auth/login" class="text-green-600 hover:text-green-800 font-medium">or login with email</a>
-                    </p>                   
-                    <p class="text-sm text-green-600/60 text-center">
-                        By continuing, you agree to our Terms of Service
-                    </p>
+                
+                    <div class="mt-4">
+                        <p class="text-sm text-center text-white mb-2">
+                            Enter your username and password to login
+                        </p>
+                        
+                        <a href="/auth/login" 
+                           class="block w-3/4 mx-auto mt-8 py-2 px-4 rounded-lg text-xs text-green-600 bg-white border border-green-600 font-medium text-center hover:bg-green-50 transition-colors">
+                            Or Login with email
+                        </a>
+
+                        <p class="text-xs text-white text-center mt-4">
+                            By continuing, you agree to our Terms of Service
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <footer class="mt-8">
-                <p class="text-sm text-green-600/60 text-center">
+            <footer class="absolute bottom-4">
+                <p class="text-xs text-gray-500">
                     © 2024 WhyGym. All rights reserved.
                 </p>
             </footer>
         </div>
     </div>
+
+    <script>
+        function showSpinner() {
+            document.getElementById('buttonText').style.display = 'none';
+            document.getElementById('spinner').style.display = 'inline';
+        }
+    </script>
 </body>
 </html> 

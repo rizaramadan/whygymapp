@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { resolve } from 'path';
 import * as cookieParser from 'cookie-parser';
+import { registerHelpers } from './views/helpers/hbs-helpers';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -12,6 +13,9 @@ async function bootstrap() {
   app.setBaseViewsDir(resolve('./src/views'));
   app.setViewEngine('hbs');
   app.use(cookieParser());
+
+  // Register Handlebars helpers
+  registerHelpers();
 
   await app.listen(process.env.PORT ?? 3000);
 }
