@@ -7,6 +7,7 @@ import {
   Request,
   Param,
   Response,
+  Res,
 } from '@nestjs/common';
 import { Response as ExpressResponse } from 'express';
 import {
@@ -34,8 +35,11 @@ export class UsersController {
   @Roles('front-officer')
   async createUserRequest(
     @Body() body: CreateUserRequestArgs,
+    @Response() res: ExpressResponse,
   ): Promise<CreateUserRequestRow | null> {
-    return this.usersService.createUserRequest(body);
+    const result = await this.usersService.createUserRequest(body);
+    res.setHeader('HX-Redirect', '/users/user-requests');
+    return result;
   }
 
   // view all user requests for front officer
@@ -52,17 +56,14 @@ export class UsersController {
   @Roles('admin')
   async approveUserRequest(
     @Request() req: { user: User },
-    @Response() res: ExpressResponse,
     @Param('id') id: string,
   ) {
     const args: ApproveAndApplyUserArgs = {
       approvedBy: req.user.id,
       id: parseInt(id),
     };
-    console.log(args);
-    //set response header HX-Refresh to tru
-    res.setHeader('HX-Refresh', 'true');
-    return this.usersService.approveAndApplyUser(args);
+    await this.usersService.approveAndApplyUser(args);
+    return '<script>window.location.href="/users/pending-user-requests"</script>';
   }
 
   // view pending user requests for admin
