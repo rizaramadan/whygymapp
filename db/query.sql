@@ -78,6 +78,12 @@ SET status = 'approved', approved_by = $1
 WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at;
 
+-- name: RejectUserRequest :one
+UPDATE whygym.create_user_requests
+SET status = 'rejected', approved_by = $1
+WHERE id = $2
+RETURNING id, username, password, email, status, created_at, updated_at;
+
 -- name: GetPendingUserRequests :many
 SELECT id, username, password, email, status, created_at, updated_at
 FROM whygym.create_user_requests

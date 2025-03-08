@@ -340,6 +340,48 @@ export async function approveUserRequest(client: Client, args: ApproveUserReques
     };
 }
 
+export const rejectUserRequestQuery = `-- name: RejectUserRequest :one
+UPDATE whygym.create_user_requests
+SET status = 'rejected', approved_by = $1
+WHERE id = $2
+RETURNING id, username, password, email, status, created_at, updated_at`;
+
+export interface RejectUserRequestArgs {
+    approvedBy: number | null;
+    id: number;
+}
+
+export interface RejectUserRequestRow {
+    id: number;
+    username: string;
+    password: string;
+    email: string | null;
+    status: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function rejectUserRequest(client: Client, args: RejectUserRequestArgs): Promise<RejectUserRequestRow | null> {
+    const result = await client.query({
+        text: rejectUserRequestQuery,
+        values: [args.approvedBy, args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        username: row[1],
+        password: row[2],
+        email: row[3],
+        status: row[4],
+        createdAt: row[5],
+        updatedAt: row[6]
+    };
+}
+
 export const getPendingUserRequestsQuery = `-- name: GetPendingUserRequests :many
 SELECT id, username, password, email, status, created_at, updated_at
 FROM whygym.create_user_requests

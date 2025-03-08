@@ -14,6 +14,7 @@ import {
   CreateUserRequestArgs,
   CreateUserRequestRow,
   ApproveAndApplyUserArgs,
+  RejectUserRequestArgs,
 } from '../../db/src/query_sql';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { User, UsersService } from './users.service';
@@ -63,6 +64,20 @@ export class UsersController {
       id: parseInt(id),
     };
     await this.usersService.approveAndApplyUser(args);
+    return '<script>window.location.href="/users/pending-user-requests"</script>';
+  }
+
+  @Post('reject-user-request/:id')
+  @Roles('admin')
+  async rejectUserRequest(
+    @Request() req: { user: User },
+    @Param('id') id: string,
+  ) {
+    const args: RejectUserRequestArgs = {
+      approvedBy: req.user.id,
+      id: parseInt(id),
+    };
+    await this.usersService.rejectUserRequest(args);
     return '<script>window.location.href="/users/pending-user-requests"</script>';
   }
 

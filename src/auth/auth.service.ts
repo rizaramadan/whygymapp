@@ -20,9 +20,9 @@ export class AuthService {
     if (!isUserValid) {
       throw new UnauthorizedException();
     } else {
-      const user: User = await this.usersService.findOneWithUsername(
+      const user: User = (await this.usersService.findOneWithUsername(
         username,
-      ) as User;
+      )) as User;
       const payload = {
         id: user.id,
         username: user.username,

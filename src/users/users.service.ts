@@ -17,6 +17,9 @@ import {
   getUserByEmail,
   CheckUserCredentialsArgs,
   getUserByUsername,
+  RejectUserRequestRow,
+  RejectUserRequestArgs,
+  rejectUserRequest,
 } from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
 
@@ -84,12 +87,6 @@ export class UsersService {
     return data;
   }
 
-  async approveUserRequest(
-    body: ApproveUserRequestArgs,
-  ): Promise<ApproveUserRequestRow | null> {
-    return await approveUserRequest(this.pool, body);
-  }
-
   async getPendingUserRequests(): Promise<GetPendingUserRequestsRow[] | null> {
     return await getPendingUserRequests(this.pool);
   }
@@ -99,6 +96,7 @@ export class UsersService {
   ): Promise<ApproveAndApplyUserRow | null> {
     return await approveAndApplyUser(this.pool, body);
   }
+
 
   async checkUserCredentials(
     username: string,
@@ -110,5 +108,9 @@ export class UsersService {
     };
     const result = await checkUserCredentials(this.pool, param);
     return result?.count === '1';
+  }
+
+  async rejectUserRequest(args: RejectUserRequestArgs): Promise<RejectUserRequestRow | null> {
+    return await rejectUserRequest(this.pool, args);
   }
 }
