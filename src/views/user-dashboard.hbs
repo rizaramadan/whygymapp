@@ -9,28 +9,28 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         #html5-qrcode-button-camera-start, #html5-qrcode-button-camera-stop {
-            display: none; /* Keep this if you want the button hidden initially */
-            background-color: #2c7a7f; /* Deep green color */
-            color: white; /* Text color */
-            padding: 0.5rem 1rem; /* Padding for the button */
-            border-radius: 0.375rem; /* Rounded corners */
-            border: none; /* Remove default border */
-            cursor: pointer; /* Pointer cursor on hover */
-            transition: background-color 0.3s; /* Smooth transition for hover effect */
+            display: none;
+            background-color: #2c7a7f;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         #html5-qrcode-button-camera-start:hover, #html5-qrcode-button-camera-stop:hover {
-            background-color: #285e61; /* Darker green on hover */
+            background-color: #285e61;
         }
 
         #html5-qrcode-button-camera-start:focus, #html5-qrcode-button-camera-stop:focus {
-            outline: 2px solid #2c7a7f; /* Focus outline */
-            outline-offset: 2px; /* Space between outline and button */
+            outline: 2px solid #2c7a7f;
+            outline-offset: 2px;
         }
 
         #qr-reader {
             border: none !important;
-            background: #f0fdf4 !important; /* Light green background */
+            background: #f0fdf4 !important;
         }
 
         #qr-reader__scan_region {
@@ -48,149 +48,165 @@
             border: none !important;
             margin: 8px 0 !important;
         }
+
+        body {
+            background-color: #f0fdf4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .card-container {
+            max-width: 420px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .qr-code-container {
+            background-color: #f0fdf4;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white">
-    <!-- Sidebars -->
-    <div class="hidden lg:block fixed left-0 top-0 h-full w-1/4 bg-green-50/30"></div>
-    <div class="hidden lg:block fixed right-0 top-0 h-full w-1/4 bg-green-50/30"></div>
+<body class="bg-green-50 p-4">
+    <div class="card-container">
+        <!-- Header with logo and logout -->
+        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+            <h1 class="text-xl font-bold text-green-800">Gym App</h1>
+            <a href="/logout" class="text-green-600 text-sm">Logout</a>
+        </div>
 
-    <!-- Main content area -->
-    <div class="flex-1 flex flex-col px-4 py-8">
-        <!-- Header -->
-        <div class="w-full max-w-4xl mx-auto mb-8">
-            <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-green-800">WhyGym</h1>
-                <button class="px-4 py-2 text-sm text-green-600 hover:text-green-800">Logout</button>
+        <!-- Welcome section with user image -->
+        <div class="p-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">Welcome back, {{user.fullName}}</h2>
+                <p class="text-sm text-gray-500">Your membership is active until March 30, 2024</p>
+            </div>
+            <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
+                {{#if user.picUrl}}
+                    <img src="{{user.picUrl}}" alt="{{user.fullName}}" class="w-full h-full object-cover">
+                {{else}}
+                    <!-- Default user icon if no profile image -->
+                    <div class="w-full h-full flex items-center justify-center bg-green-100 text-green-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                {{/if}}
             </div>
         </div>
 
-        <!-- Dashboard Content -->
-        <div class="w-full max-w-4xl mx-auto">
-            <!-- Welcome Card -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                <h2 class="text-2xl font-semibold text-green-800">Welcome back, {{  user.fullName }}</h2>
-                <p class="text-green-600/80">Your membership is active until March 30, 2024</p>
-            </div>
-
-            <!-- QR Scanner Section -->
-            <div class="w-full max-w-4xl mx-auto mb-8">
-                <div class="bg-white rounded-2xl shadow-lg p-8">
-                    <div class="flex flex-col items-center">
-                        <button 
-                            id="start-scan-button" 
-                            onclick="startScanner(this)" 
-                            class="w-64 h-64 border-4 border-dashed border-green-500 rounded-xl flex flex-col items-center justify-center gap-4 hover:border-green-600 hover:bg-green-50 transition-all duration-200 group">
-                            <!-- Camera Icon (using SVG) -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-500 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <div class="text-center">
-                                <p class="text-green-600 font-medium mb-1">Tap to Scan QR Code</p>
-                            </div>
-                        </button>
-                        <div id="scanner-container" class="hidden">
-                            <div id="qr-reader" class="w-full max-w-md rounded-xl overflow-hidden"></div>
-                            <p class="text-sm text-green-600/80 mt-4">Position the QR code within the frame to scan</p>
-                        </div>
-                    </div>
+        <!-- QR Code section -->
+        <div class="qr-code-container" id="tap-qr-code-container">
+            <div id="start-scan-button" onclick="startScanner(this)" class="qr-code border-2 border-green-200 cursor-pointer">
+                <!-- QR Code placeholder -->
+                <div id="qr-placeholder" class="flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                    <p class="text-green-600 text-sm font-medium">Tap to Scan QR Code</p>
                 </div>
             </div>
+        </div>
+        <div id="scanner-container" class="hidden p-4 flex justify-center">
+            <div id="qr-reader" class="w-full max-w-xs rounded-xl overflow-hidden"></div>
+        </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-medium text-green-800">Workouts</h3>
-                    <p class="text-3xl font-bold text-green-600">12</p>
-                    <p class="text-sm text-green-600/60">This month</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-medium text-green-800">Classes</h3>
-                    <p class="text-3xl font-bold text-green-600">5</p>
-                    <p class="text-sm text-green-600/60">Attended</p>
-                </div>
+        <!-- Stats section -->
+        <div class="grid grid-cols-2 gap-4 p-4 border-t border-gray-100">
+            <div>
+                <h3 class="text-gray-600 text-sm">Workouts</h3>
+                <p class="text-lg font-bold text-gray-800">12<span class="text-xs font-normal text-gray-500 ml-1">This month</span></p>
             </div>
+            <div>
+                <h3 class="text-gray-600 text-sm">Classes</h3>
+                <p class="text-lg font-bold text-gray-800">5<span class="text-xs font-normal text-gray-500 ml-1">Attended</span></p>
+            </div>
+        </div>
 
-            <!-- Upcoming Classes -->
-            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
-                <h2 class="text-xl font-semibold text-green-800 mb-6">Upcoming Classes</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
-                        <div>
-                            <h3 class="font-medium text-green-800">Yoga Basics</h3>
-                            <p class="text-sm text-green-600">Tomorrow, 9:00 AM</p>
-                        </div>
-                        <button class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700">Join</button>
+        <!-- Upcoming Classes -->
+        <div class="p-4 border-t border-gray-100">
+            <h2 class="text-lg font-semibold text-green-800 mb-3">Upcoming Classes</h2>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-medium text-gray-800">Yoga Basics</h3>
+                        <p class="text-xs text-gray-500">Tomorrow, 9:00 AM</p>
                     </div>
-                    <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl">
-                        <div>
-                            <h3 class="font-medium text-green-800">HIIT Training</h3>
-                            <p class="text-sm text-green-600">Wed, 10:30 AM</p>
-                        </div>
-                        <button class="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700">Join</button>
+                    <button class="px-3 py-1 text-xs text-white bg-green-600 rounded-md hover:bg-green-700">Join</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-medium text-gray-800">HIIT Training</h3>
+                        <p class="text-xs text-gray-500">Wed, 10:30 AM</p>
                     </div>
+                    <button class="px-3 py-1 text-xs text-white bg-green-600 rounded-md hover:bg-green-700">Join</button>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <footer class="w-full max-w-4xl mx-auto mt-8">
-            <p class="text-sm text-green-600/60 text-center">
-                © 2024 WhyGym. All rights reserved.
-            </p>
-        </footer>
+        <div class="p-3 text-center border-t border-gray-100">
+            <p class="text-xs text-gray-500">© 2025 Gym App. All rights reserved.</p>
+        </div>
     </div>
-</body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<script>
-    var html5QrcodeScanner;
-    var onScanSuccess;
-    function docReady(fn) {
-        // see if DOM is already available
-        if (document.readyState === "complete"
-            || document.readyState === "interactive") {
-            // call on next available tick
-            setTimeout(fn, 1);
-        } else {
-            document.addEventListener("DOMContentLoaded", fn);
-        }
-    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    docReady(function () {
-        var resultContainer = document.getElementById('qr-reader-results');
-        var lastResult, countResults = 0;
-        onScanSuccess = function onScanSuccess(decodedText, decodedResult) {
-            if (decodedText !== lastResult) {
-                ++countResults;
-                lastResult = decodedText;
-                // Handle on success condition with the decoded message.
-                console.log(`Scan result ${decodedText}`, decodedResult);
-                if(decodedText == "/members/visit"){
-                    var url = decodedText;
-                    //redirect to url but post request to visit endpoint    
-                    window.location.href = url;
-                }
+    <script>
+        var html5QrcodeScanner;
+        var onScanSuccess;
+        function docReady(fn) {
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                setTimeout(fn, 1);
+            } else {
+                document.addEventListener("DOMContentLoaded", fn);
             }
         }
 
-        let config = {
-            fps: 10,
-            qrbox: 160,
-            rememberLastUsedCamera: true,
-            // Only support camera scan type.
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-        };
-        html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
-    });
+        docReady(function () {
+            var lastResult, countResults = 0;
+            onScanSuccess = function onScanSuccess(decodedText, decodedResult) {
+                if (decodedText !== lastResult) {
+                    ++countResults;
+                    lastResult = decodedText;
+                    console.log(`Scan result ${decodedText}`, decodedResult);
+                    if(decodedText == "/members/visit"){
+                        var url = decodedText;
+                        window.location.href = url;
+                    }
+                }
+            }
 
-    function startScanner(buttonElement) {
-        // Remove the button
-        buttonElement.remove();
-        // Show the scanner container
-        document.getElementById('scanner-container').classList.remove('hidden');
-        html5QrcodeScanner.render(onScanSuccess);
-    }
-</script>
+            let config = {
+                fps: 10,
+                qrbox: 160,
+                rememberLastUsedCamera: true,
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            };
+            html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
+        });
+
+        function startScanner(buttonElement) {
+            document.getElementById('qr-placeholder').style.display = 'none';
+            document.getElementById('tap-qr-code-container').style.display = 'none';
+            document.getElementById('scanner-container').classList.remove('hidden');
+            html5QrcodeScanner.render(onScanSuccess);
+        }
+    </script>
+</body>
 </html>
