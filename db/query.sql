@@ -125,3 +125,10 @@ FROM
 WHERE u.username = $1
 GROUP BY u.id, u.username
 LIMIT 1;
+
+-- name: AddOrUpdateUserPicture :one
+INSERT INTO whygym.users_attributes (user_id, key, value)
+VALUES ($1, 'picture', $2)
+ON CONFLICT (user_id, key) DO UPDATE
+SET value = $2, updated_at = NOW()
+RETURNING id, user_id, key, value;

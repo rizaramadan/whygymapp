@@ -562,3 +562,40 @@ export async function getUserByUsername(client: Client, args: GetUserByUsernameA
     };
 }
 
+export const addOrUpdateUserPictureQuery = `-- name: AddOrUpdateUserPicture :one
+INSERT INTO whygym.users_attributes (user_id, key, value)
+VALUES ($1, 'picture', $2)
+ON CONFLICT (user_id, key) DO UPDATE
+SET value = $2, updated_at = NOW()
+RETURNING id, user_id, key, value`;
+
+export interface AddOrUpdateUserPictureArgs {
+    userId: string;
+    value: string;
+}
+
+export interface AddOrUpdateUserPictureRow {
+    id: string;
+    userId: string;
+    key: string;
+    value: string;
+}
+
+export async function addOrUpdateUserPicture(client: Client, args: AddOrUpdateUserPictureArgs): Promise<AddOrUpdateUserPictureRow | null> {
+    const result = await client.query({
+        text: addOrUpdateUserPictureQuery,
+        values: [args.userId, args.value],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        userId: row[1],
+        key: row[2],
+        value: row[3]
+    };
+}
+

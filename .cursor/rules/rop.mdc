@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+### Functions
+
+- Every function created, always have first parameters ErrorApp, always returns ErrorApp as last, and always check first ErrorApp param if hasError, early return
+

@@ -207,12 +207,48 @@ CREATE TABLE whygym.users (
     password character varying(255) NOT NULL,
     email character varying(100),
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    salt character varying(64)
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
 ALTER TABLE whygym.users OWNER TO postgres;
+
+--
+-- Name: users_attributes; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.users_attributes (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    key character varying(255) NOT NULL,
+    value text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE whygym.users_attributes OWNER TO postgres;
+
+--
+-- Name: users_attributes_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.users_attributes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.users_attributes_id_seq OWNER TO postgres;
+
+--
+-- Name: users_attributes_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.users_attributes_id_seq OWNED BY whygym.users_attributes.id;
+
 
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
@@ -304,6 +340,13 @@ ALTER TABLE ONLY whygym.users ALTER COLUMN id SET DEFAULT nextval('whygym.users_
 
 
 --
+-- Name: users_attributes id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.users_attributes ALTER COLUMN id SET DEFAULT nextval('whygym.users_attributes_id_seq'::regclass);
+
+
+--
 -- Name: visits id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -367,6 +410,14 @@ ALTER TABLE ONLY whygym.user_roles
 
 
 --
+-- Name: users_attributes users_attributes_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.users_attributes
+    ADD CONSTRAINT users_attributes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
 --
 
@@ -419,6 +470,27 @@ CREATE INDEX idx_user_roles_user_id ON whygym.user_roles USING btree (user_id);
 
 
 --
+-- Name: idx_users_attributes_key; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_users_attributes_key ON whygym.users_attributes USING btree (key);
+
+
+--
+-- Name: idx_users_attributes_user_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_users_attributes_user_id ON whygym.users_attributes USING btree (user_id);
+
+
+--
+-- Name: idx_users_attributes_user_id_key; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_users_attributes_user_id_key ON whygym.users_attributes USING btree (user_id, key);
+
+
+--
 -- Name: idx_users_username; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -468,6 +540,14 @@ ALTER TABLE ONLY whygym.user_roles
 
 ALTER TABLE ONLY whygym.user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES whygym.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: users_attributes users_attributes_user_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.users_attributes
+    ADD CONSTRAINT users_attributes_user_id_fkey FOREIGN KEY (user_id) REFERENCES whygym.users(id) ON DELETE CASCADE;
 
 
 --
