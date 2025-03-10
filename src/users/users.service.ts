@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   createUserRequest,
   getUserRequests,
-  approveUserRequest,
   getPendingUserRequests,
   GetUserRequestsRow,
   GetPendingUserRequestsRow,
@@ -10,8 +9,6 @@ import {
   ApproveAndApplyUserArgs,
   ApproveAndApplyUserRow,
   checkUserCredentials,
-  ApproveUserRequestArgs,
-  ApproveUserRequestRow,
   CreateUserRequestArgs,
   CreateUserRequestRow,
   getUserByEmail,
@@ -22,6 +19,7 @@ import {
   rejectUserRequest,
 } from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
+import { ErrorApp } from 'src/common/result';
 
 export type User = {
   id: number;
@@ -34,27 +32,62 @@ export type User = {
   picUrl: string;
 };
 
+export const NullUser: User = {
+  id: 0,
+  apiId: '',
+  email: '',
+  username: '',
+  password: '',
+  roles: [],
+  fullName: '',
+  picUrl: '',
+};
+
 @Injectable()
 export class UsersService {
   constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
 
-  async findOneWithEmail(email: string): Promise<User | undefined> {
-    const userInDb = await getUserByEmail(this.pool, { email });
+  async findOneWithEmail(
+    error: ErrorApp,
+    email: string,
+  ): Promise<{ user: User; error: ErrorApp }> {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { user: NullUser, error };
+    }
+    try {
+      const userInDb = await getUserByEmail(this.pool, { email });
 
-    if (userInDb) {
+      if (userInDb) {
+        return {
+          user: {
+            id: userInDb.id,
+            apiId: '',
+            email: '',
+            username: userInDb.username,
+            password: userInDb.password,
+            // Trim spaces from each role after splitting
+            roles: userInDb.roles?.split(',').map((role) => role.trim()) || [], // Assuming roles are stored as strings in the database
+            fullName: '',
+            picUrl: '',
+          },
+          error: ErrorApp.success,
+        };
+      }
       return {
-        id: userInDb.id,
-        apiId: '',
-        email: '',
-        username: userInDb.username,
-        password: userInDb.password,
-        // Trim spaces from each role after splitting
-        roles: userInDb.roles.split(',').map((role) => role.trim()), // Assuming roles are stored as strings in the database
-        fullName: '',
-        picUrl: '',
+        user: NullUser,
+        error: ErrorApp.success, //its okay if user not found, because it a darisini.com user
+      };
+    } catch (error) {
+      return {
+        user: NullUser,
+        error: new ErrorApp(
+          'error findOneWithEmail',
+          'user-service-082',
+          error,
+        ),
       };
     }
-    return undefined;
   }
 
   async findOneWithUsername(username: string): Promise<User | undefined> {
@@ -97,7 +130,6 @@ export class UsersService {
     return await approveAndApplyUser(this.pool, body);
   }
 
-
   async checkUserCredentials(
     username: string,
     password: string,
@@ -110,7 +142,9 @@ export class UsersService {
     return result?.count === '1';
   }
 
-  async rejectUserRequest(args: RejectUserRequestArgs): Promise<RejectUserRequestRow | null> {
+  async rejectUserRequest(
+    args: RejectUserRequestArgs,
+  ): Promise<RejectUserRequestRow | null> {
     return await rejectUserRequest(this.pool, args);
   }
 }

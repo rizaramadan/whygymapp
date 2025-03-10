@@ -4,7 +4,11 @@
         Enter your OTP code from your email inbox
     </p>
     
-    <form action="/auth/otp/verify" method="POST" class="space-y-6">
+    <form class="space-y-6"
+          hx-post="/auth/otp/verify"
+          hx-target="#otpFormResult"
+          hx-swap="innerHTML"
+          hx-indicator="#spinner">
         <div class="space-y-2">
             <label for="otp" class="block text-sm font-medium text-green-100">
                 OTP Code
@@ -25,6 +29,8 @@
         <button class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
                 type="submit">
             Send OTP
+            <img id="spinner" class="htmx-indicator" src="https://htmx.org/img/bars.svg"/>
         </button>
     </form>
 </div>
+<div id="otpFormResult"></div>

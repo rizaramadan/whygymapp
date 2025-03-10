@@ -1,56 +1,16 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
-import { firstValueFrom } from 'rxjs';
-import { UsersService } from 'src/users/users.service';
-import { JwtPayload } from './auth.interfaces';
-
-interface OtpCreateResponse {
-  status: boolean;
-  message: string;
-  data?: {
-    deviceId?: string;
-    preAuthSessionId?: string;
-    user?: {
-      id: string;
-      email: string;
-      // Add other user properties as needed
-    };
-    accessToken?: string;
-    refreshToken?: string;
-  };
-}
-
-interface OtpVerifyResponse {
-  status: number; // Changed to number to match the example
-  message: string;
-  data?: {
-    accessToken: string;
-    refreshToken: string;
-    user: {
-      signup: boolean;
-      id: string;
-      email: string;
-      roles: string[]; // Assuming roles is an array of strings
-      fullName: string;
-      picture: {
-        id: string;
-        url: string;
-        width: number;
-        height: number;
-      };
-    };
-  };
-}
-
-interface HttpError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-    status?: number;
-  };
-}
+import { async, firstValueFrom } from 'rxjs';
+import { UsersService, User } from 'src/users/users.service';
+import {
+  JwtPayload,
+  OtpCreateResponse,
+  OtpVerifyApiResponse,
+  HttpError,
+  NullPayload,
+} from './auth.interfaces';
+import { ErrorApp } from 'src/common/result';
 
 @Injectable()
 export class OtpAuthService {
@@ -66,13 +26,44 @@ export class OtpAuthService {
     this.apiKey = process.env.API_KEY || '1234567890';
   }
 
-  async createOtp(email: string): Promise<{
+  // create otp, first created to be called by AuthController.createOtp
+  async createOtp(
+    error: ErrorApp,
+    email: string,
+  ): Promise<{
     success: boolean;
     message: string;
     deviceId?: string;
     preAuthSessionId?: string;
+    error?: ErrorApp;
   }> {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { success: false, message: '', error };
+    }
+    // call api create send otp
+    const { response, error: errorOtp } = await this.callApiCreateSendOtp(
+      error,
+      email,
+    );
+    // return constructed response
+    return this.constructCreateOtpResponse(errorOtp, response);
+  }
+
+  // call api create send otp, first created to be called by  createOtp
+  private async callApiCreateSendOtp(
+    error: ErrorApp,
+    email: string,
+  ): Promise<{
+    response: OtpCreateResponse | null;
+    error: ErrorApp;
+  }> {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { response: null, error };
+    }
     try {
+      // call api to send otp
       const response = await firstValueFrom(
         this.httpService.post<OtpCreateResponse>(
           `${this.authApiUrl}/v1/auth/otp/create`,
@@ -81,40 +72,179 @@ export class OtpAuthService {
           },
           {
             headers: {
-              'x-api-key': this.apiKey, // Add the x-api-key header here
+              'x-api-key': this.apiKey,
             },
           },
         ),
       );
-
-      // Check if the response indicates success
-      if (response.data.status) {
-        return {
-          success: true,
-          message: 'OTP has been sent to your email',
-          deviceId: response.data.data?.deviceId || '', // Return deviceId
-          preAuthSessionId: response.data.data?.preAuthSessionId || '', // Return preAuthSessionId
-        };
-      } else {
-        return {
-          success: false,
-          message: response.data.message || 'Failed to send OTP',
-        };
-      }
+      // return response
+      return { response: response.data, error: ErrorApp.success };
     } catch (error) {
-      const httpError = error as HttpError; // Cast to HttpError
-      throw new HttpException(
-        httpError.response?.data?.message || 'Failed to send OTP',
-        httpError.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // handle error
+      const httpError = error as HttpError;
+      const data = {
+        message: httpError.response?.data?.message || 'Failed to send OTP',
+        status: httpError.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+      return {
+        response: null,
+        error: new ErrorApp(
+          'error call api create send otp',
+          'otp-auth-092',
+          data,
+        ),
+      };
     }
   }
 
-  async verifyOtp(verifyOtpDto: {
-    deviceId: string;
-    preAuthSessionId: string;
-    userInputCode: string;
-  }): Promise<{ roles: string[]; fullName: string; access_token: string }> {
+  // construct response for createOtp, first created to be called by createOtp
+  private constructCreateOtpResponse(
+    error: ErrorApp,
+    response: OtpCreateResponse | null,
+  ): {
+    success: boolean;
+    message: string;
+    deviceId?: string;
+    preAuthSessionId?: string;
+    error?: ErrorApp;
+  } {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { success: false, message: '', error };
+    }
+    if (response?.status) {
+      // return response if success
+      return {
+        success: true,
+        message: 'OTP has been sent to your email',
+        deviceId: response.data?.deviceId || '',
+        preAuthSessionId: response.data?.preAuthSessionId || '',
+      };
+    } else {
+      // return response if failed
+      return {
+        success: false,
+        message: '',
+        error: new ErrorApp(
+          'error call api create send otp',
+          'otp-auth-133',
+          response,
+        ),
+      };
+    }
+  }
+
+  async verifyOtp(
+    error: ErrorApp,
+    verifyOtpDto: {
+      deviceId: string;
+      preAuthSessionId: string;
+      userInputCode: string;
+    },
+  ): Promise<{
+    roles: string[];
+    fullName: string;
+    access_token: string;
+    error: ErrorApp;
+  }> {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { roles: [], fullName: '', access_token: '', error };
+    }
+    try {
+      const { response, error: errorVerifyOtp } = await this.callApiVerifyOtp(
+        error,
+        verifyOtpDto,
+      );
+
+      // find user in db with email
+      const findUserResult = await this.usersService.findOneWithEmail(
+        errorVerifyOtp,
+        response?.data?.user?.email || '',
+      );
+
+      // create jwt payload with user information
+      const {
+        payload,
+        access_token,
+        error: errorJwt,
+      } = await this.createJwtPayloadWithUserInformation(
+        findUserResult.error,
+        findUserResult.user,
+        response,
+      );
+
+      // return response
+      return {
+        roles: payload.roles,
+        fullName: payload.fullName,
+        access_token: access_token,
+        error: errorJwt,
+      };
+    } catch (error) {
+      const httpError = error as HttpError;
+      return {
+        roles: [],
+        fullName: '',
+        access_token: '',
+        error: new ErrorApp('error verify otp', 'otp-auth-179', httpError),
+      };
+    }
+  }
+
+  private async createJwtPayloadWithUserInformation(
+    error: ErrorApp,
+    userInDb: User,
+    response: OtpVerifyApiResponse | null,
+  ): Promise<{ payload: JwtPayload; access_token: string; error: ErrorApp }> {
+    if (error.hasError()) {
+      return {
+        payload: NullPayload,
+        access_token: '',
+        error,
+      };
+    }
+    try {
+      const payload: JwtPayload = {
+        id: userInDb?.id.toString() || '',
+        apiId: response?.data?.user?.id || '',
+        accessToken: response?.data?.accessToken || '',
+        refreshToken: response?.data?.refreshToken || '',
+        email: response?.data?.user?.email || '',
+        roles: userInDb?.roles || [],
+        fullName: response?.data?.user?.fullName || '',
+        picUrl: response?.data?.user?.picture?.url || '',
+      };
+      const access_token = await this.jwtService.signAsync(payload);
+      return {
+        payload,
+        access_token,
+        error: ErrorApp.success,
+      };
+    } catch (error) {
+      return {
+        payload: NullPayload,
+        access_token: '',
+        error: new ErrorApp('error create jwt payload', 'otp-auth-240', error),
+      };
+    }
+  }
+
+  private async callApiVerifyOtp(
+    error: ErrorApp,
+    verifyOtpDto: {
+      deviceId: string;
+      preAuthSessionId: string;
+      userInputCode: string;
+    },
+  ): Promise<{
+    response: OtpVerifyApiResponse | null;
+    error: ErrorApp;
+  }> {
+    //skip if error exist from previous step
+    if (error.hasError()) {
+      return { response: null, error };
+    }
     try {
       const request = {
         deviceId: verifyOtpDto.deviceId,
@@ -124,53 +254,36 @@ export class OtpAuthService {
       };
 
       const response = await firstValueFrom(
-        this.httpService.post<OtpVerifyResponse>(
+        this.httpService.post<OtpVerifyApiResponse>(
           `${this.authApiUrl}/v1/auth/otp/verify`,
           request,
           {
             headers: {
-              'x-api-key': this.apiKey, // Add the x-api-key header here
+              'x-api-key': this.apiKey,
             },
           },
         ),
       );
-
-      if (response.data.status) {
-        // Assuming the external API returns user data upon successful verification
-        const userInDb = await this.usersService.findOneWithEmail(
-          response.data.data?.user?.email || '',
-        );
-
-        // Create a JWT token with user information
-        const payload: JwtPayload = {
-          id: userInDb?.id.toString() || '',
-          apiId: response.data.data?.user?.id || '',
-          accessToken: response.data.data?.accessToken || '',
-          refreshToken: response.data.data?.refreshToken || '',
-          email: response.data.data?.user?.email || '',
-          //userInDb?.roles is string "[ 'admin', 'user' ]",
-          roles: userInDb?.roles || [],
-          fullName: response.data.data?.user?.fullName || '',
-          picUrl: response.data.data?.user?.picture?.url || '',
-        };
-
-        return {
-          roles: payload.roles,
-          fullName: payload.fullName,
-          access_token: await this.jwtService.signAsync(payload),
-        };
+      console.log('response otp verify api respons');
+      console.log(response.data);
+      if (response.data.status && response.data.data?.accessToken) {
+        return { response: response.data, error: ErrorApp.success };
       } else {
-        throw new HttpException(
-          response.data.message || 'Failed to send OTP',
-          HttpStatus.UNAUTHORIZED,
-        );
+        return {
+          response: null,
+          error: new ErrorApp('error verify otp', 'otp-auth-274', response),
+        };
       }
     } catch (error) {
-      const httpError = error as HttpError; // Cast to HttpError
-      throw new HttpException(
-        httpError.response?.data?.message || 'Invalid OTP',
-        httpError.response?.status || HttpStatus.UNAUTHORIZED,
-      );
+      const httpError = error as HttpError;
+      return {
+        response: null,
+        error: new ErrorApp(
+          'error call api verify otp',
+          'otp-auth-283',
+          httpError,
+        ),
+      };
     }
   }
 }

@@ -15,7 +15,8 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { User } from 'src/users/users.service';
 import { Response } from 'express';
-
+import { ErrorApp } from 'src/common/result';
+import { CreateOtpDto, VerifyOtpDto } from './auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -41,8 +42,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('otp/create')
   @Render('auth/otp')
-  createOtp(@Body() createOtpDto: { email: string }) {
-    return this.otpAuthService.createOtp(createOtpDto.email);
+  createOtp(@Body() createOtpDto: CreateOtpDto) {
+    return this.otpAuthService.createOtp(ErrorApp.success, createOtpDto.email);
   }
 
   @Public()
@@ -50,17 +51,33 @@ export class AuthController {
   @Post('otp/verify')
   async verifyOtp(
     @Body()
-    verifyOtpDto: {
-      deviceId: string;
-      preAuthSessionId: string;
-      userInputCode: string;
-    },
-    @Res() res: Response,
+    verifyOtpDto: VerifyOtpDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const jwt = await this.otpAuthService.verifyOtp(verifyOtpDto);
-    res.cookie('access_token', jwt.access_token);
-    const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
-    return res.redirect(`/${role}-dashboard`);
+    const jwt = await this.otpAuthService.verifyOtp(
+      ErrorApp.success,
+      verifyOtpDto,
+    );
+    console.log(jwt);
+    if (jwt.error.hasError()) {
+      return `<script>alert('${jwt.error.message} ${jwt.error.code}')</script>`;
+      //res.set('Content-Type', 'text/html');
+      //res.send(
+      //  Buffer.from(
+      //    `<script>alert("${jwt.error.message} ${jwt.error.code}")</script>`,
+      //  ),
+      //);
+    } else {
+      res.cookie('access_token', jwt.access_token);
+      const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
+      return `<script>window.location.href="/${role}-dashboard"</script>`;
+      //res.set('Content-Type', 'text/html');
+      //res.send(
+      //  Buffer.from(
+      //    `<script>window.location.href="/${role}-dashboard"</script>`,
+      //  ),
+      //);
+    }
   }
 
   @Public()
