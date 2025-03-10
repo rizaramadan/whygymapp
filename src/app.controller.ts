@@ -23,6 +23,15 @@ export class AppController {
     };
   }
 
+  @Get('/member-dashboard')
+  @Render('member-dashboard')
+  @Roles('member')
+  memberDashboard(@Request() req: { user: User }) {
+    return {
+      user: req.user,
+    };
+  }
+
   @Get('/admin-dashboard')
   @Render('admin-dashboard')
   @Roles('admin')
