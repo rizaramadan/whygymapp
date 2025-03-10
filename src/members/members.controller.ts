@@ -44,4 +44,10 @@ export class MembersController {
     const lastVisitId = await this.membersService.getLastVisitId();
     return lastVisitId?.id || '';
   }
+
+  @Get('membership-apply')
+  @Render('members/membership-apply')
+  getApply() {
+    return {};
+  }
 }

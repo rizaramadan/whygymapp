@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membership Application - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            background-color: #f0fdf4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-green-50 min-h-screen" x-data="membershipForm()">
+    <div class="max-w-4xl mx-auto p-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
+            <h1 class="text-xl font-bold text-green-800">WhyGym</h1>
+            <a href="/user-dashboard" class="text-green-600 hover:text-green-700 text-sm font-medium">Back to Dashboard</a>
+        </div>
+
+        <!-- Application Form -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-900">Membership Application</h2>
+                <p class="mt-2 text-gray-600">Please fill out all required information below.</p>
+            </div>
+
+            <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
+                <!-- Personal Information -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900">Personal Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">First Name</label>
+                            <input type="text" x-model="formData.firstName" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                            <input type="text" x-model="formData.lastName" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="tel" x-model="formData.phone" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                        <input type="date" 
+                               x-model="formData.dateOfBirth" 
+                               :max="maxBirthDate"
+                               @input="validateBirthDate($event.target.value)"
+                               required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                               :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': birthDateError}">
+                        <p class="mt-1 text-sm text-red-600" x-show="birthDateError" x-text="birthDateError"></p>
+                    </div>
+                </div>
+
+                <!-- Membership Details -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900">Membership Details</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Membership Type</label>
+                        <select x-model="formData.membershipType" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <option value="">Select a membership type</option>
+                            <option value="basic">Basic (Gym access only)</option>
+                            <option value="premium">Premium (Gym + Classes)</option>
+                            <option value="platinum">Platinum (Gym + Classes + Personal Trainer)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input type="date" x-model="formData.startDate" required
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+                        <input type="text" x-model="formData.emergencyContact" required
+                               placeholder="Name and phone number"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                    </div>
+                </div>
+
+                <!-- Health Information -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900">Health Information</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Do you have any medical conditions?</label>
+                        <textarea x-model="formData.medicalConditions" rows="3"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                placeholder="Please list any medical conditions or write 'None'"></textarea>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="checkbox" x-model="formData.terms" required
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3">
+                            <label class="text-sm text-gray-700">
+                                I agree to the <a href="/terms" class="text-green-600 hover:text-green-700">Terms and Conditions</a> and acknowledge that I have read the <a href="/privacy" class="text-green-600 hover:text-green-700">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end pt-6 border-t border-gray-100">
+                    <button type="submit"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center py-6">
+            <p class="text-sm text-gray-500">© 2024 WhyGym. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        function membershipForm() {
+            return {
+                formData: {
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    dateOfBirth: '',
+                    membershipType: '',
+                    startDate: '',
+                    emergencyContact: '',
+                    medicalConditions: '',
+                    terms: false
+                },
+                birthDateError: '',
+                get maxBirthDate() {
+                    const date = new Date();
+                    date.setFullYear(date.getFullYear() - 5);
+                    return date.toISOString().split('T')[0];
+                },
+                validateBirthDate(value) {
+                    if (!value) return;
+                    const inputDate = new Date(value);
+                    const minAge = 5;
+                    const today = new Date();
+                    const cutoffDate = new Date();
+                    cutoffDate.setFullYear(today.getFullYear() - minAge);
+                    
+                    if (inputDate > cutoffDate) {
+                        this.birthDateError = `Applicant must be at least ${minAge} years old`;
+                        this.formData.dateOfBirth = '';
+                    } else {
+                        this.birthDateError = '';
+                    }
+                },
+                init() {
+                    // Load saved data when the component initializes
+                    const savedData = localStorage.getItem('membershipFormData');
+                    if (savedData) {
+                        this.formData = JSON.parse(savedData);
+                        if (this.formData.dateOfBirth) {
+                            this.validateBirthDate(this.formData.dateOfBirth);
+                        }
+                    }
+
+                    // Watch for changes and save to localStorage
+                    this.$watch('formData', (value) => {
+                        localStorage.setItem('membershipFormData', JSON.stringify(value));
+                    }, { deep: true });
+                },
+                handleSubmit() {
+                    if (this.birthDateError) {
+                        return;
+                    }
+                    // When form is submitted, clear the saved data
+                    localStorage.removeItem('membershipFormData');
+                    // Submit the form to the server
+                    this.$el.submit();
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

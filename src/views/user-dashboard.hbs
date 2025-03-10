@@ -8,204 +8,193 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
-        #html5-qrcode-button-camera-start, #html5-qrcode-button-camera-stop {
-            display: none;
-            background-color: #2c7a7f;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        #html5-qrcode-button-camera-start:hover, #html5-qrcode-button-camera-stop:hover {
-            background-color: #285e61;
-        }
-
-        #html5-qrcode-button-camera-start:focus, #html5-qrcode-button-camera-stop:focus {
-            outline: 2px solid #2c7a7f;
-            outline-offset: 2px;
-        }
-
-        #qr-reader {
-            border: none !important;
-            background: #f0fdf4 !important;
-        }
-
-        #qr-reader__scan_region {
-            background: #f0fdf4 !important;
-        }
-
-        #qr-reader__scan_region > img {
-            width: 250px !important;
-            height: auto !important;
-        }
-
-        #qr-reader__dashboard {
-            padding: 0 !important;
-            background: #f0fdf4 !important;
-            border: none !important;
-            margin: 8px 0 !important;
-        }
-
         body {
             background-color: #f0fdf4;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-
-        .card-container {
-            max-width: 420px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 40;
         }
-
-        .qr-code-container {
-            background-color: #f0fdf4;
-            padding: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .modal-backdrop.show {
+            display: block;
         }
-
-        .qr-code {
-            width: 200px;
-            height: 200px;
-            background-color: white;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            width: 90%;
+            max-width: 600px;
+        }
+        .modal.show {
+            display: block;
         }
     </style>
 </head>
 <body class="bg-green-50 p-4">
-    <div class="card-container">
+    <div class="max-w-4xl mx-auto">
         <!-- Header with logo and logout -->
-        <div class="flex justify-between items-center p-4 border-b border-gray-100">
-            <h1 class="text-xl font-bold text-green-800">Gym App</h1>
-            <a href="/logout" class="text-green-600 text-sm">Logout</a>
+        <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
+            <h1 class="text-xl font-bold text-green-800">WhyGym</h1>
+            <a href="/logout" class="text-green-600 hover:text-green-700 text-sm font-medium">Logout</a>
         </div>
 
-        <!-- Welcome section with user image -->
-        <div class="p-4 flex justify-between items-center">
-            <div>
-                <h2 class="text-lg font-semibold text-gray-800">Welcome back, {{user.fullName}}</h2>
-                <p class="text-sm text-gray-500">Your membership is active until March 30, 2024</p>
-            </div>
-            <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                {{#if user.picUrl}}
-                    <img src="{{user.picUrl}}" alt="{{user.fullName}}" class="w-full h-full object-cover">
-                {{else}}
-                    <!-- Default user icon if no profile image -->
-                    <div class="w-full h-full flex items-center justify-center bg-green-100 text-green-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </div>
-                {{/if}}
-            </div>
+        <!-- Hero Image -->
+        <div class="rounded-xl overflow-hidden mb-6 shadow-sm">
+            <img src="/img/user-dashboard.webp" 
+                 alt="WhyGym Facilities" 
+                 class="w-full h-[300px] object-cover">
         </div>
 
-        <!-- QR Code section -->
-        <div class="qr-code-container" id="tap-qr-code-container">
-            <div id="start-scan-button" onclick="startScanner(this)" class="qr-code border-2 border-green-200 cursor-pointer">
-                <!-- QR Code placeholder -->
-                <div id="qr-placeholder" class="flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div class="p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Welcome to WhyGym!</h2>
+                <p class="text-gray-600 mb-6">Ready to start your fitness journey? Join our gym community and get access to world-class facilities and expert trainers.</p>
+                
+                <!-- CTA Button -->
+                <a href="/members/membership-apply" 
+                   class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 shadow-sm">
+                    Apply for Membership
+                    <svg class="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
-                    <p class="text-green-600 text-sm font-medium">Tap to Scan QR Code</p>
-                </div>
-            </div>
-        </div>
-        <div id="scanner-container" class="hidden p-4 flex justify-center">
-            <div id="qr-reader" class="w-full max-w-xs rounded-xl overflow-hidden"></div>
-        </div>
-
-        <!-- Stats section -->
-        <div class="grid grid-cols-2 gap-4 p-4 border-t border-gray-100">
-            <div>
-                <h3 class="text-gray-600 text-sm">Workouts</h3>
-                <p class="text-lg font-bold text-gray-800">12<span class="text-xs font-normal text-gray-500 ml-1">This month</span></p>
-            </div>
-            <div>
-                <h3 class="text-gray-600 text-sm">Classes</h3>
-                <p class="text-lg font-bold text-gray-800">5<span class="text-xs font-normal text-gray-500 ml-1">Attended</span></p>
-            </div>
-        </div>
-
-        <!-- Upcoming Classes -->
-        <div class="p-4 border-t border-gray-100">
-            <h2 class="text-lg font-semibold text-green-800 mb-3">Upcoming Classes</h2>
-            <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-medium text-gray-800">Yoga Basics</h3>
-                        <p class="text-xs text-gray-500">Tomorrow, 9:00 AM</p>
-                    </div>
-                    <button class="px-3 py-1 text-xs text-white bg-green-600 rounded-md hover:bg-green-700">Join</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-medium text-gray-800">HIIT Training</h3>
-                        <p class="text-xs text-gray-500">Wed, 10:30 AM</p>
-                    </div>
-                    <button class="px-3 py-1 text-xs text-white bg-green-600 rounded-md hover:bg-green-700">Join</button>
-                </div>
+                </a>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="p-3 text-center border-t border-gray-100">
-            <p class="text-xs text-gray-500">© 2025 Gym App. All rights reserved.</p>
+        <div class="text-center py-4">
+            <p class="text-sm text-gray-500">© 2024 WhyGym. All rights reserved.</p>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Modal Backdrop -->
+    <div id="modalBackdrop" class="modal-backdrop" onclick="hideModal('membershipModal')"></div>
+
+    <!-- Membership Application Modal -->
+    <div id="membershipModal" class="modal">
+        <div class="bg-white rounded-xl shadow-xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h3 class="text-xl font-semibold text-gray-900">Membership Application</h3>
+                <button onclick="hideModal('membershipModal')" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <form hx-post="/membership/submit" hx-target="#formResponse" class="space-y-6">
+                    <!-- Personal Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-medium text-gray-900">Personal Information</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">First Name</label>
+                                <input type="text" name="firstName" required
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Last Name</label>
+                                <input type="text" name="lastName" required
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+                    </div>
+
+                    <!-- Membership Details -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-medium text-gray-900">Membership Details</h4>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Membership Type</label>
+                            <select name="membershipType" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                <option value="">Select a membership type</option>
+                                <option value="basic">Basic (Gym access only)</option>
+                                <option value="premium">Premium (Gym + Classes)</option>
+                                <option value="platinum">Platinum (Gym + Classes + Personal Trainer)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                            <input type="date" name="startDate" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+                            <input type="text" name="emergencyContact" required
+                                   placeholder="Name and phone number"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
+                    </div>
+
+                    <!-- Health Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-medium text-gray-900">Health Information</h4>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Do you have any medical conditions?</label>
+                            <textarea name="medicalConditions" rows="3"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                    placeholder="Please list any medical conditions or write 'None'"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Form Response Area -->
+                    <div id="formResponse"></div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end">
+                        <button type="submit"
+                                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150">
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
-        var html5QrcodeScanner;
-        var onScanSuccess;
-        function docReady(fn) {
-            if (document.readyState === "complete" || document.readyState === "interactive") {
-                setTimeout(fn, 1);
-            } else {
-                document.addEventListener("DOMContentLoaded", fn);
-            }
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+            document.getElementById('modalBackdrop').classList.add('show');
+            document.body.style.overflow = 'hidden';
         }
 
-        docReady(function () {
-            var lastResult, countResults = 0;
-            onScanSuccess = function onScanSuccess(decodedText, decodedResult) {
-                if (decodedText !== lastResult) {
-                    ++countResults;
-                    lastResult = decodedText;
-                    console.log(`Scan result ${decodedText}`, decodedResult);
-                    if(decodedText == "/members/visit"){
-                        var url = decodedText;
-                        window.location.href = url;
-                    }
-                }
-            }
-
-            let config = {
-                fps: 10,
-                qrbox: 160,
-                rememberLastUsedCamera: true,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-            };
-            html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
-        });
-
-        function startScanner(buttonElement) {
-            document.getElementById('qr-placeholder').style.display = 'none';
-            document.getElementById('tap-qr-code-container').style.display = 'none';
-            document.getElementById('scanner-container').classList.remove('hidden');
-            html5QrcodeScanner.render(onScanSuccess);
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+            document.getElementById('modalBackdrop').classList.remove('show');
+            document.body.style.overflow = '';
         }
     </script>
 </body>
