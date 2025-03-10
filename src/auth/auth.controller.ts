@@ -60,23 +60,11 @@ export class AuthController {
     );
     console.log(jwt);
     if (jwt.error.hasError()) {
-      return `<script>alert('${jwt.error.message} ${jwt.error.code}')</script>`;
-      //res.set('Content-Type', 'text/html');
-      //res.send(
-      //  Buffer.from(
-      //    `<script>alert("${jwt.error.message} ${jwt.error.code}")</script>`,
-      //  ),
-      //);
+      return `<script>openDialog('${jwt.error.message}', '${jwt.error.code}');</script>`;
     } else {
       res.cookie('access_token', jwt.access_token);
       const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
       return `<script>window.location.href="/${role}-dashboard"</script>`;
-      //res.set('Content-Type', 'text/html');
-      //res.send(
-      //  Buffer.from(
-      //    `<script>window.location.href="/${role}-dashboard"</script>`,
-      //  ),
-      //);
     }
   }
 

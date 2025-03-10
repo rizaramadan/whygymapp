@@ -264,14 +264,12 @@ export class OtpAuthService {
           },
         ),
       );
-      console.log('response otp verify api respons');
-      console.log(response.data);
       if (response.data.status && response.data.data?.accessToken) {
         return { response: response.data, error: ErrorApp.success };
       } else {
         return {
           response: null,
-          error: new ErrorApp('error verify otp', 'otp-auth-274', response),
+          error: new ErrorApp('otp not verified', 'otp-auth-274', response),
         };
       }
     } catch (error) {

@@ -39,7 +39,9 @@
             align-items: center;
             justify-content: center;
         }
+
     </style>
+    <link rel="stylesheet" href="/dialog/style.css">
 </head>
 <body class="min-h-screen">
     <!-- Main content area -->
@@ -82,6 +84,7 @@
                         <p class="text-xs text-white text-center mt-4">
                             By continuing, you agree to our Terms of Service
                         </p>
+                        
                     </div>
                 </div>
                 
@@ -95,5 +98,36 @@
             </footer>
         </div>
     </div>
+    <dialog id="error-dialog" class="rounded-2xl shadow-xl backdrop:bg-gray-800/50 backdrop:backdrop-blur-sm p-0 border-0 min-w-[420px] max-w-[90vw] w-full md:w-[480px]">
+        <div class="bg-white dark:bg-gray-800 p-8 space-y-8">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <p class="text-xl font-semibold text-gray-900 dark:text-white" id="error-dialog-code">
+                    
+                </p>
+                <button onclick="document.getElementById('error-dialog').close()" 
+                        class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg p-1.5">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-6">
+                <div class="flex">
+                    
+                    <!-- Error Message -->
+                    <div class="ml-4">
+                        <p id="error-dialog-message" 
+                           class="text-base font-medium text-red-800 dark:text-red-200">
+                            
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
 </body>
+<script src="/dialog/dialog.js"></script>
 </html> 
