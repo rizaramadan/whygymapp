@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <!-- Add Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Add Heroicons (for chevron icons) -->
@@ -82,9 +81,7 @@
         }
     </style>
 </head>
-<body class="bg-green-50 min-h-screen" 
-      x-data="membershipForm()"
-      hx-boost="true">
+<body class="bg-green-50 min-h-screen" x-data="membershipForm()">
     <div class="max-w-4xl mx-auto p-4">
         <!-- Header -->
         <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
@@ -99,183 +96,255 @@
                 <p class="mt-2 text-gray-600">Please fill out all required information below.</p>
             </div>
 
-            <form hx-post="/api/membership/apply" 
-                  hx-target="#form-content"
-                  hx-swap="innerHTML"
-                  class="p-6 space-y-8">
-                
-                <!-- Progress Indicator -->
-                <div class="flex items-center justify-between mb-8">
-                    <template x-for="(section, index) in sections" :key="index">
-                        <div class="flex items-center" :class="{'flex-1': index !== sections.length - 1}">
-                            <div class="step-circle"
-                                 :class="getStepClass(index)">
-                                <span x-text="index + 1"></span>
-                            </div>
-                            <div x-show="index !== sections.length - 1" 
-                                 class="step-connector"
-                                 :class="{'bg-green-600': index < currentSection, 'bg-gray-300': index >= currentSection}">
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Form Content -->
-                <div id="form-content">
-                    <template x-for="(section, index) in sections" :key="index">
-                        <div x-show="currentSection === index" 
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 transform translate-x-4"
-                             x-transition:enter-end="opacity-100 transform translate-x-0">
-                            
-                            <h3 class="text-xl font-semibold mb-4" x-text="section.title"></h3>
-                            
-                            <div class="space-y-4">
-                                <template x-for="field in section.fields" :key="field.id">
-                                    <div class="form-field">
-                                        <label :for="field.id" class="block text-sm font-medium text-gray-700 mb-1">
-                                            <span x-text="field.label"></span>
-                                            <span x-show="field.required" class="text-red-500">*</span>
-                                        </label>
-                                        
-                                        <!-- Input Fields -->
-                                        <template x-if="field.type === 'text'">
-                                            <input :type="field.inputType || 'text'"
-                                                   :id="field.id"
-                                                   :name="field.id"
-                                                   x-model="formData[field.id]"
-                                                   :required="field.required"
-                                                   class="form-input"
-                                                   hx-post="/api/validate"
-                                                   hx-trigger="change"
-                                                   hx-target="#error-${field.id}">
-                                        </template>
-                                        
-                                        <template x-if="field.type === 'select'">
-                                            <select :id="field.id"
-                                                    :name="field.id"
-                                                    x-model="formData[field.id]"
-                                                    :required="field.required"
-                                                    class="form-select"
-                                                    hx-post="/api/validate"
-                                                    hx-trigger="change"
-                                                    hx-target="#error-${field.id}">
-                                                <option value="">Select an option</option>
-                                                <template x-for="option in field.options" :key="option.value">
-                                                    <option :value="option.value" x-text="option.label"></option>
-                                                </template>
-                                            </select>
-                                        </template>
-                                        
-                                        <template x-if="field.type === 'checkbox'">
-                                            <div class="flex items-center">
-                                                <input type="checkbox"
-                                                       :id="field.id"
-                                                       :name="field.id"
-                                                       x-model="formData[field.id]"
-                                                       :required="field.required"
-                                                       class="form-checkbox">
-                                                <label :for="field.id" 
-                                                       class="ml-2 text-sm text-gray-700" 
-                                                       x-text="field.label"></label>
-                                            </div>
-                                        </template>
-                                        
-                                        <!-- Error Message -->
-                                        <div :id="'error-' + field.id" 
-                                             class="text-red-500 text-sm mt-1"
-                                             x-show="errors[field.id]"
-                                             x-text="errors[field.id]"></div>
-                                    </div>
+            <form @submit.prevent="handleSubmit" class="p-6 space-y-8">
+                <!-- Section Navigation - Enhanced Step Indicator -->
+                <div class="py-4">
+                    <div class="flex items-center justify-between">
+                        <template x-for="(section, index) in sections" :key="index">
+                            <div class="flex items-center flex-grow" :class="{'flex-grow-0': index === sections.length - 1}">
+                                <!-- Step Circle with Number -->
+                                <div @click="currentSection = index" 
+                                     class="step-circle cursor-pointer"
+                                     :class="getStepCircleClasses(index)">
+                                    <span x-text="index + 1"></span>
+                                </div>
+                                
+                                <!-- Step Title -->
+                                <div @click="currentSection = index" 
+                                     class="ml-2 step-title cursor-pointer hidden sm:block"
+                                     :class="getStepTitleClasses(index)">
+                                    <span x-text="section.title"></span>
+                                </div>
+                                
+                                <!-- Connector Line (except after last item) -->
+                                <template x-if="index < sections.length - 1">
+                                    <div class="step-connector" :class="getConnectorClasses(index)"></div>
                                 </template>
                             </div>
+                        </template>
+                    </div>
+                    
+                    <!-- Mobile Step Title Display (only shows current step title on mobile) -->
+                    <div class="mt-3 text-center sm:hidden">
+                        <span class="font-medium text-gray-900" x-text="sections[currentSection].title"></span>
+                        <div class="text-xs text-gray-500 mt-1">
+                            Step <span x-text="currentSection + 1"></span> of <span x-text="sections.length"></span>
                         </div>
-                    </template>
+                    </div>
                 </div>
 
-                <!-- Navigation -->
+                <!-- Section Content -->
+                <template x-for="(section, sectionIndex) in sections" :key="sectionIndex">
+                    <div x-show="currentSection === sectionIndex" class="space-y-6">
+                        <!-- Section Title and Description -->
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900" x-text="section.title"></h3>
+                            <div x-show="section.description" 
+                                 class="mt-2 text-gray-600 markdown-content"
+                                 x-html="parseMarkdown(section.description)"></div>
+                        </div>
+
+                        <!-- Section Questions -->
+                        <div class="space-y-4">
+                            <template x-for="(question, questionIndex) in section.questions" :key="questionIndex">
+                                <div class="space-y-2">
+                                    <!-- Question Label -->
+                                    <div class="flex items-start">
+                                        <div class="markdown-content flex-grow" x-html="parseMarkdown(question.label)"></div>
+                                        <span class="ml-1 text-red-500 flex-shrink-0" x-show="question.required">*</span>
+                                    </div>
+
+                                    <!-- Short Answer Input -->
+                                    <template x-if="question.type === 'short-answer'">
+                                        <div>
+                                            <template x-if="question.inputType === 'checkbox'">
+                                                <div class="flex items-center">
+                                                    <input :id="question.id" 
+                                                           type="checkbox" 
+                                                           x-model="formData[question.id]" 
+                                                           :required="question.required"
+                                                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                                           :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors[question.id]}">
+                                                    <label :for="question.id" class="ml-2 block text-sm text-gray-700">
+                                                        I agree
+                                                    </label>
+                                                </div>
+                                            </template>
+                                            <template x-if="question.inputType !== 'checkbox'">
+                                                <input :type="question.inputType || 'text'" 
+                                                       x-model="formData[question.id]" 
+                                                       :required="question.required"
+                                                       :placeholder="question.placeholder || ''"
+                                                       :max="question.max || ''"
+                                                       @input="question.validate ? validateField(question.id, $event.target.value) : null"
+                                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                                                       :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors[question.id]}">
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <!-- Dropdown Select -->
+                                    <template x-if="question.type === 'dropdown'">
+                                        <select x-model="formData[question.id]" 
+                                                :required="question.required"
+                                                @change="formData[question.id] = $event.target.value; 
+                                                         console.log('Dropdown changed:', question.id, formData[question.id]); 
+                                                         question.onChange ? question.onChange($event.target.value) : null;
+                                                         saveFormData();"
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                            <option value="">Select an option</option>
+                                            <template x-for="option in question.options" :key="option.value">
+                                                <option :value="option.value" x-text="option.label"></option>
+                                            </template>
+                                        </select>
+                                    </template>
+
+                                    <!-- Dropdown with Custom Option -->
+                                    <template x-if="question.type === 'dropdown-custom'">
+                                        <div class="space-y-2">
+                                            <select x-model="formData[question.id]" 
+                                                    :required="question.required"
+                                                    @change="handleCustomDropdown(question.id); console.log('Custom dropdown changed:', question.id, formData[question.id])"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                                <option value="">Select an option</option>
+                                                <template x-for="option in question.options" :key="option.value">
+                                                    <option :value="option.value" x-text="option.label"></option>
+                                                </template>
+                                                <option value="custom">Other (specify)</option>
+                                            </select>
+                                            
+                                            <input x-show="formData[question.id] === 'custom'"
+                                                   x-model="formData[question.id + '_custom']"
+                                                   type="text"
+                                                   placeholder="Please specify"
+                                                   @input="console.log('Custom input changed:', question.id + '_custom', formData[question.id + '_custom'])"
+                                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                        </div>
+                                    </template>
+
+                                    <!-- Textarea -->
+                                    <template x-if="question.type === 'textarea'">
+                                        <textarea x-model="formData[question.id]" 
+                                                 :required="question.required"
+                                                 :placeholder="question.placeholder || ''"
+                                                 :rows="question.rows || 3"
+                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"></textarea>
+                                    </template>
+
+                                    <!-- Error Message -->
+                                    <p class="mt-1 text-sm text-red-600" x-show="errors[question.id]" x-text="errors[question.id]"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Navigation Buttons -->
                 <div class="flex justify-between pt-6 border-t border-gray-100">
-                    <button type="button"
-                            @click="prevSection"
+                    <button type="button" 
+                            @click="prevSection" 
                             x-show="currentSection > 0"
-                            class="btn btn-secondary">
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 -ml-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
                         Previous
                     </button>
                     
                     <div class="flex space-x-4">
-                        <button type="button"
-                                @click="nextSection"
+                        <button type="button" 
+                                @click="nextSection" 
                                 x-show="currentSection < sections.length - 1"
-                                class="btn btn-primary">
+                                class="px-6 py-3 border border-transparent rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 flex items-center">
                             Next
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
                         </button>
                         
-                        <button type="submit"
+                        <button type="submit" 
                                 x-show="currentSection === sections.length - 1"
-                                class="btn btn-primary">
+                                class="px-6 py-3 border border-transparent rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 flex items-center">
                             Submit Application
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
                         </button>
                     </div>
                 </div>
             </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center py-6">
+            <p class="text-sm text-gray-500">© 2024 WhyGym. All rights reserved.</p>
         </div>
     </div>
 
     <script>
         function membershipForm() {
             return {
+                // Form state
                 currentSection: 0,
                 formData: {},
                 errors: {},
+                isUnder18: false,
+                
+                // Form configuration
                 sections: [
                     {
                         title: "Personal Information",
-                        fields: [
+                        description: "",
+                        questions: [
                             {
                                 id: "emailPic",
-                                label: "Email yang membayar uang muka",
-                                type: "text",
+                                label: "Email yang membayar uang muka (isi dengan emailmu jika belum membayar uang muka)",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "duration",
                                 label: "Durasi membership (bulan)",
-                                type: "select",
+                                type: "short-answer",
                                 required: true,
+                                type: "dropdown",
                                 options: [
                                     { value: "1", label: "90 hari (3 bulan)" },
                                     { value: "2", label: "180 hari (6 bulan)" },
-                                    { value: "3", label: "360 hari (12 bulan)" }
+                                    { value: "3", label: "360 hari (12 bulan)" },
                                 ]
                             },
                             {
                                 id: "fullName",
                                 label: "Nama Lengkap",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "nickname",
                                 label: "Nickname",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "gender",
                                 label: "Jenis Kelamin",
-                                type: "select",
+                                type: "dropdown",
                                 required: true,
                                 options: [
                                     { value: "male", label: "Pria" },
                                     { value: "female", label: "Wanita" }
-                                ]
+                                ],
+                                onChange: function(value) {
+                                    console.log('Gender changed directly:', value);
+                                }
                             },
                             {
                                 id: "dateOfBirth",
                                 label: "Tanggal Lahir",
-                                type: "date",
-                                required: true,
+                                type: "short-answer",
                                 inputType: "date",
+                                required: true,
                                 validate: true,
                                 max: function() {
                                     const date = new Date();
@@ -286,59 +355,61 @@
                             {
                                 id: "address",
                                 label: "Alamat lengkapmu",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "wa",
                                 label: "Nomor Whatsappmu",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "identityNumber",
                                 label: "Nomor Identitas (KTP/SIM/Kartu Pelajar)",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "fitnessCondition",
                                 label: "Kondisi Kesehatanmu (tuliskan jika ada kondisi kesehatan khusus yang berpengaruh pada aktivitas olahraga)",
-                                type: "select",
+                                type: "dropdown-custom",
                                 required: true,
                                 options: [
                                     { value: "ok", label: "Saya dalam kondisi sehat untuk melakukan aktivitas fisik" },
                                 ]
                             }
+
                         ]
                     },
                     {
                         title: "KHUSUS DIISI MEMBER DIBAWAH 18 TAHUN",
                         description: "**Perhatian:** Bagian ini wajib diisi jika calon member berusia di bawah 18 tahun. Persetujuan orang tua/wali diperlukan untuk pendaftaran.",
-                        fields: [
+                        questions: [
                             {
                                 id: "parentName",
                                 label: "Nama Orang Tua/Wali",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "parentIdentityNumber",
                                 label: "Nomor Identitas Orang Tua/Wali (KTP/SIM/Kartu Pelajar)",
-                                type: "text",
+                                type: "short-answer",
                                 required: true
                             },
                             {
                                 id: "parentContact",
                                 label: "Nomor Telepon Orang Tua/Wali",
-                                type: "text",
+                                type: "short-answer",
                                 inputType: "tel",
                                 required: true
                             },
                             {
                                 id: "underageConsent",
                                 label: "Saya, selaku orang tua/wali, memberikan izin kepada anak saya untuk menjadi anggota Whygym dan bertanggung jawab atas segala resikonya",
-                                type: "checkbox",
+                                type: "short-answer",
+                                inputType: "checkbox",
                                 required: true
                             }
                         ]
@@ -346,35 +417,39 @@
                     {
                         title: "PERSETUJUAN SYARAT DAN KETENTUAN",
                         description:'',
-                        fields: [
+                        questions: [
                             {
                                 id: "termsAgree",
                                 label: "Saya telah membaca, memahami dan menyetujui seluruh poin dan pasal yang tercantum",
-                                type: "checkbox",
+                                type: "short-answer",
+                                inputType: "checkbox",
                                 required: true
                             },
                             {
                                 id: "riskAgree",
                                 label: "Saya menyadari dan menerima segala risiko yang mungkin terjadi saat menggunakan fasilitas Whygym",
-                                type: "checkbox",
+                                type: "short-answer",
+                                inputType: "checkbox",
                                 required: true
                             },
                             {
                                 id: "dataAgree",
                                 label: "Saya menyetujui pemrosesan data pribadi saya oleh Whygym sesuai klausul yang berlaku.",
-                                type: "checkbox",
+                                type: "short-answer",
+                                inputType: "checkbox",
                                 required: true
                             },
                             {
                                 id: "rulesAgree",
                                 label: "Saya bersedia mematuhi aturan, sanksi, dan segala kebijakan lainnya yang ditetapkan Whygym",
-                                type: "checkbox",
+                                type: "short-answer",
+                                inputType: "checkbox",
                                 required: true
                             },
                             {
                                 id: "frontOfficer",
                                 label: "Front Officer pnerima",
-                                type: "select",
+                                type: "dropdown",
                                 required: true,
                                 options: [
                                     { value: "Heru", label: "Heru" },
@@ -386,62 +461,366 @@
                         ]
                     }
                 ],
-
+                
+                // Get active sections (filtering out the underage section if user is 18+)
+                get activeSections() {
+                    if (this.isUnder18) {
+                        return this.sections;
+                    } else {
+                        return this.sections.filter((section, index) => index !== 1);
+                    }
+                },
+                
+                // Helper methods for step indicator styling
+                getStepCircleClasses(index) {
+                    // Convert index to actual section index if we're skipping the underage section
+                    const actualIndex = this.getActualSectionIndex(index);
+                    
+                    if (actualIndex < this.currentSection) {
+                        return 'bg-green-600 text-white border-2 border-green-600'; // Completed step
+                    } else if (actualIndex === this.currentSection) {
+                        return 'bg-white text-green-600 border-2 border-green-600'; // Current step
+                    } else {
+                        return 'bg-white text-gray-400 border-2 border-gray-300'; // Future step
+                    }
+                },
+                
+                getStepTitleClasses(index) {
+                    // Convert index to actual section index if we're skipping the underage section
+                    const actualIndex = this.getActualSectionIndex(index);
+                    
+                    if (actualIndex < this.currentSection) {
+                        return 'text-green-600 font-medium'; // Completed step
+                    } else if (actualIndex === this.currentSection) {
+                        return 'text-green-600 font-medium'; // Current step
+                    } else {
+                        return 'text-gray-400'; // Future step
+                    }
+                },
+                
+                getConnectorClasses(index) {
+                    // Convert index to actual section index if we're skipping the underage section
+                    const actualIndex = this.getActualSectionIndex(index);
+                    
+                    if (actualIndex < this.currentSection) {
+                        return 'bg-green-600'; // Completed connector
+                    } else {
+                        return 'bg-gray-300'; // Future connector
+                    }
+                },
+                
+                // Helper to convert display index to actual section index
+                getActualSectionIndex(displayIndex) {
+                    if (!this.isUnder18 && displayIndex >= 1) {
+                        // Skip the underage section (index 1)
+                        return displayIndex + 1;
+                    }
+                    return displayIndex;
+                },
+                
+                // Parse markdown to HTML
+                parseMarkdown(text) {
+                    if (!text) return '';
+                    return marked.parse(text);
+                },
+                
+                // Check if user is under 18
+                checkAge(dateOfBirth) {
+                    if (!dateOfBirth) return false;
+                    
+                    const birthDate = new Date(dateOfBirth);
+                    const today = new Date();
+                    
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    
+                    // Adjust age if birthday hasn't occurred yet this year
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    
+                    return age < 18;
+                },
+                
+                // Initialize the form
                 init() {
-                    // Load saved form data
-                    const saved = localStorage.getItem('membershipForm');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        this.formData = data.formData;
-                        this.currentSection = data.currentSection;
-                    }
-
-                    // Watch for changes and save
-                    this.$watch('formData', () => this.saveForm());
-                },
-
-                saveForm() {
-                    localStorage.setItem('membershipForm', JSON.stringify({
-                        formData: this.formData,
-                        currentSection: this.currentSection
-                    }));
-                },
-
-                getStepClass(index) {
-                    return {
-                        'bg-green-600 text-white': index < this.currentSection,
-                        'bg-green-600 border-green-600 text-white': index === this.currentSection,
-                        'bg-gray-200 text-gray-400': index > this.currentSection
-                    }
-                },
-
-                async nextSection() {
-                    const isValid = await this.validateSection();
-                    if (isValid) {
-                        this.currentSection++;
-                        this.saveForm();
-                    }
-                },
-
-                prevSection() {
-                    if (this.currentSection > 0) {
-                        this.currentSection--;
-                        this.saveForm();
-                    }
-                },
-
-                async validateSection() {
-                    const fields = this.sections[this.currentSection].fields;
-                    let isValid = true;
-
-                    for (const field of fields) {
-                        if (field.required && !this.formData[field.id]) {
-                            this.errors[field.id] = 'This field is required';
-                            isValid = false;
+                    // Initialize formData with empty values
+                    this.sections.forEach(section => {
+                        section.questions.forEach(question => {
+                            // Initialize with appropriate default values based on input type
+                            if (question.inputType === 'checkbox') {
+                                this.formData[question.id] = false;
+                            } else {
+                                this.formData[question.id] = '';
+                            }
+                            
+                            if (question.type === 'dropdown-custom') {
+                                this.formData[question.id + '_custom'] = '';
+                            }
+                        });
+                    });
+                    
+                    // Load saved data when the component initializes
+                    const savedData = localStorage.getItem('membershipFormData');
+                    if (savedData) {
+                        try {
+                            const parsedData = JSON.parse(savedData);
+                            
+                            // Properly restore all form fields
+                            Object.keys(parsedData).forEach(key => {
+                                this.formData[key] = parsedData[key];
+                            });
+                            
+                            // Explicitly log the gender field to debug
+                            console.log('Gender value after restore:', this.formData.gender);
+                            
+                            // Check if user is under 18 based on saved data
+                            if (this.formData.dateOfBirth) {
+                                this.isUnder18 = this.checkAge(this.formData.dateOfBirth);
+                            }
+                            
+                            console.log('Restored form data:', this.formData);
+                        } catch (error) {
+                            console.error('Error parsing saved form data:', error);
+                            localStorage.removeItem('membershipFormData');
                         }
                     }
 
-                    return isValid;
+                    // Load policy content from external file
+                    this.loadPolicyContent();
+
+                    // Watch for changes and save to localStorage
+                    this.$watch('formData', (value) => {
+                        this.saveFormData();
+                    }, { deep: true });
+                    
+                    // Add a specific watcher for the gender field
+                    this.$watch('formData.gender', (value) => {
+                        console.log('Gender field changed to:', value);
+                        this.saveFormData(); // Save immediately when gender changes
+                    });
+                    
+                    // Watch for changes to date of birth to update underage status
+                    this.$watch('formData.dateOfBirth', (value) => {
+                        this.isUnder18 = this.checkAge(value);
+                        
+                        // If we're currently on the underage section and user is now 18+, skip to next section
+                        if (!this.isUnder18 && this.currentSection === 1) {
+                            this.currentSection = 2;
+                        }
+                    });
+                    
+                    // Also save the current section to localStorage
+                    this.$watch('currentSection', (value) => {
+                        localStorage.setItem('membershipCurrentSection', value);
+                    });
+                    
+                    // Restore the current section from localStorage
+                    const savedSection = localStorage.getItem('membershipCurrentSection');
+                    if (savedSection !== null) {
+                        this.currentSection = parseInt(savedSection);
+                    }
+                },
+                
+                // Manual save function
+                saveFormData() {
+                    // Explicitly log the gender field to debug
+                    console.log('Gender value before save:', this.formData.gender);
+                    
+                    // Create a copy of the form data to ensure all fields are included
+                    const dataToSave = JSON.parse(JSON.stringify(this.formData));
+                    
+                    console.log('Saving form data:', dataToSave);
+                    localStorage.setItem('membershipFormData', JSON.stringify(dataToSave));
+                },
+                
+                // Load policy content from external file
+                loadPolicyContent() {
+                    fetch('/policy.md')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to load policy content');
+                            }
+                            return response.text();
+                        })
+                        .then(content => {
+                            // Update the Health & Emergency Information section description
+                            this.sections[2].description = content;
+                        })
+                        .catch(error => {
+                            console.error('Error loading policy content:', error);
+                            // Keep the default content if there's an error
+                        });
+                },
+                
+                // Validation methods
+                validateField(id, value) {
+                    // Clear previous error
+                    this.errors[id] = '';
+                    
+                    // Date of birth validation
+                    if (id === 'dateOfBirth' && value) {
+                        const inputDate = new Date(value);
+                        const minAge = 5;
+                        const today = new Date();
+                        const cutoffDate = new Date();
+                        cutoffDate.setFullYear(today.getFullYear() - minAge);
+                        
+                        if (inputDate > cutoffDate) {
+                            this.errors[id] = `Applicant must be at least ${minAge} years old`;
+                            this.formData[id] = '';
+                        } else {
+                            // Update underage status
+                            this.isUnder18 = this.checkAge(value);
+                        }
+                    }
+                },
+                
+                // Handle custom dropdown selection
+                handleCustomDropdown(id) {
+                    if (this.formData[id] !== 'custom') {
+                        this.formData[id + '_custom'] = '';
+                    }
+                },
+                
+                // Navigation methods
+                nextSection() {
+                    // Save form data before proceeding
+                    this.saveFormData();
+                    
+                    // Validate current section before proceeding
+                    const currentSectionQuestions = this.sections[this.currentSection].questions;
+                    let isValid = true;
+                    
+                    currentSectionQuestions.forEach(question => {
+                        // Special handling for checkbox validation
+                        if (question.inputType === 'checkbox' && question.required) {
+                            if (!this.formData[question.id]) {
+                                isValid = false;
+                                this.errors[question.id] = 'This field is required';
+                            }
+                        } 
+                        // Standard validation for other field types
+                        else if (question.required && !this.formData[question.id]) {
+                            isValid = false;
+                            this.errors[question.id] = 'This field is required';
+                        }
+                        
+                        // Special case for custom dropdown
+                        if (question.type === 'dropdown-custom' && 
+                            this.formData[question.id] === 'custom' && 
+                            !this.formData[question.id + '_custom']) {
+                            isValid = false;
+                            this.errors[question.id] = 'Please specify a value';
+                        }
+                    });
+                    
+                    if (isValid) {
+                        // Log the current section's form data for debugging
+                        console.log('Moving to next section. Current data:', 
+                            Object.fromEntries(
+                                Object.entries(this.formData).filter(([key]) => 
+                                    currentSectionQuestions.some(q => key === q.id || key === q.id + '_custom')
+                                )
+                            )
+                        );
+                        
+                        // If we're on the first section and user is 18+, skip the underage section
+                        if (this.currentSection === 0 && !this.isUnder18) {
+                            this.currentSection = 2; // Skip to the third section
+                        } else if (this.currentSection < this.sections.length - 1) {
+                            this.currentSection++;
+                        }
+                        
+                        // Save form data again after changing section
+                        this.saveFormData();
+                    }
+                },
+                
+                prevSection() {
+                    // If we're on the third section and user is 18+, go back to first section
+                    if (this.currentSection === 2 && !this.isUnder18) {
+                        this.currentSection = 0;
+                    } else if (this.currentSection > 0) {
+                        this.currentSection--;
+                    }
+                },
+                
+                // Form submission
+                handleSubmit() {
+                    // Validate all sections
+                    let isValid = true;
+                    
+                    this.sections.forEach((section, sectionIndex) => {
+                        // Skip validation for underage section if user is 18+
+                        if (sectionIndex === 1 && !this.isUnder18) {
+                            return;
+                        }
+                        
+                        section.questions.forEach(question => {
+                            // Special handling for checkbox validation
+                            if (question.inputType === 'checkbox' && question.required) {
+                                if (!this.formData[question.id]) {
+                                    isValid = false;
+                                    this.errors[question.id] = 'This field is required';
+                                }
+                            } 
+                            // Standard validation for other field types
+                            else if (question.required && !this.formData[question.id]) {
+                                isValid = false;
+                                this.errors[question.id] = 'This field is required';
+                            }
+                            
+                            // Special case for custom dropdown
+                            if (question.type === 'dropdown-custom' && 
+                                this.formData[question.id] === 'custom' && 
+                                !this.formData[question.id + '_custom']) {
+                                isValid = false;
+                                this.errors[question.id] = 'Please specify a value';
+                            }
+                        });
+                    });
+                    
+                    if (isValid) {
+                        // Process custom dropdown values
+                        Object.keys(this.formData).forEach(key => {
+                            if (key.endsWith('_custom') && this.formData[key.replace('_custom', '')] === 'custom') {
+                                this.formData[key.replace('_custom', '')] = this.formData[key];
+                            }
+                        });
+                        
+                        // Log the final form data for debugging
+                        console.log('Submitting form data:', this.formData);
+                        
+                        // Create a hidden form with all the data
+                        const formData = new FormData();
+                        Object.keys(this.formData).forEach(key => {
+                            formData.append(key, this.formData[key]);
+                        });
+                        
+                        // When form is submitted, clear the saved data
+                        localStorage.removeItem('membershipFormData');
+                        localStorage.removeItem('membershipCurrentSection');
+                        
+                        // Submit the form to the server
+                        this.$el.submit();
+                    } else {
+                        // Find the first section with errors and navigate to it
+                        for (let i = 0; i < this.sections.length; i++) {
+                            // Skip underage section if user is 18+
+                            if (i === 1 && !this.isUnder18) {
+                                continue;
+                            }
+                            
+                            const sectionQuestions = this.sections[i].questions;
+                            const hasError = sectionQuestions.some(q => this.errors[q.id]);
+                            
+                            if (hasError) {
+                                this.currentSection = i;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
