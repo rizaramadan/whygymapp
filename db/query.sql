@@ -126,9 +126,35 @@ WHERE u.username = $1
 GROUP BY u.id, u.username
 LIMIT 1;
 
+-- name: CreateAndGetUser :one
+WITH inserted_user AS (
+INSERT INTO whygym.users (email, username, password) VALUES ($1, $2, md5($3))
+    ON CONFLICT DO NOTHING
+RETURNING id, username, password, email)
+SELECT
+    inserted_user.id,
+    inserted_user.username,
+    inserted_user.password,
+    STRING_AGG(r.name, ', ')::text AS roles
+FROM
+    whygym.user_roles ur
+    RIGHT JOIN inserted_user ON inserted_user.id = ur.user_id
+    LEFT JOIN whygym.roles r ON ur.role_id = r.id
+GROUP BY inserted_user.id, inserted_user.username, inserted_user.password
+LIMIT 1;
+
 -- name: AddOrUpdateUserPicture :one
 INSERT INTO whygym.users_attributes (user_id, key, value)
 VALUES ($1, 'picture', $2)
 ON CONFLICT (user_id, key) DO UPDATE
 SET value = $2, updated_at = NOW()
 RETURNING id, user_id, key, value;
+
+
+-- name: GetUserPicture :one
+SELECT value FROM whygym.users_attributes
+WHERE user_id = $1 AND key = 'picture'
+LIMIT 1;
+
+
+

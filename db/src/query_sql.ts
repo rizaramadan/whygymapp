@@ -562,6 +562,54 @@ export async function getUserByUsername(client: Client, args: GetUserByUsernameA
     };
 }
 
+export const createAndGetUserQuery = `-- name: CreateAndGetUser :one
+WITH inserted_user AS (
+INSERT INTO whygym.users (email, username, password) VALUES ($1, $2, md5($3))
+    ON CONFLICT DO NOTHING
+RETURNING id, username, password, email)
+SELECT
+    inserted_user.id,
+    inserted_user.username,
+    inserted_user.password,
+    STRING_AGG(r.name, ', ')::text AS roles
+FROM
+    whygym.user_roles ur
+    RIGHT JOIN inserted_user ON inserted_user.id = ur.user_id
+    LEFT JOIN whygym.roles r ON ur.role_id = r.id
+GROUP BY inserted_user.id, inserted_user.username, inserted_user.password
+LIMIT 1`;
+
+export interface CreateAndGetUserArgs {
+    email: string | null;
+    username: string;
+    md5: Buffer;
+}
+
+export interface CreateAndGetUserRow {
+    id: number;
+    username: string;
+    password: string;
+    roles: string;
+}
+
+export async function createAndGetUser(client: Client, args: CreateAndGetUserArgs): Promise<CreateAndGetUserRow | null> {
+    const result = await client.query({
+        text: createAndGetUserQuery,
+        values: [args.email, args.username, args.md5],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        username: row[1],
+        password: row[2],
+        roles: row[3]
+    };
+}
+
 export const addOrUpdateUserPictureQuery = `-- name: AddOrUpdateUserPicture :one
 INSERT INTO whygym.users_attributes (user_id, key, value)
 VALUES ($1, 'picture', $2)
@@ -596,6 +644,34 @@ export async function addOrUpdateUserPicture(client: Client, args: AddOrUpdateUs
         userId: row[1],
         key: row[2],
         value: row[3]
+    };
+}
+
+export const getUserPictureQuery = `-- name: GetUserPicture :one
+SELECT value FROM whygym.users_attributes
+WHERE user_id = $1 AND key = 'picture'
+LIMIT 1`;
+
+export interface GetUserPictureArgs {
+    userId: string;
+}
+
+export interface GetUserPictureRow {
+    value: string;
+}
+
+export async function getUserPicture(client: Client, args: GetUserPictureArgs): Promise<GetUserPictureRow | null> {
+    const result = await client.query({
+        text: getUserPictureQuery,
+        values: [args.userId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        value: row[0]
     };
 }
 

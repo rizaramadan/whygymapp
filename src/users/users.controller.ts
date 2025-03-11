@@ -7,7 +7,8 @@ import {
   Request,
   Param,
   Response,
-  Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response as ExpressResponse } from 'express';
 import {
@@ -15,9 +16,13 @@ import {
   CreateUserRequestRow,
   ApproveAndApplyUserArgs,
   RejectUserRequestArgs,
+  AddOrUpdateUserPictureArgs,
 } from '../../db/src/query_sql';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { User, UsersService } from './users.service';
+import { ErrorApp } from 'src/common/result';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Multer } from 'multer';
 
 @Controller('users')
 export class UsersController {
@@ -89,5 +94,39 @@ export class UsersController {
     const pendings = await this.usersService.getPendingUserRequests();
     console.log(pendings);
     return { pendings };
+  }
+
+  // Upload picture page
+  @Get('upload-picture')
+  @Render('users/upload-picture')
+  getUploadPicturePage(@Request() req: { user: User }) {
+    // If user already has a picture URL, redirect to dashboard
+    if (req.user.picUrl) {
+      return '<script>window.location.href="/member-dashboard"</script>';
+    }
+
+    return {};
+  }
+
+  // Save picture URL endpoint
+  @Post('save-picture')
+  @UseInterceptors(FileInterceptor('file'))
+  async savePicture(
+    @Request() req: { user: User },
+    @UploadedFile() file: Multer.File,
+  ) {
+    const { picUrl, error } = await this.usersService.addOrUpdateUserPicture(
+      ErrorApp.success,
+      {
+        userId: req.user.id.toString(),
+        file,
+      },
+    );
+
+    if (error.hasError()) {
+      throw new Error(error.code + ' ' + error.message);
+    }
+
+    return { success: true, picUrl };
   }
 }

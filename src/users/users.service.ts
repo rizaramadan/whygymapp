@@ -17,9 +17,20 @@ import {
   RejectUserRequestRow,
   RejectUserRequestArgs,
   rejectUserRequest,
+  AddOrUpdateUserPictureArgs,
+  addOrUpdateUserPicture,
+  GetUserPictureArgs,
+  GetUserPictureRow,
+  getUserPicture,
+  createAndGetUser,
 } from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
 import { ErrorApp } from 'src/common/result';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { HttpStatus } from '@nestjs/common';
+import { HttpError } from 'src/auth/auth.interfaces';
+import type { Multer } from 'multer';
 
 export type User = {
   id: number;
@@ -45,7 +56,16 @@ export const NullUser: User = {
 
 @Injectable()
 export class UsersService {
-  constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
+  private readonly authApiUrl: string;
+  private readonly apiKey: string;
+
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject('DATABASE_POOL') private readonly pool: Pool,
+  ) {
+    this.authApiUrl = process.env.AUTH_API_URL || 'https://authapi.com';
+    this.apiKey = process.env.API_KEY || '1234567890';
+  }
 
   async findOneWithEmail(
     error: ErrorApp,
@@ -56,7 +76,17 @@ export class UsersService {
       return { user: NullUser, error };
     }
     try {
-      const userInDb = await getUserByEmail(this.pool, { email });
+      let errorMsg = 'getUserByEmail';
+      let userInDb = await getUserByEmail(this.pool, { email });
+
+      if (!userInDb) {
+        errorMsg = 'createAndGetUser';
+        userInDb = await createAndGetUser(this.pool, {
+          email,
+          username: email,
+          md5: Buffer.from(email),
+        });
+      }
 
       if (userInDb) {
         return {
@@ -74,16 +104,21 @@ export class UsersService {
           error: ErrorApp.success,
         };
       }
+
       return {
         user: NullUser,
-        error: ErrorApp.success, //its okay if user not found, because it a darisini.com user
+        error: new ErrorApp(
+          'error findOneWithEmail on ' + errorMsg,
+          'user-service-107',
+          null,
+        ),
       };
     } catch (error) {
       return {
         user: NullUser,
         error: new ErrorApp(
           'error findOneWithEmail',
-          'user-service-082',
+          'user-service-116',
           error,
         ),
       };
@@ -146,5 +181,92 @@ export class UsersService {
     args: RejectUserRequestArgs,
   ): Promise<RejectUserRequestRow | null> {
     return await rejectUserRequest(this.pool, args);
+  }
+
+  async getUserPicture(
+    args: GetUserPictureArgs,
+  ): Promise<GetUserPictureRow | null> {
+    return await getUserPicture(this.pool, args);
+  }
+
+  async addOrUpdateUserPicture(
+    error: ErrorApp,
+    args: { file: Multer.File; userId: string },
+  ): Promise<{ picUrl: string; error: ErrorApp }> {
+    // Skip if error exists from previous step
+    if (error.hasError()) {
+      return { picUrl: '', error };
+    }
+
+    try {
+      // Upload image first
+      const formData = new FormData();
+      const blob = new Blob([args.file.buffer], { type: args.file.mimetype });
+      formData.append('file', blob, args.file.originalname);
+
+      const response = await firstValueFrom(
+        this.httpService.post<{
+          status: number;
+          message: string;
+          data: {
+            url: string;
+          };
+        }>(`${this.authApiUrl}/v1/images/upload`, formData, {
+          headers: {
+            'x-api-key': this.apiKey,
+            'Content-Type': 'multipart/form-data',
+          },
+        }),
+      );
+
+      if (!response.data.status) {
+        console.log(response.data);
+        return {
+          picUrl: '',
+          error: new ErrorApp(
+            'Failed to upload image',
+            'user-service-pic-201',
+            response.data,
+          ),
+        };
+      }
+
+      // Save URL to database
+      const result = await addOrUpdateUserPicture(this.pool, {
+        userId: args.userId,
+        value: response.data.data.url,
+      });
+
+      if (!result) {
+        return {
+          picUrl: '',
+          error: new ErrorApp(
+            'Failed to save image URL to database',
+            'user-service-pic-218',
+            null,
+          ),
+        };
+      }
+
+      return {
+        picUrl: response.data.data.url,
+        error: ErrorApp.success,
+      };
+    } catch (error) {
+      console.log(error);
+      const httpError = error as HttpError;
+      return {
+        picUrl: '',
+        error: new ErrorApp(
+          'Error processing image upload',
+          'user-service-pic-234',
+          {
+            message: httpError.response?.data?.message || 'Upload failed',
+            status:
+              httpError.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+          },
+        ),
+      };
+    }
   }
 }
