@@ -7,14 +7,84 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Add Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Add Heroicons (for chevron icons) -->
+    <script src="https://unpkg.com/@heroicons/v1/outline/chevron-right.js"></script>
     <style>
         body {
             background-color: #f0fdf4;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
+        /* Markdown content styling */
+        .markdown-content ul, .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content ul {
+            list-style-type: disc;
+        }
+        .markdown-content ol {
+            list-style-type: decimal;
+        }
+        .markdown-content a {
+            color: #16a34a;
+            text-decoration: underline;
+        }
+        .markdown-content a:hover {
+            color: #15803d;
+        }
+        .markdown-content strong {
+            font-weight: 600;
+        }
+        .markdown-content em {
+            font-style: italic;
+        }
+        .markdown-content p {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Step indicator styling */
+        .step-connector {
+            height: 2px;
+            flex-grow: 1;
+            margin: 0 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .step-circle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 640px) {
+            .step-title {
+                display: none;
+            }
+            .step-circle {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+        }
     </style>
 </head>
-<body class="bg-green-50 min-h-screen" x-data="membershipForm()">
+<body class="bg-green-50 min-h-screen" 
+      x-data="membershipForm()"
+      hx-boost="true">
     <div class="max-w-4xl mx-auto p-4">
         <!-- Header -->
         <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
@@ -29,173 +99,349 @@
                 <p class="mt-2 text-gray-600">Please fill out all required information below.</p>
             </div>
 
-            <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
-                <!-- Personal Information -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-900">Personal Information</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">First Name</label>
-                            <input type="text" x-model="formData.firstName" required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+            <form hx-post="/api/membership/apply" 
+                  hx-target="#form-content"
+                  hx-swap="innerHTML"
+                  class="p-6 space-y-8">
+                
+                <!-- Progress Indicator -->
+                <div class="flex items-center justify-between mb-8">
+                    <template x-for="(section, index) in sections" :key="index">
+                        <div class="flex items-center" :class="{'flex-1': index !== sections.length - 1}">
+                            <div class="step-circle"
+                                 :class="getStepClass(index)">
+                                <span x-text="index + 1"></span>
+                            </div>
+                            <div x-show="index !== sections.length - 1" 
+                                 class="step-connector"
+                                 :class="{'bg-green-600': index < currentSection, 'bg-gray-300': index >= currentSection}">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Last Name</label>
-                            <input type="text" x-model="formData.lastName" required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input type="tel" x-model="formData.phone" required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                        <input type="date" 
-                               x-model="formData.dateOfBirth" 
-                               :max="maxBirthDate"
-                               @input="validateBirthDate($event.target.value)"
-                               required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                               :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': birthDateError}">
-                        <p class="mt-1 text-sm text-red-600" x-show="birthDateError" x-text="birthDateError"></p>
-                    </div>
+                    </template>
                 </div>
 
-                <!-- Membership Details -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-900">Membership Details</h3>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Membership Type</label>
-                        <select x-model="formData.membershipType" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                            <option value="">Select a membership type</option>
-                            <option value="basic">Basic (Gym access only)</option>
-                            <option value="premium">Premium (Gym + Classes)</option>
-                            <option value="platinum">Platinum (Gym + Classes + Personal Trainer)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                        <input type="date" x-model="formData.startDate" required
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
-                        <input type="text" x-model="formData.emergencyContact" required
-                               placeholder="Name and phone number"
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                    </div>
-                </div>
-
-                <!-- Health Information -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-900">Health Information</h3>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Do you have any medical conditions?</label>
-                        <textarea x-model="formData.medicalConditions" rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                placeholder="Please list any medical conditions or write 'None'"></textarea>
-                    </div>
-                </div>
-
-                <!-- Terms and Conditions -->
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex items-center h-5">
-                            <input type="checkbox" x-model="formData.terms" required
-                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                <!-- Form Content -->
+                <div id="form-content">
+                    <template x-for="(section, index) in sections" :key="index">
+                        <div x-show="currentSection === index" 
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform translate-x-4"
+                             x-transition:enter-end="opacity-100 transform translate-x-0">
+                            
+                            <h3 class="text-xl font-semibold mb-4" x-text="section.title"></h3>
+                            
+                            <div class="space-y-4">
+                                <template x-for="field in section.fields" :key="field.id">
+                                    <div class="form-field">
+                                        <label :for="field.id" class="block text-sm font-medium text-gray-700 mb-1">
+                                            <span x-text="field.label"></span>
+                                            <span x-show="field.required" class="text-red-500">*</span>
+                                        </label>
+                                        
+                                        <!-- Input Fields -->
+                                        <template x-if="field.type === 'text'">
+                                            <input :type="field.inputType || 'text'"
+                                                   :id="field.id"
+                                                   :name="field.id"
+                                                   x-model="formData[field.id]"
+                                                   :required="field.required"
+                                                   class="form-input"
+                                                   hx-post="/api/validate"
+                                                   hx-trigger="change"
+                                                   hx-target="#error-${field.id}">
+                                        </template>
+                                        
+                                        <template x-if="field.type === 'select'">
+                                            <select :id="field.id"
+                                                    :name="field.id"
+                                                    x-model="formData[field.id]"
+                                                    :required="field.required"
+                                                    class="form-select"
+                                                    hx-post="/api/validate"
+                                                    hx-trigger="change"
+                                                    hx-target="#error-${field.id}">
+                                                <option value="">Select an option</option>
+                                                <template x-for="option in field.options" :key="option.value">
+                                                    <option :value="option.value" x-text="option.label"></option>
+                                                </template>
+                                            </select>
+                                        </template>
+                                        
+                                        <template x-if="field.type === 'checkbox'">
+                                            <div class="flex items-center">
+                                                <input type="checkbox"
+                                                       :id="field.id"
+                                                       :name="field.id"
+                                                       x-model="formData[field.id]"
+                                                       :required="field.required"
+                                                       class="form-checkbox">
+                                                <label :for="field.id" 
+                                                       class="ml-2 text-sm text-gray-700" 
+                                                       x-text="field.label"></label>
+                                            </div>
+                                        </template>
+                                        
+                                        <!-- Error Message -->
+                                        <div :id="'error-' + field.id" 
+                                             class="text-red-500 text-sm mt-1"
+                                             x-show="errors[field.id]"
+                                             x-text="errors[field.id]"></div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
-                        <div class="ml-3">
-                            <label class="text-sm text-gray-700">
-                                I agree to the <a href="/terms" class="text-green-600 hover:text-green-700">Terms and Conditions</a> and acknowledge that I have read the <a href="/privacy" class="text-green-600 hover:text-green-700">Privacy Policy</a>
-                            </label>
-                        </div>
-                    </div>
+                    </template>
                 </div>
 
-                <!-- Submit Button -->
-                <div class="flex justify-end pt-6 border-t border-gray-100">
-                    <button type="submit"
-                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150">
-                        Submit Application
+                <!-- Navigation -->
+                <div class="flex justify-between pt-6 border-t border-gray-100">
+                    <button type="button"
+                            @click="prevSection"
+                            x-show="currentSection > 0"
+                            class="btn btn-secondary">
+                        Previous
                     </button>
+                    
+                    <div class="flex space-x-4">
+                        <button type="button"
+                                @click="nextSection"
+                                x-show="currentSection < sections.length - 1"
+                                class="btn btn-primary">
+                            Next
+                        </button>
+                        
+                        <button type="submit"
+                                x-show="currentSection === sections.length - 1"
+                                class="btn btn-primary">
+                            Submit Application
+                        </button>
+                    </div>
                 </div>
             </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center py-6">
-            <p class="text-sm text-gray-500">© 2024 WhyGym. All rights reserved.</p>
         </div>
     </div>
 
     <script>
         function membershipForm() {
             return {
-                formData: {
-                    firstName: '',
-                    lastName: '',
-                    phone: '',
-                    dateOfBirth: '',
-                    membershipType: '',
-                    startDate: '',
-                    emergencyContact: '',
-                    medicalConditions: '',
-                    terms: false
+                currentSection: 0,
+                formData: {},
+                errors: {},
+                sections: [
+                    {
+                        title: "Personal Information",
+                        fields: [
+                            {
+                                id: "emailPic",
+                                label: "Email yang membayar uang muka",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "duration",
+                                label: "Durasi membership (bulan)",
+                                type: "select",
+                                required: true,
+                                options: [
+                                    { value: "1", label: "90 hari (3 bulan)" },
+                                    { value: "2", label: "180 hari (6 bulan)" },
+                                    { value: "3", label: "360 hari (12 bulan)" }
+                                ]
+                            },
+                            {
+                                id: "fullName",
+                                label: "Nama Lengkap",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "nickname",
+                                label: "Nickname",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "gender",
+                                label: "Jenis Kelamin",
+                                type: "select",
+                                required: true,
+                                options: [
+                                    { value: "male", label: "Pria" },
+                                    { value: "female", label: "Wanita" }
+                                ]
+                            },
+                            {
+                                id: "dateOfBirth",
+                                label: "Tanggal Lahir",
+                                type: "date",
+                                required: true,
+                                inputType: "date",
+                                validate: true,
+                                max: function() {
+                                    const date = new Date();
+                                    date.setFullYear(date.getFullYear() - 5);
+                                    return date.toISOString().split('T')[0];
+                                }
+                            },
+                            {
+                                id: "address",
+                                label: "Alamat lengkapmu",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "wa",
+                                label: "Nomor Whatsappmu",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "identityNumber",
+                                label: "Nomor Identitas (KTP/SIM/Kartu Pelajar)",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "fitnessCondition",
+                                label: "Kondisi Kesehatanmu (tuliskan jika ada kondisi kesehatan khusus yang berpengaruh pada aktivitas olahraga)",
+                                type: "select",
+                                required: true,
+                                options: [
+                                    { value: "ok", label: "Saya dalam kondisi sehat untuk melakukan aktivitas fisik" },
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        title: "KHUSUS DIISI MEMBER DIBAWAH 18 TAHUN",
+                        description: "**Perhatian:** Bagian ini wajib diisi jika calon member berusia di bawah 18 tahun. Persetujuan orang tua/wali diperlukan untuk pendaftaran.",
+                        fields: [
+                            {
+                                id: "parentName",
+                                label: "Nama Orang Tua/Wali",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "parentIdentityNumber",
+                                label: "Nomor Identitas Orang Tua/Wali (KTP/SIM/Kartu Pelajar)",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                id: "parentContact",
+                                label: "Nomor Telepon Orang Tua/Wali",
+                                type: "text",
+                                inputType: "tel",
+                                required: true
+                            },
+                            {
+                                id: "underageConsent",
+                                label: "Saya, selaku orang tua/wali, memberikan izin kepada anak saya untuk menjadi anggota Whygym dan bertanggung jawab atas segala resikonya",
+                                type: "checkbox",
+                                required: true
+                            }
+                        ]
+                    },
+                    {
+                        title: "PERSETUJUAN SYARAT DAN KETENTUAN",
+                        description:'',
+                        fields: [
+                            {
+                                id: "termsAgree",
+                                label: "Saya telah membaca, memahami dan menyetujui seluruh poin dan pasal yang tercantum",
+                                type: "checkbox",
+                                required: true
+                            },
+                            {
+                                id: "riskAgree",
+                                label: "Saya menyadari dan menerima segala risiko yang mungkin terjadi saat menggunakan fasilitas Whygym",
+                                type: "checkbox",
+                                required: true
+                            },
+                            {
+                                id: "dataAgree",
+                                label: "Saya menyetujui pemrosesan data pribadi saya oleh Whygym sesuai klausul yang berlaku.",
+                                type: "checkbox",
+                                required: true
+                            },
+                            {
+                                id: "rulesAgree",
+                                label: "Saya bersedia mematuhi aturan, sanksi, dan segala kebijakan lainnya yang ditetapkan Whygym",
+                                type: "checkbox",
+                                required: true
+                            },
+                            {
+                                id: "frontOfficer",
+                                label: "Front Officer pnerima",
+                                type: "select",
+                                required: true,
+                                options: [
+                                    { value: "Heru", label: "Heru" },
+                                    { value: "Maya", label: "Maya" },
+                                    { value: "Miftah", label: "Miftah" },
+                                    { value: "Rani", label: "Rani" }
+                                ]
+                            },
+                        ]
+                    }
+                ],
+
+                init() {
+                    // Load saved form data
+                    const saved = localStorage.getItem('membershipForm');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        this.formData = data.formData;
+                        this.currentSection = data.currentSection;
+                    }
+
+                    // Watch for changes and save
+                    this.$watch('formData', () => this.saveForm());
                 },
-                birthDateError: '',
-                get maxBirthDate() {
-                    const date = new Date();
-                    date.setFullYear(date.getFullYear() - 5);
-                    return date.toISOString().split('T')[0];
+
+                saveForm() {
+                    localStorage.setItem('membershipForm', JSON.stringify({
+                        formData: this.formData,
+                        currentSection: this.currentSection
+                    }));
                 },
-                validateBirthDate(value) {
-                    if (!value) return;
-                    const inputDate = new Date(value);
-                    const minAge = 5;
-                    const today = new Date();
-                    const cutoffDate = new Date();
-                    cutoffDate.setFullYear(today.getFullYear() - minAge);
-                    
-                    if (inputDate > cutoffDate) {
-                        this.birthDateError = `Applicant must be at least ${minAge} years old`;
-                        this.formData.dateOfBirth = '';
-                    } else {
-                        this.birthDateError = '';
+
+                getStepClass(index) {
+                    return {
+                        'bg-green-600 text-white': index < this.currentSection,
+                        'bg-green-600 border-green-600 text-white': index === this.currentSection,
+                        'bg-gray-200 text-gray-400': index > this.currentSection
                     }
                 },
-                init() {
-                    // Load saved data when the component initializes
-                    const savedData = localStorage.getItem('membershipFormData');
-                    if (savedData) {
-                        this.formData = JSON.parse(savedData);
-                        if (this.formData.dateOfBirth) {
-                            this.validateBirthDate(this.formData.dateOfBirth);
+
+                async nextSection() {
+                    const isValid = await this.validateSection();
+                    if (isValid) {
+                        this.currentSection++;
+                        this.saveForm();
+                    }
+                },
+
+                prevSection() {
+                    if (this.currentSection > 0) {
+                        this.currentSection--;
+                        this.saveForm();
+                    }
+                },
+
+                async validateSection() {
+                    const fields = this.sections[this.currentSection].fields;
+                    let isValid = true;
+
+                    for (const field of fields) {
+                        if (field.required && !this.formData[field.id]) {
+                            this.errors[field.id] = 'This field is required';
+                            isValid = false;
                         }
                     }
 
-                    // Watch for changes and save to localStorage
-                    this.$watch('formData', (value) => {
-                        localStorage.setItem('membershipFormData', JSON.stringify(value));
-                    }, { deep: true });
-                },
-                handleSubmit() {
-                    if (this.birthDateError) {
-                        return;
-                    }
-                    // When form is submitted, clear the saved data
-                    localStorage.removeItem('membershipFormData');
-                    // Submit the form to the server
-                    this.$el.submit();
+                    return isValid;
                 }
             }
         }
