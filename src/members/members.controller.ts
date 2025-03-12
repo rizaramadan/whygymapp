@@ -1,7 +1,8 @@
-import { Controller, Get, Request, Render, Query } from '@nestjs/common';
+import { Controller, Get, Request, Render, Query, Post, Body, Redirect } from '@nestjs/common';
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';
 import { Roles } from 'src/roles/decorators/roles.decorator';
+import { MembershipApplicationDto } from './dto/membership-application.dto';
 
 @Controller('members')
 export class MembersController {
@@ -48,6 +49,48 @@ export class MembersController {
   @Get('membership-apply')
   @Render('members/membership-apply')
   getApply() {
+    return {
+      getCurrentDate: new Date().toISOString().split('T')[0],
+    };
+  }
+
+  @Post('membership-apply')
+  @Redirect()
+  async submitMembershipApplication(
+    @Request() req: { user: User },
+    @Body() applicationData: MembershipApplicationDto,
+  ) {
+    try {
+      const result = await this.membersService.processMembershipApplication(
+        req.user,
+        applicationData,
+      );
+
+      if (result) {
+        // Successful submission - redirect to success page
+        return {
+          url: '/members/application-success',
+          statusCode: 302,
+        };
+      } else {
+        // Failed submission - redirect back to form with error
+        return {
+          url: '/members/membership-apply?error=submission_failed',
+          statusCode: 302,
+        };
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      return {
+        url: '/members/membership-apply?error=unexpected_error',
+        statusCode: 302,
+      };
+    }
+  }
+
+  @Get('application-success')
+  @Render('members/application-success')
+  getApplicationSuccess() {
     return {};
   }
 }

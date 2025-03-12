@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <form id="membershipForm" action="/api/membership/apply" method="POST" class="p-6">
+            <form id="membershipForm" action="/members/membership-apply" method="POST" class="p-6">
                 <!-- Section 1: Personal Information -->
                 <div class="form-section active space-y-6" data-section="1">
                     <h3 class="text-xl font-semibold mb-6">Personal Information</h3>
@@ -455,17 +455,8 @@
                 input.classList.add('border-red-500');
                 const errorDiv = input.nextElementSibling;
                 if (errorDiv && errorDiv.classList.contains('error-message')) {
-                    // Get the field label text
-                    const label = input.closest('div').querySelector('label');
-                    const labelText = label ? label.textContent.replace('*', '').trim() : 'Field ini';
-                    errorDiv.textContent = `${labelText} harus diisi`;
+                    errorDiv.textContent = 'This field is required';
                     errorDiv.style.display = 'block';
-                }
-                
-                // Add error highlight to select elements
-                if (input.tagName === 'SELECT') {
-                    input.parentElement.classList.add('relative');
-                    input.classList.add('border-red-500', 'pr-10');
                 }
             }
 
@@ -475,11 +466,6 @@
                 const errorDiv = input.nextElementSibling;
                 if (errorDiv && errorDiv.classList.contains('error-message')) {
                     errorDiv.style.display = 'none';
-                }
-                
-                // Remove error highlight from select elements
-                if (input.tagName === 'SELECT') {
-                    input.classList.remove('border-red-500', 'pr-10');
                 }
             }
 
