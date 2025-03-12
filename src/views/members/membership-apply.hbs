@@ -98,7 +98,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">
-                                Email yang membayar uang muka
+                                Email utama group/duo (kosongkan jika membership single)
                                 <span class="text-red-500">*</span>
                             </label>
                             <input type="email" name="emailPic" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
@@ -116,6 +116,10 @@
                                 <option value="2">180 hari (6 bulan)</option>
                                 <option value="3">360 hari (12 bulan)</option>
                             </select>
+                        </div>
+
+                        <div class="bg-yellow-100 border-yellow-500 border-2 rounded-md p-4">
+                            <p>KHUSUS PAKET DUO / GROUP, INFORMASI DI ATAS HARUS SAMA UNTUK SEMUA PENDAFTAR</p>
                         </div>
 
                         <div>
@@ -355,11 +359,36 @@
             // Handle next button click
             nextBtn.addEventListener('click', function() {
                 if (validateSection(currentSection)) {
-                    currentSection++;
+                    // Check if we're on section 1 and user is 18 or older
+                    if (currentSection === 0) {
+                        const dobInput = form.querySelector('input[name="dateOfBirth"]');
+                        const age = calculateAge(new Date(dobInput.value));
+                        if (age >= 18) {
+                            // Skip section 2 for adults
+                            currentSection = 2;
+                        } else {
+                            currentSection++;
+                        }
+                    } else {
+                        currentSection++;
+                    }
                     showSection(currentSection);
                     saveFormData();
                 }
             });
+
+            // Add calculateAge function
+            function calculateAge(birthDate) {
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                // Adjust age if birthday hasn't occurred this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            }
 
             // Handle previous button click
             prevBtn.addEventListener('click', function() {
@@ -478,7 +507,7 @@
                 }
             });
 
-            // Handle date of birth changes
+            // Modify the date of birth change handler
             const dobInput = form.querySelector('input[name="dateOfBirth"]');
             
             // Set max date to today
@@ -518,44 +547,46 @@
                 }
                 
                 clearError(this);
-                const age = today.getFullYear() - dob.getFullYear();
+                const age = calculateAge(dob);
                 
                 // Show/hide under 18 section based on age
                 if (age < 18) {
                     const parentFields = document.querySelectorAll('[name^="parent"]');
                     parentFields.forEach(field => field.required = true);
+                    // If we're already past section 2, go back to it
+                    if (currentSection > 1) {
+                        currentSection = 1;
+                        showSection(currentSection);
+                    }
                 } else {
                     const parentFields = document.querySelectorAll('[name^="parent"]');
                     parentFields.forEach(field => {
                         field.required = false;
                         field.value = '';
                     });
+                    // If we're on section 2, skip to section 3
+                    if (currentSection === 1) {
+                        currentSection = 2;
+                        showSection(currentSection);
+                    }
                 }
                 
                 saveFormData();
             });
 
-            // Modify the loadFormData function to handle health condition
+            // Modify loadFormData to handle section skipping
             const originalLoadFormData = loadFormData;
             loadFormData = function() {
                 originalLoadFormData();
                 const savedData = localStorage.getItem('formData');
                 if (savedData) {
                     const data = JSON.parse(savedData);
-                    const healthSelect = form.elements['healthConditionPreset'];
-                    const customInput = document.getElementById('customHealthCondition');
-                    
-                    // If we have saved health condition data
-                    if (data.healthCondition) {
-                        // If the saved value matches the default option
-                        if (data.healthCondition === 'Saya dalam kondisi sehat untuk melakukan aktivitas fisik') {
-                            healthSelect.value = 'none';
-                            customInput.style.display = 'none';
-                        } else {
-                            // For any other value, show the custom input
-                            healthSelect.value = 'other';
-                            customInput.value = data.healthCondition;
-                            customInput.style.display = 'block';
+                    if (data.dateOfBirth) {
+                        const age = calculateAge(new Date(data.dateOfBirth));
+                        // If user is 18 or older and we're on section 2, skip to section 3
+                        if (age >= 18 && currentSection === 1) {
+                            currentSection = 2;
+                            showSection(currentSection);
                         }
                     }
                 }
