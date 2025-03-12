@@ -5,83 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membership Application - WhyGym</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Add Marked.js for Markdown parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Add Heroicons (for chevron icons) -->
-    <script src="https://unpkg.com/@heroicons/v1/outline/chevron-right.js"></script>
     <style>
-        body {
-            background-color: #f0fdf4;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-        /* Markdown content styling */
-        .markdown-content ul, .markdown-content ol {
-            padding-left: 1.5rem;
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .markdown-content ul {
-            list-style-type: disc;
-        }
-        .markdown-content ol {
-            list-style-type: decimal;
-        }
-        .markdown-content a {
-            color: #16a34a;
-            text-decoration: underline;
-        }
-        .markdown-content a:hover {
-            color: #15803d;
-        }
-        .markdown-content strong {
-            font-weight: 600;
-        }
-        .markdown-content em {
-            font-style: italic;
-        }
-        .markdown-content p {
-            margin-bottom: 0.5rem;
-        }
-        .markdown-content h4 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
         }
         
-        /* Step indicator styling */
-        .step-connector {
-            height: 2px;
-            flex-grow: 1;
-            margin: 0 0.5rem;
-            transition: background-color 0.3s ease;
-        }
-        
-        .step-circle {
+        .step {
             width: 2rem;
             height: 2rem;
-            border-radius: 9999px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e5e7eb;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
         
-        @media (max-width: 640px) {
-            .step-title {
-                display: none;
-            }
-            .step-circle {
-                width: 2.5rem;
-                height: 2.5rem;
-            }
+        .step.active {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+        
+        .step.completed {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+        
+        .step-connector {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
         }
     </style>
 </head>
-<body class="bg-green-50 min-h-screen" x-data="membershipForm()">
+<body class="bg-gray-50">
     <div class="max-w-4xl mx-auto p-4">
         <!-- Header -->
         <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
@@ -96,734 +80,513 @@
                 <p class="mt-2 text-gray-600">Please fill out all required information below.</p>
             </div>
 
-            <form @submit.prevent="handleSubmit" class="p-6 space-y-8">
-                <!-- Section Navigation - Enhanced Step Indicator -->
-                <div class="py-4">
-                    <div class="flex items-center justify-between">
-                        <template x-for="(section, index) in sections" :key="index">
-                            <div class="flex items-center flex-grow" :class="{'flex-grow-0': index === sections.length - 1}">
-                                <!-- Step Circle with Number -->
-                                <div @click="currentSection = index" 
-                                     class="step-circle cursor-pointer"
-                                     :class="getStepCircleClasses(index)">
-                                    <span x-text="index + 1"></span>
-                                </div>
-                                
-                                <!-- Step Title -->
-                                <div @click="currentSection = index" 
-                                     class="ml-2 step-title cursor-pointer hidden sm:block"
-                                     :class="getStepTitleClasses(index)">
-                                    <span x-text="section.title"></span>
-                                </div>
-                                
-                                <!-- Connector Line (except after last item) -->
-                                <template x-if="index < sections.length - 1">
-                                    <div class="step-connector" :class="getConnectorClasses(index)"></div>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
+            <!-- Step Indicator -->
+            <div class="p-6 border-b border-gray-100">
+                <div class="step-indicator">
+                    <div class="step-connector"></div>
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step" data-step="3">3</div>
+                </div>
+            </div>
+
+            <form id="membershipForm" action="/api/membership/apply" method="POST" class="p-6">
+                <!-- Section 1: Personal Information -->
+                <div class="form-section active space-y-6" data-section="1">
+                    <h3 class="text-xl font-semibold mb-6">Personal Information</h3>
                     
-                    <!-- Mobile Step Title Display (only shows current step title on mobile) -->
-                    <div class="mt-3 text-center sm:hidden">
-                        <span class="font-medium text-gray-900" x-text="sections[currentSection].title"></span>
-                        <div class="text-xs text-gray-500 mt-1">
-                            Step <span x-text="currentSection + 1"></span> of <span x-text="sections.length"></span>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Email yang membayar uang muka
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" name="emailPic" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                            <div class="error-message"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Durasi membership
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="duration" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Pilih durasi</option>
+                                <option value="1">90 hari (3 bulan)</option>
+                                <option value="2">180 hari (6 bulan)</option>
+                                <option value="3">360 hari (12 bulan)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nama Lengkap
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="fullName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nickname
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nickname" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Jenis Kelamin
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Pilih jenis kelamin</option>
+                                <option value="male">Pria</option>
+                                <option value="female">Wanita</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Tanggal Lahir
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" 
+                                   name="dateOfBirth" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" 
+                                   required
+                                   max="{{ getCurrentDate }}"
+                                   data-min-age="7">
+                            <div class="error-message"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Alamat lengkap
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="address" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nomor Whatsapp
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" name="wa" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nomor Identitas (KTP/SIM/Kartu Pelajar)
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="identityNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Kondisi Kesehatanmu (tuliskan jika ada kondisi kesehatan khusus yang berpengaruh pada aktivitas olahraga)
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="healthConditionPreset" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" onchange="handleHealthConditionChange(this)">
+                                <option value="none">Saya dalam kondisi sehat untuk melakukan aktivitas fisik</option>
+                                <option value="other">Lainnya (tuliskan)</option>
+                            </select>
+                            <input type="text" 
+                                   name="healthCondition" 
+                                   id="customHealthCondition" 
+                                   class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" 
+                                   placeholder="Tuliskan kondisi kesehatan Anda"
+                                   style="display: none;">
+                            <div class="error-message"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section Content -->
-                <template x-for="(section, sectionIndex) in sections" :key="sectionIndex">
-                    <div x-show="currentSection === sectionIndex" class="space-y-6">
-                        <!-- Section Title and Description -->
+                <!-- Section 2: Under 18 Information -->
+                <div class="form-section space-y-6" data-section="2">
+                    <h3 class="text-xl font-semibold mb-6">Informasi Wali (Untuk Member Dibawah 18 Tahun)</h3>
+                    
+                    <div class="space-y-4">
                         <div>
-                            <h3 class="text-xl font-semibold text-gray-900" x-text="section.title"></h3>
-                            <div x-show="section.description" 
-                                 class="mt-2 text-gray-600 markdown-content"
-                                 x-html="parseMarkdown(section.description)"></div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nama Orang Tua/Wali
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="parentName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
                         </div>
 
-                        <!-- Section Questions -->
-                        <div class="space-y-4">
-                            <template x-for="(question, questionIndex) in section.questions" :key="questionIndex">
-                                <div class="space-y-2">
-                                    <!-- Question Label -->
-                                    <div class="flex items-start">
-                                        <div class="markdown-content flex-grow" x-html="parseMarkdown(question.label)"></div>
-                                        <span class="ml-1 text-red-500 flex-shrink-0" x-show="question.required">*</span>
-                                    </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nomor Identitas Orang Tua/Wali
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="parentIdentityNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
 
-                                    <!-- Short Answer Input -->
-                                    <template x-if="question.type === 'short-answer'">
-                                        <div>
-                                            <template x-if="question.inputType === 'checkbox'">
-                                                <div class="flex items-center">
-                                                    <input :id="question.id" 
-                                                           type="checkbox" 
-                                                           x-model="formData[question.id]" 
-                                                           :required="question.required"
-                                                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                                           :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors[question.id]}">
-                                                    <label :for="question.id" class="ml-2 block text-sm text-gray-700">
-                                                        I agree
-                                                    </label>
-                                                </div>
-                                            </template>
-                                            <template x-if="question.inputType !== 'checkbox'">
-                                                <input :type="question.inputType || 'text'" 
-                                                       x-model="formData[question.id]" 
-                                                       :required="question.required"
-                                                       :placeholder="question.placeholder || ''"
-                                                       :max="question.max || ''"
-                                                       @input="question.validate ? validateField(question.id, $event.target.value) : null"
-                                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                                                       :class="{'border-red-300 focus:border-red-500 focus:ring-red-500': errors[question.id]}">
-                                            </template>
-                                        </div>
-                                    </template>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Nomor Telepon Orang Tua/Wali
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="tel" name="parentContact" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                        </div>
 
-                                    <!-- Dropdown Select -->
-                                    <template x-if="question.type === 'dropdown'">
-                                        <select x-model="formData[question.id]" 
-                                                :required="question.required"
-                                                @change="formData[question.id] = $event.target.value; 
-                                                         console.log('Dropdown changed:', question.id, formData[question.id]); 
-                                                         question.onChange ? question.onChange($event.target.value) : null;
-                                                         saveFormData();"
-                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                            <option value="">Select an option</option>
-                                            <template x-for="option in question.options" :key="option.value">
-                                                <option :value="option.value" x-text="option.label"></option>
-                                            </template>
-                                        </select>
-                                    </template>
-
-                                    <!-- Dropdown with Custom Option -->
-                                    <template x-if="question.type === 'dropdown-custom'">
-                                        <div class="space-y-2">
-                                            <select x-model="formData[question.id]" 
-                                                    :required="question.required"
-                                                    @change="handleCustomDropdown(question.id); console.log('Custom dropdown changed:', question.id, formData[question.id])"
-                                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                                <option value="">Select an option</option>
-                                                <template x-for="option in question.options" :key="option.value">
-                                                    <option :value="option.value" x-text="option.label"></option>
-                                                </template>
-                                                <option value="custom">Other (specify)</option>
-                                            </select>
-                                            
-                                            <input x-show="formData[question.id] === 'custom'"
-                                                   x-model="formData[question.id + '_custom']"
-                                                   type="text"
-                                                   placeholder="Please specify"
-                                                   @input="console.log('Custom input changed:', question.id + '_custom', formData[question.id + '_custom'])"
-                                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                                        </div>
-                                    </template>
-
-                                    <!-- Textarea -->
-                                    <template x-if="question.type === 'textarea'">
-                                        <textarea x-model="formData[question.id]" 
-                                                 :required="question.required"
-                                                 :placeholder="question.placeholder || ''"
-                                                 :rows="question.rows || 3"
-                                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"></textarea>
-                                    </template>
-
-                                    <!-- Error Message -->
-                                    <p class="mt-1 text-sm text-red-600" x-show="errors[question.id]" x-text="errors[question.id]"></p>
-                                </div>
-                            </template>
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="underageConsent" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500">
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Saya, selaku orang tua/wali, memberikan izin kepada anak saya
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
                         </div>
                     </div>
-                </template>
+                </div>
+
+                <!-- Section 3: Terms and Conditions -->
+                <div class="form-section space-y-6" data-section="3">
+                    <h3 class="text-xl font-semibold mb-6">Persetujuan dan Syarat Ketentuan</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="termsAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Saya telah membaca dan menyetujui seluruh poin dan pasal ketentuan
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="riskAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Saya menyadari dan menerima segala risiko yang mungkin terjadi saat menggunakan fasilitas WhyGym
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="dataAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Saya menyetujui pemrosesan data pribadi saya oleh WhyGym sesuai klausul yang berlaku
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="rulesAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Saya bersedia mematuhi semua aturan, sanksi, dan segala kebijakan lainnya yang ditetapkan WhyGym
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Front Officer
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="frontOfficer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Pilih front officer</option>
+                                <option value="Heru">Heru</option>
+                                <option value="Maya">Maya</option>
+                                <option value="Miftah">Miftah</option>
+                                <option value="Rani">Rani</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Navigation Buttons -->
-                <div class="flex justify-between pt-6 border-t border-gray-100">
-                    <button type="button" 
-                            @click="prevSection" 
-                            x-show="currentSection > 0"
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-150 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 -ml-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
+                <div class="flex justify-between mt-8">
+                    <button type="button" id="prevBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="display: none;">
                         Previous
                     </button>
-                    
-                    <div class="flex space-x-4">
-                        <button type="button" 
-                                @click="nextSection" 
-                                x-show="currentSection < sections.length - 1"
-                                class="px-6 py-3 border border-transparent rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 flex items-center">
-                            Next
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        
-                        <button type="submit" 
-                                x-show="currentSection === sections.length - 1"
-                                class="px-6 py-3 border border-transparent rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150 flex items-center">
-                            Submit Application
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 -mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
+                    <button type="button" id="nextBtn" class="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Next
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="display: none;">
+                        Submit Application
+                    </button>
                 </div>
             </form>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center py-6">
-            <p class="text-sm text-gray-500">© 2024 WhyGym. All rights reserved.</p>
         </div>
     </div>
 
     <script>
-        function membershipForm() {
-            return {
-                // Form state
-                currentSection: 0,
-                formData: {},
-                errors: {},
-                isUnder18: false,
-                
-                // Form configuration
-                sections: [
-                    {
-                        title: "Personal Information",
-                        description: "",
-                        questions: [
-                            {
-                                id: "emailPic",
-                                label: "Email yang membayar uang muka (isi dengan emailmu jika belum membayar uang muka)",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "duration",
-                                label: "Durasi membership (bulan)",
-                                type: "short-answer",
-                                required: true,
-                                type: "dropdown",
-                                options: [
-                                    { value: "1", label: "90 hari (3 bulan)" },
-                                    { value: "2", label: "180 hari (6 bulan)" },
-                                    { value: "3", label: "360 hari (12 bulan)" },
-                                ]
-                            },
-                            {
-                                id: "fullName",
-                                label: "Nama Lengkap",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "nickname",
-                                label: "Nickname",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "gender",
-                                label: "Jenis Kelamin",
-                                type: "dropdown",
-                                required: true,
-                                options: [
-                                    { value: "male", label: "Pria" },
-                                    { value: "female", label: "Wanita" }
-                                ],
-                                onChange: function(value) {
-                                    console.log('Gender changed directly:', value);
-                                }
-                            },
-                            {
-                                id: "dateOfBirth",
-                                label: "Tanggal Lahir",
-                                type: "short-answer",
-                                inputType: "date",
-                                required: true,
-                                validate: true,
-                                max: function() {
-                                    const date = new Date();
-                                    date.setFullYear(date.getFullYear() - 5);
-                                    return date.toISOString().split('T')[0];
-                                }
-                            },
-                            {
-                                id: "address",
-                                label: "Alamat lengkapmu",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "wa",
-                                label: "Nomor Whatsappmu",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "identityNumber",
-                                label: "Nomor Identitas (KTP/SIM/Kartu Pelajar)",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "fitnessCondition",
-                                label: "Kondisi Kesehatanmu (tuliskan jika ada kondisi kesehatan khusus yang berpengaruh pada aktivitas olahraga)",
-                                type: "dropdown-custom",
-                                required: true,
-                                options: [
-                                    { value: "ok", label: "Saya dalam kondisi sehat untuk melakukan aktivitas fisik" },
-                                ]
-                            }
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('membershipForm');
+            const sections = document.querySelectorAll('.form-section');
+            const steps = document.querySelectorAll('.step');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            let currentSection = 0;
 
-                        ]
-                    },
-                    {
-                        title: "KHUSUS DIISI MEMBER DIBAWAH 18 TAHUN",
-                        description: "**Perhatian:** Bagian ini wajib diisi jika calon member berusia di bawah 18 tahun. Persetujuan orang tua/wali diperlukan untuk pendaftaran.",
-                        questions: [
-                            {
-                                id: "parentName",
-                                label: "Nama Orang Tua/Wali",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "parentIdentityNumber",
-                                label: "Nomor Identitas Orang Tua/Wali (KTP/SIM/Kartu Pelajar)",
-                                type: "short-answer",
-                                required: true
-                            },
-                            {
-                                id: "parentContact",
-                                label: "Nomor Telepon Orang Tua/Wali",
-                                type: "short-answer",
-                                inputType: "tel",
-                                required: true
-                            },
-                            {
-                                id: "underageConsent",
-                                label: "Saya, selaku orang tua/wali, memberikan izin kepada anak saya untuk menjadi anggota Whygym dan bertanggung jawab atas segala resikonya",
-                                type: "short-answer",
-                                inputType: "checkbox",
-                                required: true
-                            }
-                        ]
-                    },
-                    {
-                        title: "PERSETUJUAN SYARAT DAN KETENTUAN",
-                        description:'',
-                        questions: [
-                            {
-                                id: "termsAgree",
-                                label: "Saya telah membaca, memahami dan menyetujui seluruh poin dan pasal yang tercantum",
-                                type: "short-answer",
-                                inputType: "checkbox",
-                                required: true
-                            },
-                            {
-                                id: "riskAgree",
-                                label: "Saya menyadari dan menerima segala risiko yang mungkin terjadi saat menggunakan fasilitas Whygym",
-                                type: "short-answer",
-                                inputType: "checkbox",
-                                required: true
-                            },
-                            {
-                                id: "dataAgree",
-                                label: "Saya menyetujui pemrosesan data pribadi saya oleh Whygym sesuai klausul yang berlaku.",
-                                type: "short-answer",
-                                inputType: "checkbox",
-                                required: true
-                            },
-                            {
-                                id: "rulesAgree",
-                                label: "Saya bersedia mematuhi aturan, sanksi, dan segala kebijakan lainnya yang ditetapkan Whygym",
-                                type: "short-answer",
-                                inputType: "checkbox",
-                                required: true
-                            },
-                            {
-                                id: "frontOfficer",
-                                label: "Front Officer pnerima",
-                                type: "dropdown",
-                                required: true,
-                                options: [
-                                    { value: "Heru", label: "Heru" },
-                                    { value: "Maya", label: "Maya" },
-                                    { value: "Miftah", label: "Miftah" },
-                                    { value: "Rani", label: "Rani" }
-                                ]
-                            },
-                        ]
-                    }
-                ],
-                
-                // Get active sections (filtering out the underage section if user is 18+)
-                get activeSections() {
-                    if (this.isUnder18) {
-                        return this.sections;
+            // Function to show/hide sections
+            function showSection(index) {
+                sections.forEach((section, i) => {
+                    section.classList.toggle('active', i === index);
+                });
+
+                steps.forEach((step, i) => {
+                    step.classList.toggle('active', i === index);
+                    step.classList.toggle('completed', i < index);
+                });
+
+                // Update buttons
+                prevBtn.style.display = index === 0 ? 'none' : 'block';
+                nextBtn.style.display = index === sections.length - 1 ? 'none' : 'block';
+                submitBtn.style.display = index === sections.length - 1 ? 'block' : 'none';
+
+                // Save current section to localStorage
+                localStorage.setItem('currentSection', index);
+            }
+
+            // Handle next button click
+            nextBtn.addEventListener('click', function() {
+                if (validateSection(currentSection)) {
+                    currentSection++;
+                    showSection(currentSection);
+                    saveFormData();
+                }
+            });
+
+            // Handle previous button click
+            prevBtn.addEventListener('click', function() {
+                currentSection--;
+                showSection(currentSection);
+            });
+
+            // Form validation
+            function validateSection(sectionIndex) {
+                const currentSectionEl = sections[sectionIndex];
+                const inputs = currentSectionEl.querySelectorAll('input[required], select[required], textarea[required]');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!input.value) {
+                        isValid = false;
+                        showError(input);
                     } else {
-                        return this.sections.filter((section, index) => index !== 1);
+                        clearError(input);
                     }
-                },
-                
-                // Helper methods for step indicator styling
-                getStepCircleClasses(index) {
-                    // Convert index to actual section index if we're skipping the underage section
-                    const actualIndex = this.getActualSectionIndex(index);
-                    
-                    if (actualIndex < this.currentSection) {
-                        return 'bg-green-600 text-white border-2 border-green-600'; // Completed step
-                    } else if (actualIndex === this.currentSection) {
-                        return 'bg-white text-green-600 border-2 border-green-600'; // Current step
-                    } else {
-                        return 'bg-white text-gray-400 border-2 border-gray-300'; // Future step
+                });
+
+                return isValid;
+            }
+
+            // Show error message
+            function showError(input) {
+                input.classList.add('border-red-500');
+                const errorDiv = input.nextElementSibling;
+                if (errorDiv && errorDiv.classList.contains('error-message')) {
+                    errorDiv.textContent = 'This field is required';
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            // Clear error message
+            function clearError(input) {
+                input.classList.remove('border-red-500');
+                const errorDiv = input.nextElementSibling;
+                if (errorDiv && errorDiv.classList.contains('error-message')) {
+                    errorDiv.style.display = 'none';
+                }
+            }
+
+            // Save form data to localStorage
+            function saveFormData() {
+                const formData = new FormData(form);
+                const data = {};
+                // Special handling for checkboxes to ensure unchecked state is saved
+                form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    data[checkbox.name] = checkbox.checked;
+                });
+                // Handle all other form fields
+                for (let [key, value] of formData.entries()) {
+                    if (!data.hasOwnProperty(key)) { // Don't override checkbox values
+                        data[key] = value;
                     }
-                },
-                
-                getStepTitleClasses(index) {
-                    // Convert index to actual section index if we're skipping the underage section
-                    const actualIndex = this.getActualSectionIndex(index);
-                    
-                    if (actualIndex < this.currentSection) {
-                        return 'text-green-600 font-medium'; // Completed step
-                    } else if (actualIndex === this.currentSection) {
-                        return 'text-green-600 font-medium'; // Current step
-                    } else {
-                        return 'text-gray-400'; // Future step
-                    }
-                },
-                
-                getConnectorClasses(index) {
-                    // Convert index to actual section index if we're skipping the underage section
-                    const actualIndex = this.getActualSectionIndex(index);
-                    
-                    if (actualIndex < this.currentSection) {
-                        return 'bg-green-600'; // Completed connector
-                    } else {
-                        return 'bg-gray-300'; // Future connector
-                    }
-                },
-                
-                // Helper to convert display index to actual section index
-                getActualSectionIndex(displayIndex) {
-                    if (!this.isUnder18 && displayIndex >= 1) {
-                        // Skip the underage section (index 1)
-                        return displayIndex + 1;
-                    }
-                    return displayIndex;
-                },
-                
-                // Parse markdown to HTML
-                parseMarkdown(text) {
-                    if (!text) return '';
-                    return marked.parse(text);
-                },
-                
-                // Check if user is under 18
-                checkAge(dateOfBirth) {
-                    if (!dateOfBirth) return false;
-                    
-                    const birthDate = new Date(dateOfBirth);
-                    const today = new Date();
-                    
-                    let age = today.getFullYear() - birthDate.getFullYear();
-                    const monthDiff = today.getMonth() - birthDate.getMonth();
-                    
-                    // Adjust age if birthday hasn't occurred yet this year
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                        age--;
-                    }
-                    
-                    return age < 18;
-                },
-                
-                // Initialize the form
-                init() {
-                    // Initialize formData with empty values
-                    this.sections.forEach(section => {
-                        section.questions.forEach(question => {
-                            // Initialize with appropriate default values based on input type
-                            if (question.inputType === 'checkbox') {
-                                this.formData[question.id] = false;
+                }
+                localStorage.setItem('formData', JSON.stringify(data));
+            }
+
+            // Load saved form data
+            function loadFormData() {
+                const savedData = localStorage.getItem('formData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    for (let key in data) {
+                        const input = form.elements[key];
+                        if (input) {
+                            if (input.type === 'checkbox') {
+                                input.checked = data[key] === true; // Use strict boolean comparison
                             } else {
-                                this.formData[question.id] = '';
-                            }
-                            
-                            if (question.type === 'dropdown-custom') {
-                                this.formData[question.id + '_custom'] = '';
-                            }
-                        });
-                    });
-                    
-                    // Load saved data when the component initializes
-                    const savedData = localStorage.getItem('membershipFormData');
-                    if (savedData) {
-                        try {
-                            const parsedData = JSON.parse(savedData);
-                            
-                            // Properly restore all form fields
-                            Object.keys(parsedData).forEach(key => {
-                                this.formData[key] = parsedData[key];
-                            });
-                            
-                            // Explicitly log the gender field to debug
-                            console.log('Gender value after restore:', this.formData.gender);
-                            
-                            // Check if user is under 18 based on saved data
-                            if (this.formData.dateOfBirth) {
-                                this.isUnder18 = this.checkAge(this.formData.dateOfBirth);
-                            }
-                            
-                            console.log('Restored form data:', this.formData);
-                        } catch (error) {
-                            console.error('Error parsing saved form data:', error);
-                            localStorage.removeItem('membershipFormData');
-                        }
-                    }
-
-                    // Load policy content from external file
-                    this.loadPolicyContent();
-
-                    // Watch for changes and save to localStorage
-                    this.$watch('formData', (value) => {
-                        this.saveFormData();
-                    }, { deep: true });
-                    
-                    // Add a specific watcher for the gender field
-                    this.$watch('formData.gender', (value) => {
-                        console.log('Gender field changed to:', value);
-                        this.saveFormData(); // Save immediately when gender changes
-                    });
-                    
-                    // Watch for changes to date of birth to update underage status
-                    this.$watch('formData.dateOfBirth', (value) => {
-                        this.isUnder18 = this.checkAge(value);
-                        
-                        // If we're currently on the underage section and user is now 18+, skip to next section
-                        if (!this.isUnder18 && this.currentSection === 1) {
-                            this.currentSection = 2;
-                        }
-                    });
-                    
-                    // Also save the current section to localStorage
-                    this.$watch('currentSection', (value) => {
-                        localStorage.setItem('membershipCurrentSection', value);
-                    });
-                    
-                    // Restore the current section from localStorage
-                    const savedSection = localStorage.getItem('membershipCurrentSection');
-                    if (savedSection !== null) {
-                        this.currentSection = parseInt(savedSection);
-                    }
-                },
-                
-                // Manual save function
-                saveFormData() {
-                    // Explicitly log the gender field to debug
-                    console.log('Gender value before save:', this.formData.gender);
-                    
-                    // Create a copy of the form data to ensure all fields are included
-                    const dataToSave = JSON.parse(JSON.stringify(this.formData));
-                    
-                    console.log('Saving form data:', dataToSave);
-                    localStorage.setItem('membershipFormData', JSON.stringify(dataToSave));
-                },
-                
-                // Load policy content from external file
-                loadPolicyContent() {
-                    fetch('/policy.md')
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Failed to load policy content');
-                            }
-                            return response.text();
-                        })
-                        .then(content => {
-                            // Update the Health & Emergency Information section description
-                            this.sections[2].description = content;
-                        })
-                        .catch(error => {
-                            console.error('Error loading policy content:', error);
-                            // Keep the default content if there's an error
-                        });
-                },
-                
-                // Validation methods
-                validateField(id, value) {
-                    // Clear previous error
-                    this.errors[id] = '';
-                    
-                    // Date of birth validation
-                    if (id === 'dateOfBirth' && value) {
-                        const inputDate = new Date(value);
-                        const minAge = 5;
-                        const today = new Date();
-                        const cutoffDate = new Date();
-                        cutoffDate.setFullYear(today.getFullYear() - minAge);
-                        
-                        if (inputDate > cutoffDate) {
-                            this.errors[id] = `Applicant must be at least ${minAge} years old`;
-                            this.formData[id] = '';
-                        } else {
-                            // Update underage status
-                            this.isUnder18 = this.checkAge(value);
-                        }
-                    }
-                },
-                
-                // Handle custom dropdown selection
-                handleCustomDropdown(id) {
-                    if (this.formData[id] !== 'custom') {
-                        this.formData[id + '_custom'] = '';
-                    }
-                },
-                
-                // Navigation methods
-                nextSection() {
-                    // Save form data before proceeding
-                    this.saveFormData();
-                    
-                    // Validate current section before proceeding
-                    const currentSectionQuestions = this.sections[this.currentSection].questions;
-                    let isValid = true;
-                    
-                    currentSectionQuestions.forEach(question => {
-                        // Special handling for checkbox validation
-                        if (question.inputType === 'checkbox' && question.required) {
-                            if (!this.formData[question.id]) {
-                                isValid = false;
-                                this.errors[question.id] = 'This field is required';
-                            }
-                        } 
-                        // Standard validation for other field types
-                        else if (question.required && !this.formData[question.id]) {
-                            isValid = false;
-                            this.errors[question.id] = 'This field is required';
-                        }
-                        
-                        // Special case for custom dropdown
-                        if (question.type === 'dropdown-custom' && 
-                            this.formData[question.id] === 'custom' && 
-                            !this.formData[question.id + '_custom']) {
-                            isValid = false;
-                            this.errors[question.id] = 'Please specify a value';
-                        }
-                    });
-                    
-                    if (isValid) {
-                        // Log the current section's form data for debugging
-                        console.log('Moving to next section. Current data:', 
-                            Object.fromEntries(
-                                Object.entries(this.formData).filter(([key]) => 
-                                    currentSectionQuestions.some(q => key === q.id || key === q.id + '_custom')
-                                )
-                            )
-                        );
-                        
-                        // If we're on the first section and user is 18+, skip the underage section
-                        if (this.currentSection === 0 && !this.isUnder18) {
-                            this.currentSection = 2; // Skip to the third section
-                        } else if (this.currentSection < this.sections.length - 1) {
-                            this.currentSection++;
-                        }
-                        
-                        // Save form data again after changing section
-                        this.saveFormData();
-                    }
-                },
-                
-                prevSection() {
-                    // If we're on the third section and user is 18+, go back to first section
-                    if (this.currentSection === 2 && !this.isUnder18) {
-                        this.currentSection = 0;
-                    } else if (this.currentSection > 0) {
-                        this.currentSection--;
-                    }
-                },
-                
-                // Form submission
-                handleSubmit() {
-                    // Validate all sections
-                    let isValid = true;
-                    
-                    this.sections.forEach((section, sectionIndex) => {
-                        // Skip validation for underage section if user is 18+
-                        if (sectionIndex === 1 && !this.isUnder18) {
-                            return;
-                        }
-                        
-                        section.questions.forEach(question => {
-                            // Special handling for checkbox validation
-                            if (question.inputType === 'checkbox' && question.required) {
-                                if (!this.formData[question.id]) {
-                                    isValid = false;
-                                    this.errors[question.id] = 'This field is required';
-                                }
-                            } 
-                            // Standard validation for other field types
-                            else if (question.required && !this.formData[question.id]) {
-                                isValid = false;
-                                this.errors[question.id] = 'This field is required';
-                            }
-                            
-                            // Special case for custom dropdown
-                            if (question.type === 'dropdown-custom' && 
-                                this.formData[question.id] === 'custom' && 
-                                !this.formData[question.id + '_custom']) {
-                                isValid = false;
-                                this.errors[question.id] = 'Please specify a value';
-                            }
-                        });
-                    });
-                    
-                    if (isValid) {
-                        // Process custom dropdown values
-                        Object.keys(this.formData).forEach(key => {
-                            if (key.endsWith('_custom') && this.formData[key.replace('_custom', '')] === 'custom') {
-                                this.formData[key.replace('_custom', '')] = this.formData[key];
-                            }
-                        });
-                        
-                        // Log the final form data for debugging
-                        console.log('Submitting form data:', this.formData);
-                        
-                        // Create a hidden form with all the data
-                        const formData = new FormData();
-                        Object.keys(this.formData).forEach(key => {
-                            formData.append(key, this.formData[key]);
-                        });
-                        
-                        // When form is submitted, clear the saved data
-                        localStorage.removeItem('membershipFormData');
-                        localStorage.removeItem('membershipCurrentSection');
-                        
-                        // Submit the form to the server
-                        this.$el.submit();
-                    } else {
-                        // Find the first section with errors and navigate to it
-                        for (let i = 0; i < this.sections.length; i++) {
-                            // Skip underage section if user is 18+
-                            if (i === 1 && !this.isUnder18) {
-                                continue;
-                            }
-                            
-                            const sectionQuestions = this.sections[i].questions;
-                            const hasError = sectionQuestions.some(q => this.errors[q.id]);
-                            
-                            if (hasError) {
-                                this.currentSection = i;
-                                break;
+                                input.value = data[key];
                             }
                         }
                     }
                 }
+
+                // Restore current section
+                const savedSection = localStorage.getItem('currentSection');
+                if (savedSection !== null) {
+                    currentSection = parseInt(savedSection);
+                    showSection(currentSection);
+                }
             }
-        }
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (validateSection(currentSection)) {
+                    // Clear saved data
+                    localStorage.removeItem('formData');
+                    localStorage.removeItem('currentSection');
+                    
+                    // Submit the form
+                    this.submit();
+                }
+            });
+
+            // Load saved data when page loads
+            loadFormData();
+
+            // Add change event listeners to all inputs for auto-save
+            form.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.type === 'checkbox') {
+                    // Special handling for checkboxes
+                    input.addEventListener('change', function() {
+                        saveFormData();
+                        // Ensure the checkbox state is immediately saved
+                        const data = JSON.parse(localStorage.getItem('formData') || '{}');
+                        data[this.name] = this.checked;
+                        localStorage.setItem('formData', JSON.stringify(data));
+                    });
+                } else {
+                    input.addEventListener('change', saveFormData);
+                }
+            });
+
+            // Handle date of birth changes
+            const dobInput = form.querySelector('input[name="dateOfBirth"]');
+            
+            // Set max date to today
+            const today = new Date();
+            const maxDate = today.toISOString().split('T')[0];
+            dobInput.setAttribute('max', maxDate);
+
+            function validateAge(birthDate) {
+                const today = new Date();
+                const birth = new Date(birthDate);
+                const minAge = parseInt(dobInput.dataset.minAge) || 7;
+                
+                let age = today.getFullYear() - birth.getFullYear();
+                const monthDiff = today.getMonth() - birth.getMonth();
+                
+                // Adjust age if birthday hasn't occurred this year
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+                
+                return age >= minAge;
+            }
+
+            dobInput.addEventListener('change', function() {
+                const dob = new Date(this.value);
+                const isValidAge = validateAge(dob);
+                
+                if (!isValidAge) {
+                    showError(this);
+                    this.value = ''; // Clear invalid date
+                    const errorDiv = this.nextElementSibling;
+                    if (errorDiv && errorDiv.classList.contains('error-message')) {
+                        errorDiv.textContent = 'Member must be at least 7 years old';
+                        errorDiv.style.display = 'block';
+                    }
+                    return;
+                }
+                
+                clearError(this);
+                const age = today.getFullYear() - dob.getFullYear();
+                
+                // Show/hide under 18 section based on age
+                if (age < 18) {
+                    const parentFields = document.querySelectorAll('[name^="parent"]');
+                    parentFields.forEach(field => field.required = true);
+                } else {
+                    const parentFields = document.querySelectorAll('[name^="parent"]');
+                    parentFields.forEach(field => {
+                        field.required = false;
+                        field.value = '';
+                    });
+                }
+                
+                saveFormData();
+            });
+
+            // Modify the loadFormData function to handle health condition
+            const originalLoadFormData = loadFormData;
+            loadFormData = function() {
+                originalLoadFormData();
+                const savedData = localStorage.getItem('formData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    const healthSelect = form.elements['healthConditionPreset'];
+                    const customInput = document.getElementById('customHealthCondition');
+                    
+                    // If we have saved health condition data
+                    if (data.healthCondition) {
+                        // If the saved value matches the default option
+                        if (data.healthCondition === 'Saya dalam kondisi sehat untuk melakukan aktivitas fisik') {
+                            healthSelect.value = 'none';
+                            customInput.style.display = 'none';
+                        } else {
+                            // For any other value, show the custom input
+                            healthSelect.value = 'other';
+                            customInput.value = data.healthCondition;
+                            customInput.style.display = 'block';
+                        }
+                    }
+                }
+            };
+
+            // Also modify handleHealthConditionChange to ensure proper value setting
+            function handleHealthConditionChange(select) {
+                const customInput = document.getElementById('customHealthCondition');
+                if (select.value === 'other') {
+                    customInput.style.display = 'block';
+                    customInput.required = true;
+                    if (!customInput.value) {
+                        customInput.focus(); // Focus the input when shown
+                    }
+                } else {
+                    customInput.style.display = 'none';
+                    customInput.required = false;
+                    customInput.value = select.options[select.selectedIndex].text;
+                }
+                saveFormData();
+            }
+
+            // Add the function to the window object to make it accessible from HTML
+            window.handleHealthConditionChange = handleHealthConditionChange;
+
+            // Initial trigger of health condition handling on page load
+            const healthSelect = form.elements['healthConditionPreset'];
+            if (healthSelect) {
+                handleHealthConditionChange(healthSelect);
+            }
+        });
     </script>
 </body>
 </html> 
