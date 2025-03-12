@@ -675,3 +675,121 @@ export async function getUserPicture(client: Client, args: GetUserPictureArgs): 
     };
 }
 
+export const createMemberByEmailQuery = `-- name: CreateMemberByEmail :one
+/*
+CREATE TABLE whygym.members (
+    id integer NOT NULL,
+    email character varying(100),
+    nickname character varying(100) NOT NULL,
+    date_of_birth date,
+    phone_number character varying(20),
+    membership_status character varying(20) DEFAULT 'active'::character varying NOT NULL,
+    notes text,
+    additional_data json,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+*/
+
+INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at`;
+
+export interface CreateMemberByEmailArgs {
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    membershipStatus: string;
+    notes: string | null;
+    additionalData: any | null;
+}
+
+export interface CreateMemberByEmailRow {
+    id: number;
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    membershipStatus: string;
+    notes: string | null;
+    additionalData: any | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function createMemberByEmail(client: Client, args: CreateMemberByEmailArgs): Promise<CreateMemberByEmailRow | null> {
+    const result = await client.query({
+        text: createMemberByEmailQuery,
+        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.membershipStatus, args.notes, args.additionalData],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1],
+        nickname: row[2],
+        dateOfBirth: row[3],
+        phoneNumber: row[4],
+        membershipStatus: row[5],
+        notes: row[6],
+        additionalData: row[7],
+        createdAt: row[8],
+        updatedAt: row[9]
+    };
+}
+
+export const createMemberByUsernameQuery = `-- name: CreateMemberByUsername :one
+INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
+VALUES ($1, $2, $3, $4, $5, 'username in email field', $6)
+RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at`;
+
+export interface CreateMemberByUsernameArgs {
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    membershipStatus: string;
+    additionalData: any | null;
+}
+
+export interface CreateMemberByUsernameRow {
+    id: number;
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    membershipStatus: string;
+    notes: string | null;
+    additionalData: any | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function createMemberByUsername(client: Client, args: CreateMemberByUsernameArgs): Promise<CreateMemberByUsernameRow | null> {
+    const result = await client.query({
+        text: createMemberByUsernameQuery,
+        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.membershipStatus, args.additionalData],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1],
+        nickname: row[2],
+        dateOfBirth: row[3],
+        phoneNumber: row[4],
+        membershipStatus: row[5],
+        notes: row[6],
+        additionalData: row[7],
+        createdAt: row[8],
+        updatedAt: row[9]
+    };
+}
+

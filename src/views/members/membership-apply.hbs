@@ -401,15 +401,51 @@
                 const currentSectionEl = sections[sectionIndex];
                 const inputs = currentSectionEl.querySelectorAll('input[required], select[required], textarea[required]');
                 let isValid = true;
+                let firstError = null;
 
                 inputs.forEach(input => {
                     if (!input.value) {
                         isValid = false;
                         showError(input);
+                        if (!firstError) {
+                            firstError = input;
+                        }
                     } else {
                         clearError(input);
                     }
                 });
+
+                // If there are errors, scroll to the first one
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Show a summary message at the top of the section
+                    const existingAlert = currentSectionEl.querySelector('.error-summary');
+                    if (!existingAlert) {
+                        const alert = document.createElement('div');
+                        alert.className = 'error-summary bg-red-50 border-l-4 border-red-500 p-4 mb-4';
+                        alert.innerHTML = `
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        Mohon lengkapi semua field yang bertanda bintang (*)
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                        currentSectionEl.querySelector('h3').insertAdjacentElement('afterend', alert);
+                    }
+                } else {
+                    // Remove error summary if all fields are valid
+                    const existingAlert = currentSectionEl.querySelector('.error-summary');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                }
 
                 return isValid;
             }
@@ -419,8 +455,17 @@
                 input.classList.add('border-red-500');
                 const errorDiv = input.nextElementSibling;
                 if (errorDiv && errorDiv.classList.contains('error-message')) {
-                    errorDiv.textContent = 'This field is required';
+                    // Get the field label text
+                    const label = input.closest('div').querySelector('label');
+                    const labelText = label ? label.textContent.replace('*', '').trim() : 'Field ini';
+                    errorDiv.textContent = `${labelText} harus diisi`;
                     errorDiv.style.display = 'block';
+                }
+                
+                // Add error highlight to select elements
+                if (input.tagName === 'SELECT') {
+                    input.parentElement.classList.add('relative');
+                    input.classList.add('border-red-500', 'pr-10');
                 }
             }
 
@@ -430,6 +475,11 @@
                 const errorDiv = input.nextElementSibling;
                 if (errorDiv && errorDiv.classList.contains('error-message')) {
                     errorDiv.style.display = 'none';
+                }
+                
+                // Remove error highlight from select elements
+                if (input.tagName === 'SELECT') {
+                    input.classList.remove('border-red-500', 'pr-10');
                 }
             }
 
