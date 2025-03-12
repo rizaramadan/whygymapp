@@ -7,6 +7,9 @@ import {
   Post,
   Body,
   Redirect,
+  Param,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';

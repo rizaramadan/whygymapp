@@ -12,3 +12,4 @@ CREATE INDEX idx_users_attributes_user_id ON whygym.users_attributes(user_id);
 CREATE INDEX idx_users_attributes_key ON whygym.users_attributes(key);
 CREATE INDEX idx_users_attributes_user_id_key ON whygym.users_attributes(user_id, key);
 CREATE UNIQUE INDEX idx_users_attributes_user_id_key_unique ON whygym.users_attributes(user_id, key);
+CREATE INDEX idx_members_pending_email ON whygym.members (email) WHERE membership_status = 'PENDING';

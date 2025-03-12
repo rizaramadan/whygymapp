@@ -156,22 +156,6 @@ SELECT value FROM whygym.users_attributes
 WHERE user_id = $1 AND key = 'picture'
 LIMIT 1;
 
-
-/*
-CREATE TABLE whygym.members (
-    id integer NOT NULL,
-    email character varying(100),
-    nickname character varying(100) NOT NULL,
-    date_of_birth date,
-    phone_number character varying(20),
-    membership_status character varying(20) DEFAULT 'active'::character varying NOT NULL,
-    notes text,
-    additional_data json,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
-);
-*/
-
 -- name: CreateMemberByEmail :one
 INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -183,6 +167,6 @@ INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, member
 VALUES ($1, $2, $3, $4, $5, 'username in email field', $6)
 RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at;
 
-
-
-
+-- name: GetPendingMembershipByEmail :one
+SELECT id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data FROM whygym.members
+WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1);

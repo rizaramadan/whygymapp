@@ -60,6 +60,7 @@ export class MembersService {
 
       // Prepare additional data to store as JSON
       const additionalData = {
+        emailPic: applicationData.emailPic,
         fullName: applicationData.fullName,
         gender: applicationData.gender,
         address: applicationData.address,

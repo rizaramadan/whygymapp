@@ -793,3 +793,44 @@ export async function createMemberByUsername(client: Client, args: CreateMemberB
     };
 }
 
+export const getPendingMembershipByEmailQuery = `-- name: GetPendingMembershipByEmail :one
+SELECT id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data FROM whygym.members
+WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1)`;
+
+export interface GetPendingMembershipByEmailArgs {
+    email: string | null;
+}
+
+export interface GetPendingMembershipByEmailRow {
+    id: number;
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    membershipStatus: string;
+    notes: string | null;
+    additionalData: any | null;
+}
+
+export async function getPendingMembershipByEmail(client: Client, args: GetPendingMembershipByEmailArgs): Promise<GetPendingMembershipByEmailRow | null> {
+    const result = await client.query({
+        text: getPendingMembershipByEmailQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1],
+        nickname: row[2],
+        dateOfBirth: row[3],
+        phoneNumber: row[4],
+        membershipStatus: row[5],
+        notes: row[6],
+        additionalData: row[7]
+    };
+}
+
