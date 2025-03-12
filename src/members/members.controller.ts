@@ -1,4 +1,13 @@
-import { Controller, Get, Request, Render, Query, Post, Body, Redirect } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Request,
+  Render,
+  Query,
+  Post,
+  Body,
+  Redirect,
+} from '@nestjs/common';
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';
 import { Roles } from 'src/roles/decorators/roles.decorator';
