@@ -5,11 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - WhyGym</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="/style.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
         }
         .hero-section {
             position: relative;
@@ -48,85 +53,87 @@
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="p-4 flex justify-between items-center">
-        <button class="text-2xl">☰</button>
-        <h1 class="text-xl font-bold">WhyGym</h1>
-        <a href="/logout" class="text-green-500 font-medium">Logout</a>
-    </header>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <button class="text-2xl">☰</button>
+            <h1 class="text-xl font-bold">WhyGym</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
 
-    <!-- Hero Section -->
-    <div class="hero-section">
-        <img src="/img/user-dashboard.webp" alt="WhyGym Facilities">
-        <div class="hero-overlay">
-            <h2 class="text-4xl font-bold mb-2">Welcome to WhyGym!</h2>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <img src="/img/user-dashboard.webp" alt="WhyGym Facilities">
+            <div class="hero-overlay">
+                <h2 class="text-4xl font-bold mb-2">Welcome to WhyGym!</h2>
+            </div>
         </div>
-    </div>
 
-    <!-- Welcome Text -->
-    <div class="p-6">
-        <p class="text-gray-700 text-lg mb-8">
-            Ready to start your fitness journey? Join our gym community and get access to world-class facilities and expert trainers.
-        </p>
+        <!-- Welcome Text -->
+        <div class="p-6">
+            <p class="text-gray-700 text-lg mb-8">
+                Ready to start your fitness journey? Join our gym community and get access to world-class facilities and expert trainers.
+            </p>
 
-        <!-- CTA Button -->
-        <a href="/members/membership-apply" 
-           class="w-full block text-center py-4 px-6 bg-green-500 text-white rounded-full text-lg font-medium hover:bg-green-600 transition-colors">
-            Apply for Membership <span class="ml-2">→</span>
-        </a>
-    </div>
+            <!-- CTA Button -->
+            <a href="/members/membership-apply" 
+               class="w-full block text-center py-4 px-6 bg-green-500 text-white rounded-full text-lg font-medium hover:bg-green-600 transition-colors">
+                Apply for Membership <span class="ml-2">→</span>
+            </a>
+        </div>
 
-    <!-- Membership Applications -->
-    {{#if membershipApplications}}
-    <div class="p-6">
-        <h2 class="text-2xl font-bold mb-6">Your Membership Applications</h2>
-        
-        <div class="space-y-4">
-            {{#each membershipApplications}}
-            <div class="application-card border-2 border-gray-200">
-                <div class="flex items-start gap-4">
-                    <div class="avatar">
-                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-medium">
-                                {{#if this.additionalData.fullName}}
-                                    {{this.additionalData.fullName}}
-                                {{else}}
-                                    {{this.nickname}}
-                                {{/if}}
-                            </h3>
-                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Pending</span>
+        <!-- Membership Applications -->
+        {{#if membershipApplications}}
+        <div class="p-6">
+            <h2 class="text-2xl font-bold mb-6">Your Membership Applications</h2>
+            
+            <div class="space-y-4">
+                {{#each membershipApplications}}
+                <div class="application-card border-2 border-gray-200">
+                    <div class="flex items-start gap-4">
+                        <div class="avatar">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
                         </div>
-                        <p class="text-green-600 text-sm mt-1">
-                            Application Date: {{formatDate this.created_at}}<br>
-                            Duration: {{this.additionalData.duration}} days
-                        </p>
-                        <div class="mt-4 flex gap-4">
-                            <a href="/members/payment/{{this.id}}" 
-                               class="flex-1 text-center py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors">
-                                Continue Payment
-                            </a>
-                            <button onclick="cancelApplication('{{this.id}}')"
-                                    class="flex-1 text-center py-3 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors">
-                                Cancel
-                            </button>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-medium">
+                                    {{#if this.additionalData.fullName}}
+                                        {{this.additionalData.fullName}}
+                                    {{else}}
+                                        {{this.nickname}}
+                                    {{/if}}
+                                </h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Pending</span>
+                            </div>
+                            <p class="text-green-600 text-sm mt-1">
+                                Application Date: {{formatDate this.created_at}}<br>
+                                Duration: {{this.additionalData.duration}} days
+                            </p>
+                            <div class="mt-4 flex gap-4">
+                                <a href="/members/payment/{{this.id}}" 
+                                   class="flex-1 text-center py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors">
+                                    Continue Payment
+                                </a>
+                                <button onclick="cancelApplication('{{this.id}}')"
+                                        class="flex-1 text-center py-3 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {{/each}}
             </div>
-            {{/each}}
         </div>
-    </div>
-    {{/if}}
+        {{/if}}
 
-    <!-- Footer -->
-    <footer class="p-8 text-center">
-        <p class="text-green-600">© 2024 WhyGym. All rights reserved.</p>
-    </footer>
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2024 WhyGym. All rights reserved.</p>
+        </footer>
+    </div>
 </body>
 </html>

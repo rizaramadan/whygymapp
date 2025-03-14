@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membership Application - WhyGym</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
     <style>
         .step-indicator {
             display: flex;
@@ -164,7 +167,7 @@
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" 
                                    required
                                    max="{{ getCurrentDate }}"
-                                   data-min-age="7">
+                                   data-min-age="12">
                             <div class="error-message"></div>
                         </div>
 
@@ -727,7 +730,7 @@
             function validateAge(birthDate) {
                 const today = new Date();
                 const birth = new Date(birthDate);
-                const minAge = parseInt(dobInput.dataset.minAge) || 7;
+                const minAge = parseInt(dobInput.dataset.minAge) || 12;
                 
                 let age = today.getFullYear() - birth.getFullYear();
                 const monthDiff = today.getMonth() - birth.getMonth();
@@ -749,7 +752,7 @@
                     this.value = ''; // Clear invalid date
                     const errorDiv = this.nextElementSibling;
                     if (errorDiv && errorDiv.classList.contains('error-message')) {
-                        errorDiv.textContent = 'Member must be at least 7 years old';
+                        errorDiv.textContent = 'Member must be at least 12 years old';
                         errorDiv.style.display = 'block';
                     }
                     return;

@@ -7,3 +7,27 @@
 .htmx-request.htmx-indicator{
     display:inline;
 }
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap');
+
+/* Base styles */
+body {
+    font-family: 'Comfortaa', sans-serif;
+}
+
+/* Header styles */
+h1, h2, h3, h4, h5, h6,
+.font-header {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Font weight utilities */
+.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.font-comfortaa {
+    font-family: 'Comfortaa', sans-serif;
+}
