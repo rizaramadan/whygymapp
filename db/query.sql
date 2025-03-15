@@ -168,5 +168,9 @@ VALUES ($1, $2, $3, $4, $5, 'username in email field', $6)
 RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at;
 
 -- name: GetPendingMembershipByEmail :one
-SELECT id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data FROM whygym.members
-WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1);
+SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
+WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1;
+
+-- name: DeletePendingMembership :one
+DELETE FROM whygym.members
+WHERE id = $1 AND membership_status = 'PENDING' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id;

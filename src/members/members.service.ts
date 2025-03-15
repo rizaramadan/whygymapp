@@ -8,9 +8,12 @@ import {
   GetLastVisitIdRow,
   getTodayVisits,
   getVisitsAfterId,
-  createMemberByUsername,
   CreateMemberByUsernameRow,
   createMemberByEmail,
+  deletePendingMembership,
+  DeletePendingMembershipRow,
+  GetPendingMembershipByEmailRow,
+  getPendingMembershipByEmail,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -100,5 +103,18 @@ export class MembersService {
       console.error('Error processing membership application:', error);
       return null;
     }
+  }
+
+  async getPendingMembershipByEmail(
+    email: string,
+  ): Promise<GetPendingMembershipByEmailRow | null> {
+    return await getPendingMembershipByEmail(this.pool, { email });
+  }
+
+  async deletePendingMembership(
+    id: number,
+    email: string,
+  ): Promise<DeletePendingMembershipRow | null> {
+    return await deletePendingMembership(this.pool, { id, email });
   }
 }

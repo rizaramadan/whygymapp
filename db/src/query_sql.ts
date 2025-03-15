@@ -676,21 +676,6 @@ export async function getUserPicture(client: Client, args: GetUserPictureArgs): 
 }
 
 export const createMemberByEmailQuery = `-- name: CreateMemberByEmail :one
-/*
-CREATE TABLE whygym.members (
-    id integer NOT NULL,
-    email character varying(100),
-    nickname character varying(100) NOT NULL,
-    date_of_birth date,
-    phone_number character varying(20),
-    membership_status character varying(20) DEFAULT 'active'::character varying NOT NULL,
-    notes text,
-    additional_data json,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
-);
-*/
-
 INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at`;
@@ -794,8 +779,8 @@ export async function createMemberByUsername(client: Client, args: CreateMemberB
 }
 
 export const getPendingMembershipByEmailQuery = `-- name: GetPendingMembershipByEmail :one
-SELECT id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data FROM whygym.members
-WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1)`;
+SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
+WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1`;
 
 export interface GetPendingMembershipByEmailArgs {
     email: string | null;
@@ -808,6 +793,7 @@ export interface GetPendingMembershipByEmailRow {
     dateOfBirth: Date | null;
     phoneNumber: string | null;
     membershipStatus: string;
+    createdAt: Date | null;
     notes: string | null;
     additionalData: any | null;
 }
@@ -829,8 +815,37 @@ export async function getPendingMembershipByEmail(client: Client, args: GetPendi
         dateOfBirth: row[3],
         phoneNumber: row[4],
         membershipStatus: row[5],
-        notes: row[6],
-        additionalData: row[7]
+        createdAt: row[6],
+        notes: row[7],
+        additionalData: row[8]
+    };
+}
+
+export const deletePendingMembershipQuery = `-- name: DeletePendingMembership :one
+DELETE FROM whygym.members
+WHERE id = $1 AND membership_status = 'PENDING' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id`;
+
+export interface DeletePendingMembershipArgs {
+    id: number;
+    email: string | null;
+}
+
+export interface DeletePendingMembershipRow {
+    id: number;
+}
+
+export async function deletePendingMembership(client: Client, args: DeletePendingMembershipArgs): Promise<DeletePendingMembershipRow | null> {
+    const result = await client.query({
+        text: deletePendingMembershipQuery,
+        values: [args.id, args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
     };
 }
 

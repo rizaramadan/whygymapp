@@ -10,6 +10,7 @@ import {
   Param,
   HttpException,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';
@@ -81,7 +82,7 @@ export class MembersController {
       if (result) {
         // Successful submission - redirect to success page
         return {
-          url: '/members/application-success',
+          url: '/user-dashboard',
           statusCode: 302,
         };
       } else {
@@ -104,5 +105,38 @@ export class MembersController {
   @Render('members/application-success')
   getApplicationSuccess() {
     return {};
+  }
+
+  @Delete('cancel-application/:id')
+  @Render('user-dashboard')
+  async cancelApplication(
+    @Param('id') id: string,
+    @Request() req: { user: User },
+  ) {
+    try {
+      const result = await this.membersService.deletePendingMembership(
+        parseInt(id),
+        req.user.email,
+      );
+
+      if (!result) {
+        throw new HttpException(
+          'Failed to cancel membership application',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Return the data needed for the dashboard template
+      return {
+        url: '/user-dashboard',
+        statusCode: 302,
+      };
+    } catch (error: unknown) {
+      const err = error as Error;
+      throw new HttpException(
+        err.message || 'An error occurred while cancelling the application',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
