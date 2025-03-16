@@ -27,7 +27,9 @@ async function bootstrap() {
 
   // Register Handlebars helpers
   registerHelpers();
+  const port = process.env.PORT ?? 3000;
+  console.log(`Server is running on port ${port}`);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(port);
 }
 bootstrap();
