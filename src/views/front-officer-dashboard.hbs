@@ -60,6 +60,17 @@
                 <div id="last-visit-id" style='display: none;'>{{lastVisitId}}</div>
             </div>
 
+            <div id="hero-container" style="display: none;">
+                <div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
+                    <div class="flex-shrink-0 mr-6">
+                        <img src="" id="hero-image" class="w-60 h-60 rounded-full object-cover border-2 border-green-200">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-lg font-medium text-green-900" id="hero-visit-code"></p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Users List -->
             <div class="bg-white rounded-2xl shadow-lg p-8">
                 <div class="space-y-4" id="visitors-list-container">
@@ -67,7 +78,7 @@
                     <div class="flex items-center p-6 rounded-xl border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
                         <div class="flex-shrink-0 mr-6">
                             {{#if this.picUrl}}
-                            <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
+                            <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200 visit-pic">
                             {{else}}
                             <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
                                 <span class="text-3xl text-green-600">{{this.email}}</span>
@@ -76,6 +87,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-lg font-medium text-green-900">{{this.email}}</p>
+                            <p class="text-lg font-medium text-green-900 visit-code">Visit code: {{this.visitCode}}</p>
                             <p class="text-sm text-green-500 mt-1">Visited at: {{this.checkInTime}}</p>
                         </div>
                     </div>
@@ -95,6 +107,15 @@
         document.getElementById('visitors-list-container').addEventListener('htmx:afterSwap', function(evt) {
             if(evt.detail.xhr.status == 200 && evt.detail.xhr.response.length >=10){
                 document.getElementById("last-visit-id").innerText = document.querySelectorAll(".visit-id")[0]?.innerText
+                document.getElementById("hero-image").src = document.querySelectorAll(".visit-pic")[0]?.src
+                document.getElementById("hero-visit-code").innerText = document.querySelectorAll(".visit-code")[0]?.innerText
+                document.getElementById("hero-container").style.display = "block"
+                //after 10 seconds, remove hero image and visit code
+                setTimeout(() => {
+                    document.getElementById("hero-image").src = ""
+                    document.getElementById("hero-visit-code").innerText = ""
+                    document.getElementById("hero-container").style.display = "none"
+                }, 20000)
             }
         });
     </script>

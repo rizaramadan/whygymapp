@@ -1,0 +1,1 @@
+ALTER TABLE whygym.visits DROP COLUMN visit_code; 

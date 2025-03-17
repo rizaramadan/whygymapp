@@ -3,7 +3,7 @@
     <div class='flex-shrink-0 mr-6'>
         <div style="display: none;" class="visit-id">{{this.id}}</div>
         {{#if this.picUrl}}
-        <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200">
+        <img src="{{this.picUrl}}" alt="{{this.email}}" class="w-20 h-20 rounded-full object-cover border-2 border-green-200 visit-pic">
         {{else}}
         <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
             <span class="text-3xl text-green-600">{{this.email}}</span>
@@ -12,6 +12,7 @@
     </div>
     <div class="flex-1 min-w-0">
         <p class="text-lg font-medium text-green-900">{{this.email}}</p>
+        <p class="text-lg font-medium text-green-900 visit-code">Visit code: {{this.visitCode}}</p>
         <p class="text-sm text-green-500 mt-1">Visited at: {{this.checkInTime}}</p>
     </div>
 </div>

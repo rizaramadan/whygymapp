@@ -1,0 +1,1 @@
+ALTER TABLE whygym.visits ADD COLUMN visit_code integer NOT NULL DEFAULT floor(random() * (99 - 10 + 1)) + 10; 

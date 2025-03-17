@@ -40,6 +40,7 @@ export class MembersController {
       email: visit.email,
       picUrl: visit.picUrl,
       checkInTime: visit.checkInTime,
+      visitCode: visit.visitCode,
     };
   }
 

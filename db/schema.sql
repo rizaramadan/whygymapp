@@ -284,7 +284,8 @@ CREATE TABLE whygym.visits (
     email character varying(100),
     pic_url character varying(255) NOT NULL,
     notes text,
-    additional_data json
+    additional_data json,
+    visit_code integer DEFAULT (floor((random() * (((99 - 10) + 1))::double precision)) + (10)::double precision) NOT NULL
 );
 
 
@@ -449,6 +450,13 @@ CREATE INDEX idx_members_membership_status ON whygym.members USING btree (member
 
 
 --
+-- Name: idx_members_pending_email; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHERE ((membership_status)::text = 'PENDING'::text);
+
+
+--
 -- Name: idx_members_user_id; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -488,6 +496,13 @@ CREATE INDEX idx_users_attributes_user_id ON whygym.users_attributes USING btree
 --
 
 CREATE INDEX idx_users_attributes_user_id_key ON whygym.users_attributes USING btree (user_id, key);
+
+
+--
+-- Name: idx_users_attributes_user_id_key_unique; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_users_attributes_user_id_key_unique ON whygym.users_attributes USING btree (user_id, key);
 
 
 --

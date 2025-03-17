@@ -72,7 +72,7 @@ export class AuthController {
     } else {
       res.cookie('access_token', jwt.access_token);
       const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
-      if (verifyOtpDto.action) {
+      if (verifyOtpDto.action === 'member-visit') {
         return `<script>window.location.href="/members/visit"</script>`;
       } else {
         return `<script>window.location.href="/${role}-dashboard"</script>`;

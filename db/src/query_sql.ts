@@ -101,7 +101,7 @@ export async function getUserByEmail(client: Client, args: GetUserByEmailArgs): 
 }
 
 export const getTodayVisitsQuery = `-- name: GetTodayVisits :many
-SELECT id, member_id, email, pic_url, check_in_time
+SELECT id, member_id, email, pic_url, check_in_time, visit_code
 FROM whygym.visits 
 WHERE check_in_date = CURRENT_DATE
 ORDER BY check_in_time DESC`;
@@ -112,6 +112,7 @@ export interface GetTodayVisitsRow {
     email: string | null;
     picUrl: string;
     checkInTime: Date;
+    visitCode: number;
 }
 
 export async function getTodayVisits(client: Client): Promise<GetTodayVisitsRow[]> {
@@ -126,7 +127,8 @@ export async function getTodayVisits(client: Client): Promise<GetTodayVisitsRow[
             memberId: row[1],
             email: row[2],
             picUrl: row[3],
-            checkInTime: row[4]
+            checkInTime: row[4],
+            visitCode: row[5]
         };
     });
 }
@@ -134,7 +136,7 @@ export async function getTodayVisits(client: Client): Promise<GetTodayVisitsRow[
 export const createVisitQuery = `-- name: CreateVisit :one
 INSERT INTO whygym.visits (member_id, email, pic_url)
 VALUES ($1, $2, $3)
-RETURNING id, member_id, email, pic_url, check_in_time`;
+RETURNING id, member_id, email, pic_url, check_in_time, visit_code`;
 
 export interface CreateVisitArgs {
     memberId: number;
@@ -148,6 +150,7 @@ export interface CreateVisitRow {
     email: string | null;
     picUrl: string;
     checkInTime: Date;
+    visitCode: number;
 }
 
 export async function createVisit(client: Client, args: CreateVisitArgs): Promise<CreateVisitRow | null> {
@@ -165,7 +168,8 @@ export async function createVisit(client: Client, args: CreateVisitArgs): Promis
         memberId: row[1],
         email: row[2],
         picUrl: row[3],
-        checkInTime: row[4]
+        checkInTime: row[4],
+        visitCode: row[5]
     };
 }
 
@@ -198,7 +202,7 @@ export async function getMemberIdByEmail(client: Client, args: GetMemberIdByEmai
 }
 
 export const getVisitsAfterIdQuery = `-- name: GetVisitsAfterId :many
-SELECT id, member_id, email, pic_url, check_in_time
+SELECT id, member_id, email, pic_url, check_in_time, visit_code
 FROM whygym.visits 
 WHERE id > $1
 ORDER BY check_in_time DESC`;
@@ -213,6 +217,7 @@ export interface GetVisitsAfterIdRow {
     email: string | null;
     picUrl: string;
     checkInTime: Date;
+    visitCode: number;
 }
 
 export async function getVisitsAfterId(client: Client, args: GetVisitsAfterIdArgs): Promise<GetVisitsAfterIdRow[]> {
@@ -227,7 +232,8 @@ export async function getVisitsAfterId(client: Client, args: GetVisitsAfterIdArg
             memberId: row[1],
             email: row[2],
             picUrl: row[3],
-            checkInTime: row[4]
+            checkInTime: row[4],
+            visitCode: row[5]
         };
     });
 }
