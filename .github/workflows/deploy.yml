@@ -21,4 +21,3 @@ jobs:
             npm install
             npm run build
             sudo systemctl restart whygym
-            sudo systemctl status whygym --no-pager
