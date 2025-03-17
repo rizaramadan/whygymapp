@@ -11,4 +11,5 @@ export class VerifyOtpDto {
   preAuthSessionId: string;
   @IsNotEmpty()
   userInputCode: string;
+  action?: string;
 }

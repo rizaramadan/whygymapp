@@ -30,6 +30,7 @@ export class OtpAuthService {
   async createOtp(
     error: ErrorApp,
     email: string,
+    action?: string,
   ): Promise<{
     success: boolean;
     message: string;
@@ -47,7 +48,7 @@ export class OtpAuthService {
       email,
     );
     // return constructed response
-    return this.constructCreateOtpResponse(errorOtp, response);
+    return this.constructCreateOtpResponse(errorOtp, response, action);
   }
 
   // call api create send otp, first created to be called by  createOtp
@@ -101,11 +102,13 @@ export class OtpAuthService {
   private constructCreateOtpResponse(
     error: ErrorApp,
     response: OtpCreateResponse | null,
+    action?: string,
   ): {
     success: boolean;
     message: string;
     deviceId?: string;
     preAuthSessionId?: string;
+    action?: string;
     error?: ErrorApp;
   } {
     //skip if error exist from previous step
@@ -119,6 +122,7 @@ export class OtpAuthService {
         message: 'OTP has been sent to your email',
         deviceId: response.data?.deviceId || '',
         preAuthSessionId: response.data?.preAuthSessionId || '',
+        action: action,
       };
     } else {
       // return response if failed

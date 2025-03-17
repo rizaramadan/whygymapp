@@ -8,6 +8,7 @@ import {
   Request,
   Render,
   Res,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OtpAuthService } from './otp-auth.service';
@@ -27,8 +28,8 @@ export class AuthController {
   @Public()
   @Get('login')
   @Render('auth/login')
-  getLoginPage() {
-    return {};
+  getLoginPage(@Query('action') action?: string) {
+    return { action };
   }
 
   @Public()
@@ -42,8 +43,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('otp/create')
   @Render('auth/otp')
-  createOtp(@Body() createOtpDto: CreateOtpDto) {
-    return this.otpAuthService.createOtp(ErrorApp.success, createOtpDto.email);
+  createOtp(
+    @Body() createOtpDto: CreateOtpDto,
+    @Query('action') action?: string,
+  ) {
+    return this.otpAuthService.createOtp(
+      ErrorApp.success,
+      createOtpDto.email,
+      action,
+    );
   }
 
   @Public()
@@ -64,7 +72,11 @@ export class AuthController {
     } else {
       res.cookie('access_token', jwt.access_token);
       const role = jwt.roles.length > 0 ? jwt.roles[0] : 'user';
-      return `<script>window.location.href="/${role}-dashboard"</script>`;
+      if (verifyOtpDto.action) {
+        return `<script>window.location.href="/members/visit"</script>`;
+      } else {
+        return `<script>window.location.href="/${role}-dashboard"</script>`;
+      }
     }
   }
 

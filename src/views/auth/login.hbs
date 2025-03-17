@@ -53,8 +53,15 @@
 
             <!-- Main form container -->
             <div class="w-full max-w-sm">
+                {{#if action}}
+                    <div class="mt-4">
+                        <p class="text-xl text-center text-white mb-2">
+                            Please login to continue checking in
+                        </p>
+                    </div>  
+                {{/if}}
                 <div id="loginForm" class="space-y-4">
-                    <form hx-post="/auth/otp/create"
+                    <form hx-post="/auth/otp/create?action={{action}}"
                           hx-target="#loginForm"
                           hx-swap="outerHTML"
                           hx-indicator="#spinner"
@@ -78,7 +85,7 @@
                             Enter your email to receive otp on your email
                         </p>
                         
-                        <a href="/auth/login-user-pass" 
+                        <a href="/auth/login-user-pass?action={{action}}" 
                         class="block w-3/4 mx-auto mt-8 py-2 px-4 rounded-lg text-xs text-green-600 bg-white border border-green-600 font-medium text-center hover:bg-green-50 transition-colors">
                             Or Login with username and password
                         </a>
