@@ -29,6 +29,16 @@ export class MembersController {
       req.user.email,
       req.user.picUrl,
     );
+
+    // Mock weekly visits data
+    const weeklyVisits = [
+      { week: 'week 8', count: 1 },
+      { week: 'week 9', count: 4 },
+      { week: 'week 10', count: 2 },
+      { week: 'week 11', count: 3 },
+      { week: 'week 12', count: 5 },
+    ];
+
     if (!visit) {
       return {
         status: null,
@@ -41,6 +51,7 @@ export class MembersController {
       picUrl: visit.picUrl,
       checkInTime: visit.checkInTime,
       visitCode: visit.visitCode,
+      weeklyVisits: weeklyVisits,
     };
   }
 

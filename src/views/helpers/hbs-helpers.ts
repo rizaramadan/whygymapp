@@ -13,4 +13,8 @@ export function registerHelpers() {
       hour12: true,
     });
   });
+
+  hbs.registerHelper('json', function (context) {
+    return JSON.stringify(context);
+  });
 }

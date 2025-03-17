@@ -115,12 +115,14 @@ if (!visit) {
     </div>
 
     <script>
-        // Dummy data for the charts
+        // Parse the weekly visits data passed from server
+        const weeklyVisitsRaw = {{{json weeklyVisits}}};
+        
         const weeklyData = {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: weeklyVisitsRaw.map(item => item.week),
             datasets: [{
                 label: 'Weekly Visits',
-                data: [2, 3, 1, 4, 2, 5, 3],
+                data: weeklyVisitsRaw.map(item => item.count),
                 borderColor: 'rgb(34, 197, 94)',
                 tension: 0.3,
                 fill: false
@@ -128,7 +130,7 @@ if (!visit) {
         };
 
         const monthlyData = {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4'],
             datasets: [{
                 label: 'Monthly Visits',
                 data: [12, 15, 18, 14],
