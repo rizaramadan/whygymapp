@@ -855,3 +855,88 @@ export async function deletePendingMembership(client: Client, args: DeletePendin
     };
 }
 
+export const getWeeklyVisitsByEmailQuery = `-- name: GetWeeklyVisitsByEmail :many
+WITH data AS (SELECT
+    EXTRACT(WEEK FROM check_in_date) AS week_of_year, count(*) AS count
+FROM whygym.visits
+WHERE email = $1
+GROUP BY EXTRACT(WEEK FROM check_in_date)
+ORDER BY EXTRACT(WEEK FROM check_in_date) DESC
+LIMIT 5),
+week_series AS(
+    SELECT generate_series (
+        EXTRACT(WEEK FROM CURRENT_DATE)::INT - 4,
+        EXTRACT(WEEK FROM CURRENT_DATE)::INT
+    ) as week_of_year
+)
+SELECT 'week ' || ws.week_of_year, coalesce(count, 0)
+FROM week_series ws
+    LEFT JOIN data d ON ws.week_of_year = d.week_of_year
+    ORDER BY ws.week_of_year ASC`;
+
+export interface GetWeeklyVisitsByEmailArgs {
+    email: string | null;
+}
+
+export interface GetWeeklyVisitsByEmailRow {
+    : string | null;
+    count: string;
+}
+
+export async function getWeeklyVisitsByEmail(client: Client, args: GetWeeklyVisitsByEmailArgs): Promise<GetWeeklyVisitsByEmailRow[]> {
+    const result = await client.query({
+        text: getWeeklyVisitsByEmailQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            : row[0],
+            count: row[1]
+        };
+    });
+}
+
+export const getMonthlyVisitsByEmailQuery = `-- name: GetMonthlyVisitsByEmail :many
+WITH data AS (
+    SELECT EXTRACT(month FROM check_in_date) AS month_of_year, count(*) AS count
+    FROM whygym.visits
+    WHERE email =  $1
+    GROUP BY EXTRACT(month FROM check_in_date)
+    ORDER BY EXTRACT(month FROM check_in_date) DESC
+    LIMIT 5),
+month_series AS (
+    SELECT generate_series (
+        EXTRACT(month FROM CURRENT_DATE)::INT - 4,
+        EXTRACT(month FROM CURRENT_DATE)::INT
+    ) as month_of_year
+)
+SELECT 'month ' || ms.month_of_year, coalesce(count, 0)
+FROM month_series ms
+    LEFT JOIN data d ON ms.month_of_year = d.month_of_year
+    WHERE ms.month_of_year > 0
+    ORDER BY ms.month_of_year ASC`;
+
+export interface GetMonthlyVisitsByEmailArgs {
+    email: string | null;
+}
+
+export interface GetMonthlyVisitsByEmailRow {
+    : string | null;
+    count: string;
+}
+
+export async function getMonthlyVisitsByEmail(client: Client, args: GetMonthlyVisitsByEmailArgs): Promise<GetMonthlyVisitsByEmailRow[]> {
+    const result = await client.query({
+        text: getMonthlyVisitsByEmailQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            : row[0],
+            count: row[1]
+        };
+    });
+}
+
