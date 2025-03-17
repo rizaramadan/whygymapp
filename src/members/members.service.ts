@@ -14,6 +14,10 @@ import {
   DeletePendingMembershipRow,
   GetPendingMembershipByEmailRow,
   getPendingMembershipByEmail,
+  GetWeeklyVisitsByEmailRow,
+  GetMonthlyVisitsByEmailRow,
+  getWeeklyVisitsByEmail,
+  getMonthlyVisitsByEmail,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -116,5 +120,17 @@ export class MembersService {
     email: string,
   ): Promise<DeletePendingMembershipRow | null> {
     return await deletePendingMembership(this.pool, { id, email });
+  }
+
+  async getWeeklyVisitsByEmail(
+    email: string,
+  ): Promise<GetWeeklyVisitsByEmailRow[]> {
+    return await getWeeklyVisitsByEmail(this.pool, { email });
+  }
+
+  async getMonthlyVisitsByEmail(
+    email: string,
+  ): Promise<GetMonthlyVisitsByEmailRow[]> {
+    return await getMonthlyVisitsByEmail(this.pool, { email });
   }
 }

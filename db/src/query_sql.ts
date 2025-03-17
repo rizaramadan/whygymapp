@@ -869,7 +869,7 @@ week_series AS(
         EXTRACT(WEEK FROM CURRENT_DATE)::INT
     ) as week_of_year
 )
-SELECT 'week ' || ws.week_of_year, coalesce(count, 0)
+SELECT 'week ' || ws.week_of_year AS week_number, coalesce(count, 0) AS week_count
 FROM week_series ws
     LEFT JOIN data d ON ws.week_of_year = d.week_of_year
     ORDER BY ws.week_of_year ASC`;
@@ -879,8 +879,8 @@ export interface GetWeeklyVisitsByEmailArgs {
 }
 
 export interface GetWeeklyVisitsByEmailRow {
-    : string | null;
-    count: string;
+    weekNumber: string | null;
+    weekCount: string;
 }
 
 export async function getWeeklyVisitsByEmail(client: Client, args: GetWeeklyVisitsByEmailArgs): Promise<GetWeeklyVisitsByEmailRow[]> {
@@ -891,8 +891,8 @@ export async function getWeeklyVisitsByEmail(client: Client, args: GetWeeklyVisi
     });
     return result.rows.map(row => {
         return {
-            : row[0],
-            count: row[1]
+            weekNumber: row[0],
+            weekCount: row[1]
         };
     });
 }
@@ -911,7 +911,7 @@ month_series AS (
         EXTRACT(month FROM CURRENT_DATE)::INT
     ) as month_of_year
 )
-SELECT 'month ' || ms.month_of_year, coalesce(count, 0)
+SELECT 'month ' || ms.month_of_year AS month_number, coalesce(count, 0) AS month_count
 FROM month_series ms
     LEFT JOIN data d ON ms.month_of_year = d.month_of_year
     WHERE ms.month_of_year > 0
@@ -922,8 +922,8 @@ export interface GetMonthlyVisitsByEmailArgs {
 }
 
 export interface GetMonthlyVisitsByEmailRow {
-    : string | null;
-    count: string;
+    monthNumber: string | null;
+    monthCount: string;
 }
 
 export async function getMonthlyVisitsByEmail(client: Client, args: GetMonthlyVisitsByEmailArgs): Promise<GetMonthlyVisitsByEmailRow[]> {
@@ -934,8 +934,8 @@ export async function getMonthlyVisitsByEmail(client: Client, args: GetMonthlyVi
     });
     return result.rows.map(row => {
         return {
-            : row[0],
-            count: row[1]
+            monthNumber: row[0],
+            monthCount: row[1]
         };
     });
 }

@@ -31,13 +31,13 @@ export class MembersController {
     );
 
     // Mock weekly visits data
-    const weeklyVisits = [
-      { week: 'week 8', count: 0 },
-      { week: 'week 9', count: 3 },
-      { week: 'week 10', count: 0 },
-      { week: 'week 11', count: 3 },
-      { week: 'week 12', count: 5 },
-    ];
+    const weeklyVisits = await this.membersService.getWeeklyVisitsByEmail(
+      req.user.email,
+    );
+
+    const monthlyVisits = await this.membersService.getMonthlyVisitsByEmail(
+      req.user.email,
+    );
 
     if (!visit) {
       return {
@@ -52,6 +52,7 @@ export class MembersController {
       checkInTime: visit.checkInTime,
       visitCode: visit.visitCode,
       weeklyVisits: weeklyVisits,
+      monthlyVisits: monthlyVisits,
     };
   }
 

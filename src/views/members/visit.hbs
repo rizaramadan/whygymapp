@@ -117,23 +117,23 @@ if (!visit) {
     <script>
         // Parse the weekly visits data passed from server
         const weeklyVisitsRaw = {{{json weeklyVisits}}};
-        
         const weeklyData = {
-            labels: weeklyVisitsRaw.map(item => item.week),
+            labels: weeklyVisitsRaw.map(item => item.weekNumber),
             datasets: [{
                 label: 'Weekly Visits',
-                data: weeklyVisitsRaw.map(item => item.count),
+                data: weeklyVisitsRaw.map(item => item.weekCount),
                 borderColor: 'rgb(34, 197, 94)',
                 tension: 0.3,
                 fill: false
             }]
         };
 
+        const monthlyVisitsRaw = {{{json monthlyVisits}}};
         const monthlyData = {
-            labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4'],
+            labels: monthlyVisitsRaw.map(item => item.monthNumber),
             datasets: [{
                 label: 'Monthly Visits',
-                data: [12, 15, 18, 14],
+                data: monthlyVisitsRaw.map(item => item.monthCount),
                 borderColor: 'rgb(34, 197, 94)',
                 tension: 0.3,
                 fill: false

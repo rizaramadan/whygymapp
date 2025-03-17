@@ -190,7 +190,7 @@ week_series AS(
         EXTRACT(WEEK FROM CURRENT_DATE)::INT
     ) as week_of_year
 )
-SELECT 'week ' || ws.week_of_year, coalesce(count, 0)
+SELECT 'week ' || ws.week_of_year AS week_number, coalesce(count, 0) AS week_count
 FROM week_series ws
     LEFT JOIN data d ON ws.week_of_year = d.week_of_year
     ORDER BY ws.week_of_year ASC;
@@ -210,7 +210,7 @@ month_series AS (
         EXTRACT(month FROM CURRENT_DATE)::INT
     ) as month_of_year
 )
-SELECT 'month ' || ms.month_of_year, coalesce(count, 0)
+SELECT 'month ' || ms.month_of_year AS month_number, coalesce(count, 0) AS month_count
 FROM month_series ms
     LEFT JOIN data d ON ms.month_of_year = d.month_of_year
     WHERE ms.month_of_year > 0
