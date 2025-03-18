@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Param, Req } from '@nestjs/common';
+import { Controller, Get, Render, Post, Param } from '@nestjs/common';
 import { Roles } from 'src/roles/decorators/roles.decorator';
-import { Request } from 'express';
 import { FoService } from './fo.service';
 
 @Controller('fo')
@@ -9,20 +8,13 @@ export class FoController {
 
   @Get('waiting-payment-method-orders')
   @Roles('front-officer')
-  async waitingPaymentOrders(@Req() req: Request) {
+  @Render('fo/waiting-payment-method-orders')
+  async waitingPaymentOrders() {
     const orders = await this.foService.getWaitingPaymentOrders();
-    
-    // If it's an HTMX request, return partial view
-    if (req.headers['hx-request']) {
-      return orders;
-    }
-    
-    // Otherwise render full page
+    console.log(orders);
+
     return {
-      view: 'fo/waiting-payment-method-orders',
-      data: {
-        orders,
-      },
+      orders,
     };
   }
 
