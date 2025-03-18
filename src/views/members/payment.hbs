@@ -82,6 +82,25 @@
             background-color: #d1d5db;
             cursor: not-allowed;
         }
+        .payment-summary {
+            background-color: white;
+            border-radius: 1rem;
+            margin: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .summary-total {
+            border-top: 2px solid #e2e8f0;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -97,10 +116,27 @@
         <form action="/members/process-payment" method="POST" id="paymentForm">
             <input type="hidden" name="memberId" value="{{memberId}}">
             
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <h2 class="text-xl font-semibold mb-4">Payment Summary</h2>
+                <div class="summary-row">
+                    <span class="text-gray-600">Membership Fee</span>
+                    <span>{{formatCurrency membershipFee}}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-gray-600">Tax (11%)</span>
+                    <span>{{formatCurrency tax}}</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span class="text-green-600">{{formatCurrency total}}</span>
+                </div>
+            </div>
+
             <div class="payment-options">
                 <div class="payment-option" onclick="selectPayment('bank_transfer')">
                     <div class="flex items-center gap-4">
-                        <img src="/img/bank-transfer.png" alt="Bank Transfer" class="payment-icon">
+                        <img src="/img/bank-transfer.webp" alt="Bank Transfer" class="payment-icon">
                         <div>
                             <div class="payment-title text-lg font-semibold">Bank Transfer</div>
                             <div class="payment-description text-gray-600">Transfer directly to our bank account</div>
@@ -111,7 +147,7 @@
 
                 <div class="payment-option" onclick="selectPayment('qris')">
                     <div class="flex items-center gap-4">
-                        <img src="/img/qris.png" alt="QRIS" class="payment-icon">
+                        <img src="/img/qris.webp" alt="QRIS" class="payment-icon">
                         <div>
                             <div class="payment-title text-lg font-semibold">QRIS</div>
                             <div class="payment-description text-gray-600">Pay using any QRIS-supported e-wallet</div>
@@ -122,7 +158,7 @@
 
                 <div class="payment-option" onclick="selectPayment('virtual_account')">
                     <div class="flex items-center gap-4">
-                        <img src="/img/virtual-account.png" alt="Virtual Account" class="payment-icon">
+                        <img src="/img/virtual-account.webp" alt="Virtual Account" class="payment-icon">
                         <div>
                             <div class="payment-title text-lg font-semibold">Virtual Account</div>
                             <div class="payment-description text-gray-600">Pay through virtual account number</div>

@@ -786,7 +786,7 @@ export async function createMemberByUsername(client: Client, args: CreateMemberB
 
 export const getPendingMembershipByEmailQuery = `-- name: GetPendingMembershipByEmail :one
 SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
-WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1`;
+WHERE membership_status = 'pending' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1`;
 
 export interface GetPendingMembershipByEmailArgs {
     email: string | null;
@@ -829,7 +829,7 @@ export async function getPendingMembershipByEmail(client: Client, args: GetPendi
 
 export const deletePendingMembershipQuery = `-- name: DeletePendingMembership :one
 DELETE FROM whygym.members
-WHERE id = $1 AND membership_status = 'PENDING' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id`;
+WHERE id = $1 AND membership_status = 'pending' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id`;
 
 export interface DeletePendingMembershipArgs {
     id: number;
@@ -938,5 +938,89 @@ export async function getMonthlyVisitsByEmail(client: Client, args: GetMonthlyVi
             monthCount: row[1]
         };
     });
+}
+
+export const createMemberOrderQuery = `-- name: CreateMemberOrder :one
+WITH im AS (
+    INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
+    VALUES ($1, $2, $3, $4, 'pending', $5, $6)
+    RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at
+)
+INSERT INTO whygym.orders (member_id, price, order_status)
+SELECT im.id, $7, 'waiting payment method' FROM im LIMIT 1
+RETURNING id, reference_id, member_id, price`;
+
+export interface CreateMemberOrderArgs {
+    email: string | null;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    notes: string | null;
+    additionalData: any | null;
+    price: string;
+}
+
+export interface CreateMemberOrderRow {
+    id: number;
+    referenceId: string;
+    memberId: number | null;
+    price: string;
+}
+
+export async function createMemberOrder(client: Client, args: CreateMemberOrderArgs): Promise<CreateMemberOrderRow | null> {
+    const result = await client.query({
+        text: createMemberOrderQuery,
+        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.notes, args.additionalData, args.price],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        referenceId: row[1],
+        memberId: row[2],
+        price: row[3]
+    };
+}
+
+export const getOrderReferenceIdByEmailQuery = `-- name: GetOrderReferenceIdByEmail :one
+SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id as memberId
+FROM whygym.orders o
+    INNER JOIN whygym.members m ON o.member_id = m.id
+WHERE m.membership_status = 'pending'
+    AND m.email = $1
+LIMIT 1`;
+
+export interface GetOrderReferenceIdByEmailArgs {
+    email: string | null;
+}
+
+export interface GetOrderReferenceIdByEmailRow {
+    referenceId: string;
+    additionalData: any | null;
+    nickname: string;
+    createdAt: Date | null;
+    memberid: number;
+}
+
+export async function getOrderReferenceIdByEmail(client: Client, args: GetOrderReferenceIdByEmailArgs): Promise<GetOrderReferenceIdByEmailRow | null> {
+    const result = await client.query({
+        text: getOrderReferenceIdByEmailQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        referenceId: row[0],
+        additionalData: row[1],
+        nickname: row[2],
+        createdAt: row[3],
+        memberid: row[4]
+    };
 }
 

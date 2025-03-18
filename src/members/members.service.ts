@@ -8,8 +8,6 @@ import {
   GetLastVisitIdRow,
   getTodayVisits,
   getVisitsAfterId,
-  CreateMemberByUsernameRow,
-  createMemberByEmail,
   deletePendingMembership,
   DeletePendingMembershipRow,
   GetPendingMembershipByEmailRow,
@@ -18,6 +16,10 @@ import {
   GetMonthlyVisitsByEmailRow,
   getWeeklyVisitsByEmail,
   getMonthlyVisitsByEmail,
+  createMemberOrder,
+  CreateMemberOrderRow,
+  GetOrderReferenceIdByEmailRow,
+  getOrderReferenceIdByEmail,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -25,6 +27,39 @@ import { User } from 'src/users/users.service';
 
 @Injectable()
 export class MembersService {
+  private static readonly priceMap: {
+    [key in 'normal' | 'discount']: {
+      [key in 'male' | 'female']: {
+        [key in '90' | '180' | '360']: number;
+      };
+    };
+  } = {
+    normal: {
+      male: {
+        '90': 9,
+        '180': 18,
+        '360': 36,
+      },
+      female: {
+        '90': 90,
+        '180': 180,
+        '360': 360,
+      },
+    },
+    discount: {
+      male: {
+        '90': 8,
+        '180': 17,
+        '360': 35,
+      },
+      female: {
+        '90': 80,
+        '180': 170,
+        '360': 350,
+      },
+    },
+  };
+
   constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
 
   async createVisit(
@@ -57,50 +92,79 @@ export class MembersService {
     return await getVisitsAfterId(this.pool, { id: lastVisitId });
   }
 
+  private createAdditionalData(applicationData: MembershipApplicationDto) {
+    return {
+      emailPic: applicationData.emailPic,
+      fullName: applicationData.fullName,
+      gender: applicationData.gender,
+      address: applicationData.address,
+      identityNumber: applicationData.identityNumber,
+      healthCondition: applicationData.healthCondition,
+      duration: applicationData.duration,
+      parentInfo: applicationData.parentName
+        ? {
+            name: applicationData.parentName,
+            identityNumber: applicationData.parentIdentityNumber,
+            contact: applicationData.parentContact,
+            consent: applicationData.underageConsent,
+          }
+        : null,
+      agreements: {
+        terms: applicationData.termsAgree,
+        risk: applicationData.riskAgree,
+        data: applicationData.dataAgree,
+        rules: applicationData.rulesAgree,
+      },
+      frontOfficer: applicationData.frontOfficer,
+    };
+  }
+
+  private createMemberParams(
+    user: User,
+    applicationData: MembershipApplicationDto,
+    additionalData: ReturnType<typeof this.createAdditionalData>,
+  ) {
+    return {
+      email: user.email || user.username,
+      nickname: applicationData.nickname,
+      dateOfBirth: new Date(applicationData.dateOfBirth),
+      phoneNumber: applicationData.wa,
+      membershipStatus: 'PENDING' as const,
+      additionalData,
+      notes: user.email ? user.email : 'username in email field',
+    };
+  }
+
   async processMembershipApplication(
     user: User,
     applicationData: MembershipApplicationDto,
-  ): Promise<CreateMemberByUsernameRow | null> {
+  ): Promise<CreateMemberOrderRow | null> {
     try {
-      // Convert date string to Date object
-      const dateOfBirth = new Date(applicationData.dateOfBirth);
+      const additionalData = this.createAdditionalData(applicationData);
+      const priceType = 'normal';
+      const duration = applicationData.duration as '90' | '180' | '360';
+      const gender = additionalData.gender.toLowerCase() as 'male' | 'female';
 
-      // Prepare additional data to store as JSON
-      const additionalData = {
-        emailPic: applicationData.emailPic,
-        fullName: applicationData.fullName,
-        gender: applicationData.gender,
-        address: applicationData.address,
-        identityNumber: applicationData.identityNumber,
-        healthCondition: applicationData.healthCondition,
-        duration: applicationData.duration,
-        parentInfo: applicationData.parentName
-          ? {
-              name: applicationData.parentName,
-              identityNumber: applicationData.parentIdentityNumber,
-              contact: applicationData.parentContact,
-              consent: applicationData.underageConsent,
-            }
-          : null,
-        agreements: {
-          terms: applicationData.termsAgree,
-          risk: applicationData.riskAgree,
-          data: applicationData.dataAgree,
-          rules: applicationData.rulesAgree,
-        },
-        frontOfficer: applicationData.frontOfficer,
+      if (!MembersService.priceMap[priceType]?.[gender]?.[duration]) {
+        throw new Error('Invalid price parameters');
+      }
+
+      const price = String(
+        MembersService.priceMap[priceType][gender][duration],
+      );
+
+      const memberParams = {
+        email: user.email || user.username,
+        nickname: applicationData.nickname,
+        dateOfBirth: new Date(applicationData.dateOfBirth),
+        phoneNumber: applicationData.wa,
+        notes: user.email ? user.email : 'username in email field',
+        additionalData,
+        price,
       };
 
       // Create member using the provided function
-      const member = await createMemberByEmail(this.pool, {
-        email: user.email || user.username,
-        nickname: applicationData.nickname,
-        dateOfBirth: dateOfBirth,
-        phoneNumber: applicationData.wa,
-        membershipStatus: 'PENDING',
-        additionalData: additionalData,
-        notes: user.email ? user.email : 'username in email field',
-      });
+      const member = await createMemberOrder(this.pool, memberParams);
 
       return member;
     } catch (error) {
@@ -113,6 +177,12 @@ export class MembersService {
     email: string,
   ): Promise<GetPendingMembershipByEmailRow | null> {
     return await getPendingMembershipByEmail(this.pool, { email });
+  }
+
+  async getOrderReferenceIdByEmail(
+    email: string,
+  ): Promise<GetOrderReferenceIdByEmailRow | null> {
+    return await getOrderReferenceIdByEmail(this.pool, { email });
   }
 
   async deletePendingMembership(

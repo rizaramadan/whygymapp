@@ -169,11 +169,11 @@ RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, n
 
 -- name: GetPendingMembershipByEmail :one
 SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
-WHERE membership_status = 'PENDING' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1;
+WHERE membership_status = 'pending' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1;
 
 -- name: DeletePendingMembership :one
 DELETE FROM whygym.members
-WHERE id = $1 AND membership_status = 'PENDING' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id;
+WHERE id = $1 AND membership_status = 'pending' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id;
 
 
 -- name: GetWeeklyVisitsByEmail :many
@@ -217,3 +217,22 @@ FROM month_series ms
     ORDER BY ms.month_of_year ASC;
 
 
+-- name: CreateMemberOrder :one
+WITH im AS (
+    INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
+    VALUES ($1, $2, $3, $4, 'pending', $5, $6)
+    RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at
+)
+INSERT INTO whygym.orders (member_id, price, order_status)
+SELECT im.id, $7, 'waiting payment method' FROM im LIMIT 1
+RETURNING id, reference_id, member_id, price;
+
+
+
+-- name: GetOrderReferenceIdByEmail :one
+SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id as memberId
+FROM whygym.orders o
+    INNER JOIN whygym.members m ON o.member_id = m.id
+WHERE m.membership_status = 'pending'
+    AND m.email = $1
+LIMIT 1;

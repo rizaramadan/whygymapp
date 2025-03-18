@@ -21,7 +21,7 @@ export class AppController {
   async dashboard(@Request() req: { user: User }) {
     // Mock data for membership applications
     const membershipApplication =
-      await this.membersService.getPendingMembershipByEmail(req.user.email);
+      await this.membersService.getOrderReferenceIdByEmail(req.user.email);
     console.log(membershipApplication);
     return {
       user: req.user,

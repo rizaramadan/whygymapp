@@ -152,6 +152,49 @@ ALTER SEQUENCE whygym.members_id_seq OWNED BY whygym.members.id;
 
 
 --
+-- Name: orders; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.orders (
+    id integer NOT NULL,
+    price numeric(10,0) NOT NULL,
+    reference_id character varying(40) DEFAULT (public.uuid_generate_v4())::text NOT NULL,
+    member_id integer,
+    payment_method character varying(32) DEFAULT ''::character varying NOT NULL,
+    url character varying(255) DEFAULT ''::character varying NOT NULL,
+    order_status character varying(32) DEFAULT ''::character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    notes text,
+    additional_info jsonb
+);
+
+
+ALTER TABLE whygym.orders OWNER TO postgres;
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.orders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.orders_id_seq OWNER TO postgres;
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.orders_id_seq OWNED BY whygym.orders.id;
+
+
+--
 -- Name: roles; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -327,6 +370,13 @@ ALTER TABLE ONLY whygym.members ALTER COLUMN id SET DEFAULT nextval('whygym.memb
 
 
 --
+-- Name: orders id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders ALTER COLUMN id SET DEFAULT nextval('whygym.orders_id_seq'::regclass);
+
+
+--
 -- Name: roles id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -384,6 +434,14 @@ ALTER TABLE ONLY whygym.create_user_requests
 
 ALTER TABLE ONLY whygym.members
     ADD CONSTRAINT members_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
 
 
 --
@@ -464,6 +522,27 @@ CREATE INDEX idx_members_user_id ON whygym.members USING btree (email);
 
 
 --
+-- Name: idx_orders_member_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_orders_member_id ON whygym.orders USING btree (member_id);
+
+
+--
+-- Name: idx_orders_order_status; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_orders_order_status ON whygym.orders USING btree (order_status);
+
+
+--
+-- Name: idx_orders_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_orders_reference_id ON whygym.orders USING btree (reference_id);
+
+
+--
 -- Name: idx_user_roles_role_id; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -539,6 +618,14 @@ CREATE INDEX idx_visits_member_id ON whygym.visits USING btree (member_id);
 
 ALTER TABLE ONLY whygym.create_user_requests
     ADD CONSTRAINT create_user_requests_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES whygym.users(id);
+
+
+--
+-- Name: orders orders_member_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders
+    ADD CONSTRAINT orders_member_id_fkey FOREIGN KEY (member_id) REFERENCES whygym.members(id) ON DELETE CASCADE;
 
 
 --

@@ -111,11 +111,11 @@
                                 Application Date: {{formatDate membershipApplication.createdAt}}<br>
                             </p>
                             <div class="mt-4 flex gap-4">
-                                <a href="/members/payment/{{membershipApplication.id}}" 
+                                <a href="/members/payment/{{membershipApplication.referenceId}}" 
                                    class="flex-1 text-center py-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors">
                                     Pay Now
                                 </a>
-                                <button hx-delete="/members/cancel-application/{{membershipApplication.id}}"
+                                <button hx-delete="/members/cancel-application/{{membershipApplication.memberid}}"
                                         hx-confirm="Are you sure you want to cancel this application?"
                                         hx-target="body"
                                         hx-swap="outerHTML"

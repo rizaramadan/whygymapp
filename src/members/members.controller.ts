@@ -19,6 +19,25 @@ import { MembershipApplicationDto } from './dto/membership-application.dto';
 
 @Controller('members')
 export class MembersController {
+  // Define static property for payment options
+  private static paymentOptions = [
+    {
+      id: 'bank_transfer',
+      name: 'Bank Transfer',
+      description: 'Transfer directly to our bank account',
+    },
+    {
+      id: 'qris',
+      name: 'QRIS',
+      description: 'Pay using any QRIS-supported e-wallet',
+    },
+    {
+      id: 'virtual_account',
+      name: 'Virtual Account',
+      description: 'Pay through virtual account number',
+    },
+  ];
+
   constructor(private readonly membersService: MembersService) {}
 
   @Get('visit')
@@ -91,11 +110,11 @@ export class MembersController {
         req.user,
         applicationData,
       );
-      
+
       if (result) {
         // Successful submission - redirect to success page
         return {
-          url: `/members/payment/${result.id}`,
+          url: `/members/payment/${result.referenceId}`,
           statusCode: 302,
         };
       } else {
@@ -156,29 +175,19 @@ export class MembersController {
   @Get('payment/:memberId')
   @Render('members/payment')
   payment(@Request() req: { user: User }, @Param('memberId') memberId: string) {
+    // Mock payment data
+    const membershipFee = 500000; // 500k IDR
+    const taxRate = 0.11; // 11% tax
+    const tax = membershipFee * taxRate;
+    const total = membershipFee + tax;
+
     return {
       user: req.user,
       memberId: memberId,
-      paymentOptions: [
-        {
-          id: 'bank_transfer',
-          name: 'Bank Transfer',
-          description: 'Transfer directly to our bank account',
-          icon: '/images/bank-transfer-icon.svg',
-        },
-        {
-          id: 'qris',
-          name: 'QRIS',
-          description: 'Pay using any QRIS-supported e-wallet',
-          icon: '/images/qris-icon.svg',
-        },
-        {
-          id: 'virtual_account',
-          name: 'Virtual Account',
-          description: 'Pay through virtual account number',
-          icon: '/images/virtual-account-icon.svg',
-        },
-      ],
+      membershipFee,
+      tax,
+      total,
+      paymentOptions: MembersController.paymentOptions, // Access static property
     };
   }
 
