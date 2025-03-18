@@ -102,9 +102,9 @@ export class UsersController {
   @Render('users/upload-picture')
   getUploadPicturePage(@Request() req: { user: User }) {
     // If user already has a picture URL, redirect to dashboard
-    //if (req.user.picUrl) {
-    //  return '<script>window.location.href="/member-dashboard"</script>';
-    //}
+    if (req.user.picUrl) {
+      return '<script>window.location.href="/user-dashboard"</script>';
+    }
 
     return {};
   }
@@ -116,9 +116,10 @@ export class UsersController {
     @Request() req: { user: User },
     @UploadedFile() file: Multer.File,
     @Body('gender') gender: string,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: ExpressResponse,
   ) {
-    const { picUrl, error } = await this.usersService.addOrUpdateUserPicture(
+    const { accessToken, picUrl, error } =
+    await this.usersService.addOrUpdateUserPicture(
       ErrorApp.success,
       req.user,
       {
@@ -127,6 +128,8 @@ export class UsersController {
         gender,
       },
     );
+
+    res.cookie('access_token', accessToken);
 
     if (error.hasError()) {
       throw new Error(error.code + ' ' + error.message);

@@ -209,7 +209,7 @@ export class UsersService {
       const formData = new FormData();
       const blob = new Blob([args.file.buffer], { type: args.file.mimetype });
       formData.append('avatar', blob, args.file.originalname);
-      formData.append('fullName', user.fullName);
+      formData.append('fullName', "some fullname");
       formData.append('gender', args.gender);
       formData.append('phoneNumber', '+628000000000');
       formData.append('birthDate', '2000-01-01T10:10:10.111Z');
@@ -232,6 +232,8 @@ export class UsersService {
         }),
       );
 
+      console.log('response create-profile', response);
+
       if (!response.data.status) {
         console.log(response.data);
         return {
@@ -253,6 +255,8 @@ export class UsersService {
           },
         }),
       );
+
+      console.log('response of me', responseOfMe);
 
       if (!response.data.status) {
         console.log(response.data);
