@@ -63,6 +63,9 @@ export class AppController {
   me(@Request() req: { user: User }) {
     const result = req.user;
     result.id = 0;
-    return result;
+    return {
+      result,
+      theAccessToken: req.user.accessToken,
+    };
   }
 }

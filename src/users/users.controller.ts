@@ -9,6 +9,7 @@ import {
   Response,
   UploadedFile,
   UseInterceptors,
+  Res,
 } from '@nestjs/common';
 import { Response as ExpressResponse } from 'express';
 import {
@@ -101,9 +102,9 @@ export class UsersController {
   @Render('users/upload-picture')
   getUploadPicturePage(@Request() req: { user: User }) {
     // If user already has a picture URL, redirect to dashboard
-    if (req.user.picUrl) {
-      return '<script>window.location.href="/member-dashboard"</script>';
-    }
+    //if (req.user.picUrl) {
+    //  return '<script>window.location.href="/member-dashboard"</script>';
+    //}
 
     return {};
   }
@@ -114,12 +115,16 @@ export class UsersController {
   async savePicture(
     @Request() req: { user: User },
     @UploadedFile() file: Multer.File,
+    @Body('gender') gender: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const { picUrl, error } = await this.usersService.addOrUpdateUserPicture(
       ErrorApp.success,
+      req.user,
       {
         userId: req.user.id.toString(),
         file,
+        gender,
       },
     );
 

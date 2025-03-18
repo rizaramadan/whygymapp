@@ -161,6 +161,8 @@ export class OtpAuthService {
         verifyOtpDto,
       );
 
+      console.log('response callApiVerifyOtp', response);
+
       // find user in db with email
       const findUserResult = await this.usersService.findOneWithEmail(
         errorVerifyOtp,
@@ -196,7 +198,7 @@ export class OtpAuthService {
     }
   }
 
-  private async createJwtPayloadWithUserInformation(
+  public async createJwtPayloadWithUserInformation(
     error: ErrorApp,
     userInDb: User,
     response: OtpVerifyApiResponse | null,
@@ -218,6 +220,7 @@ export class OtpAuthService {
         roles: userInDb?.roles || [],
         fullName: response?.data?.user?.fullName || '',
         picUrl: response?.data?.user?.picture?.url || '',
+        needSignUp: response?.data?.user?.signup || false,
       };
       const access_token = await this.jwtService.signAsync(payload);
       return {

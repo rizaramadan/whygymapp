@@ -17,8 +17,6 @@ import {
   RejectUserRequestRow,
   RejectUserRequestArgs,
   rejectUserRequest,
-  AddOrUpdateUserPictureArgs,
-  addOrUpdateUserPicture,
   GetUserPictureArgs,
   GetUserPictureRow,
   getUserPicture,
@@ -29,8 +27,10 @@ import { ErrorApp } from 'src/common/result';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { HttpStatus } from '@nestjs/common';
-import { HttpError } from 'src/auth/auth.interfaces';
+import { HttpError, JwtPayload, OtpVerifyApiResponse } from 'src/auth/auth.interfaces';
 import type { Multer } from 'multer';
+import { JwtService } from '@nestjs/jwt';
+import { UserMeResponse } from './interfaces/user-response.interface';
 
 export type User = {
   id: number;
@@ -41,6 +41,7 @@ export type User = {
   roles: string[];
   fullName: string;
   picUrl: string;
+  accessToken: string;
 };
 
 export const NullUser: User = {
@@ -52,6 +53,7 @@ export const NullUser: User = {
   roles: [],
   fullName: '',
   picUrl: '',
+  accessToken: '',
 };
 
 @Injectable()
@@ -62,6 +64,7 @@ export class UsersService {
   constructor(
     private readonly httpService: HttpService,
     @Inject('DATABASE_POOL') private readonly pool: Pool,
+    private readonly jwtService: JwtService,
   ) {
     this.authApiUrl = process.env.AUTH_API_URL || 'https://authapi.com';
     this.apiKey = process.env.API_KEY || '1234567890';
@@ -100,6 +103,7 @@ export class UsersService {
             roles: userInDb.roles?.split(',').map((role) => role.trim()) || [], // Assuming roles are stored as strings in the database
             fullName: '',
             picUrl: '',
+            accessToken: '',
           },
           error: ErrorApp.success,
         };
@@ -139,6 +143,7 @@ export class UsersService {
         roles: userInDb.roles?.split(',').map((role) => role.trim()) || [], // Assuming roles are stored as strings in the database
         fullName: '',
         picUrl: '',
+        accessToken: '',
       };
     }
     return undefined;
@@ -191,18 +196,25 @@ export class UsersService {
 
   async addOrUpdateUserPicture(
     error: ErrorApp,
-    args: { file: Multer.File; userId: string },
-  ): Promise<{ picUrl: string; error: ErrorApp }> {
+    user: User,
+    args: { file: Multer.File; userId: string; gender: string },
+  ): Promise<{ accessToken: string; picUrl: string; error: ErrorApp }> {
     // Skip if error exists from previous step
     if (error.hasError()) {
-      return { picUrl: '', error };
+      return { accessToken: '', picUrl: '', error };
     }
 
     try {
       // Upload image first
       const formData = new FormData();
       const blob = new Blob([args.file.buffer], { type: args.file.mimetype });
-      formData.append('file', blob, args.file.originalname);
+      formData.append('avatar', blob, args.file.originalname);
+      formData.append('fullName', user.fullName);
+      formData.append('gender', args.gender);
+      formData.append('phoneNumber', '+628000000000');
+      formData.append('birthDate', '2000-01-01T10:10:10.111Z');
+      formData.append('province', 'Jawa Barat');
+      formData.append('city', 'Bogor');
 
       const response = await firstValueFrom(
         this.httpService.post<{
@@ -211,10 +223,11 @@ export class UsersService {
           data: {
             url: string;
           };
-        }>(`${this.authApiUrl}/v1/images/upload`, formData, {
+        }>(`${this.authApiUrl}/v1/users/create-profile`, formData, {
           headers: {
             'x-api-key': this.apiKey,
             'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${user.accessToken}`,
           },
         }),
       );
@@ -222,6 +235,7 @@ export class UsersService {
       if (!response.data.status) {
         console.log(response.data);
         return {
+          accessToken: '',
           picUrl: '',
           error: new ErrorApp(
             'Failed to upload image',
@@ -231,24 +245,43 @@ export class UsersService {
         };
       }
 
-      // Save URL to database
-      const result = await addOrUpdateUserPicture(this.pool, {
-        userId: args.userId,
-        value: response.data.data.url,
-      });
+      const responseOfMe = await firstValueFrom(
+        this.httpService.get<UserMeResponse>(`${this.authApiUrl}/v1/users/me`, {
+          headers: {
+            'x-api-key': this.apiKey,
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        }),
+      );
 
-      if (!result) {
+      if (!response.data.status) {
+        console.log(response.data);
         return {
+          accessToken: '',
           picUrl: '',
           error: new ErrorApp(
-            'Failed to save image URL to database',
-            'user-service-pic-218',
-            null,
+            'Failed to get /users/me of darisini.com',
+            'user-service-pic-201',
+            response.data,
           ),
         };
       }
 
+      const payload: JwtPayload = {
+        id: '',
+        apiId: user.apiId || '',
+        accessToken: user.accessToken || '',
+        refreshToken: '',
+        email: user.email || '',
+        roles: user.roles || [],
+        fullName: user.fullName || '',
+        picUrl: responseOfMe.data.data.user.picture?.url || '',
+        needSignUp: false,
+      };
+      const access_token = await this.jwtService.signAsync(payload);
+
       return {
+        accessToken: access_token,
         picUrl: response.data.data.url,
         error: ErrorApp.success,
       };
@@ -256,6 +289,7 @@ export class UsersService {
       console.log(error);
       const httpError = error as HttpError;
       return {
+        accessToken: '',
         picUrl: '',
         error: new ErrorApp(
           'Error processing image upload',

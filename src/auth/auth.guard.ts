@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { jwtConstants } from './constants';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 import { JwtPayload } from './auth.interfaces';
+import { NeedSignUpException } from './exceptions/need-signup.exception';
 
 export interface CookiedRequest extends Request {
   cookies: {
@@ -33,6 +34,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     const request = context.switchToHttp().getRequest<CookiedRequest>();
+    const path = request.path;
 
     let token = this.extractTokenFromHeader(request);
     if (!token) {
@@ -42,6 +44,8 @@ export class AuthGuard implements CanActivate {
         throw new UnauthorizedException();
       }
     }
+
+    let needSignUp = false;
     try {
       const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
         secret: jwtConstants.secret,
@@ -49,11 +53,18 @@ export class AuthGuard implements CanActivate {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;
+      needSignUp = payload.needSignUp;
     } catch (error) {
       console.log('error auth guard');
       console.log(error);
       throw new UnauthorizedException();
     }
+
+    // Skip needSignUp check for /users/* paths
+    if (needSignUp && !path.startsWith('/users/') && !path.startsWith('/me')) {
+      throw new NeedSignUpException();
+    }
+
     return true;
   }
 

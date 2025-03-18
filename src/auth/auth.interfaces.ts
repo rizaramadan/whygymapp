@@ -7,6 +7,7 @@ export interface JwtPayload {
   roles: string[];
   fullName: string;
   picUrl: string;
+  needSignUp: boolean;
 }
 
 export const NullPayload: JwtPayload = {
@@ -18,6 +19,7 @@ export const NullPayload: JwtPayload = {
   roles: [],
   fullName: '',
   picUrl: '',
+  needSignUp: false,
 };
 
 export interface OtpCreateResponse {
