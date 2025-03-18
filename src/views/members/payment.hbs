@@ -1,109 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Payment Method - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
     <style>
-        .payment-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
         }
-
+        .hero-section {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .hero-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+        }
         .payment-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
         }
-
         .payment-option {
-            border: 1px solid #e2e8f0;
-            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
             padding: 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .payment-option:hover {
-            border-color: #3182ce;
+            border-color: #22c55e;
             transform: translateY(-2px);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
         .payment-option.selected {
-            border-color: #3182ce;
-            background-color: #ebf8ff;
+            border-color: #22c55e;
+            background-color: #f0fdf4;
         }
-
         .payment-icon {
             width: 48px;
             height: 48px;
             margin-bottom: 1rem;
         }
-
-        .payment-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .payment-description {
-            color: #4a5568;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-
         .continue-btn {
-            background-color: #3182ce;
+            background-color: #22c55e;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
+            padding: 1rem;
+            border-radius: 9999px;
             border: none;
             font-weight: 600;
             cursor: pointer;
-            width: 100%;
-            margin-top: 1rem;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            transition: background-color 0.3s ease;
         }
-
         .continue-btn:hover {
-            background-color: #2c5282;
+            background-color: #16a34a;
+        }
+        .continue-btn:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body>
-    
-    <div class="payment-container">
-        <h1 class="text-2xl font-bold mb-4">Select Payment Method</h1>
-        <p class="text-gray-600 mb-6">Choose your preferred payment method to continue</p>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <a href="javascript:history.back()" class="text-2xl">←</a>
+            <h1 class="text-xl font-bold">WhyGym</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
 
+        <!-- Payment Form -->
         <form action="/members/process-payment" method="POST" id="paymentForm">
+            <input type="hidden" name="memberId" value="{{memberId}}">
+            
             <div class="payment-options">
                 <div class="payment-option" onclick="selectPayment('bank_transfer')">
-                    <img src="/images/bank-transfer-icon.svg" alt="Bank Transfer" class="payment-icon">
-                    <div class="payment-title">Bank Transfer</div>
-                    <div class="payment-description">Transfer directly to our bank account</div>
+                    <div class="flex items-center gap-4">
+                        <img src="/img/bank-transfer.png" alt="Bank Transfer" class="payment-icon">
+                        <div>
+                            <div class="payment-title text-lg font-semibold">Bank Transfer</div>
+                            <div class="payment-description text-gray-600">Transfer directly to our bank account</div>
+                        </div>
+                    </div>
                     <input type="radio" name="paymentMethod" value="bank_transfer" style="display: none;">
                 </div>
 
                 <div class="payment-option" onclick="selectPayment('qris')">
-                    <img src="/images/qris-icon.svg" alt="QRIS" class="payment-icon">
-                    <div class="payment-title">QRIS</div>
-                    <div class="payment-description">Pay using any QRIS-supported e-wallet</div>
+                    <div class="flex items-center gap-4">
+                        <img src="/img/qris.png" alt="QRIS" class="payment-icon">
+                        <div>
+                            <div class="payment-title text-lg font-semibold">QRIS</div>
+                            <div class="payment-description text-gray-600">Pay using any QRIS-supported e-wallet</div>
+                        </div>
+                    </div>
                     <input type="radio" name="paymentMethod" value="qris" style="display: none;">
                 </div>
 
                 <div class="payment-option" onclick="selectPayment('virtual_account')">
-                    <img src="/images/virtual-account-icon.svg" alt="Virtual Account" class="payment-icon">
-                    <div class="payment-title">Virtual Account</div>
-                    <div class="payment-description">Pay through virtual account number</div>
+                    <div class="flex items-center gap-4">
+                        <img src="/img/virtual-account.png" alt="Virtual Account" class="payment-icon">
+                        <div>
+                            <div class="payment-title text-lg font-semibold">Virtual Account</div>
+                            <div class="payment-description text-gray-600">Pay through virtual account number</div>
+                        </div>
+                    </div>
                     <input type="radio" name="paymentMethod" value="virtual_account" style="display: none;">
                 </div>
             </div>
 
             <button type="submit" class="continue-btn" disabled id="continueBtn">
-                Continue to Payment
+                Continue to Payment <span class="ml-2">→</span>
             </button>
         </form>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
     </div>
 
     <script>
@@ -114,7 +151,7 @@
             });
             
             // Add selected class to clicked option
-            const selectedOption = document.querySelector(`[value="${method}"]`).parentElement;
+            const selectedOption = document.querySelector(`[value="${method}"]`).parentElement.parentElement;
             selectedOption.classList.add('selected');
             
             // Select the radio input
@@ -125,4 +162,4 @@
         }
     </script>
 </body>
-</html> 
+</html>

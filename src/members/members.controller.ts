@@ -91,11 +91,11 @@ export class MembersController {
         req.user,
         applicationData,
       );
-
+      
       if (result) {
         // Successful submission - redirect to success page
         return {
-          url: '/user-dashboard',
+          url: `/members/payment/${result.id}`,
           statusCode: 302,
         };
       } else {

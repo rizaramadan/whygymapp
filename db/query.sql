@@ -215,3 +215,5 @@ FROM month_series ms
     LEFT JOIN data d ON ms.month_of_year = d.month_of_year
     WHERE ms.month_of_year > 0
     ORDER BY ms.month_of_year ASC;
+
+
