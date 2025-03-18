@@ -119,15 +119,15 @@ export class UsersController {
     @Res({ passthrough: true }) res: ExpressResponse,
   ) {
     const { accessToken, picUrl, error } =
-    await this.usersService.addOrUpdateUserPicture(
-      ErrorApp.success,
-      req.user,
-      {
-        userId: req.user.id.toString(),
-        file,
-        gender,
-      },
-    );
+      await this.usersService.addOrUpdateUserPicture(
+        ErrorApp.success,
+        req.user,
+        {
+          userId: req.user.id.toString(),
+          file,
+          gender,
+        },
+      );
 
     res.cookie('access_token', accessToken);
 

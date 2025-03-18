@@ -152,4 +152,57 @@ export class MembersController {
       );
     }
   }
+
+  @Get('payment/:memberId')
+  @Render('members/payment')
+  payment(@Request() req: { user: User }, @Param('memberId') memberId: string) {
+    return {
+      user: req.user,
+      memberId: memberId,
+      paymentOptions: [
+        {
+          id: 'bank_transfer',
+          name: 'Bank Transfer',
+          description: 'Transfer directly to our bank account',
+          icon: '/images/bank-transfer-icon.svg',
+        },
+        {
+          id: 'qris',
+          name: 'QRIS',
+          description: 'Pay using any QRIS-supported e-wallet',
+          icon: '/images/qris-icon.svg',
+        },
+        {
+          id: 'virtual_account',
+          name: 'Virtual Account',
+          description: 'Pay through virtual account number',
+          icon: '/images/virtual-account-icon.svg',
+        },
+      ],
+    };
+  }
+
+  @Post('process-payment')
+  @Redirect()
+  async processPayment(
+    @Request() req: { user: User },
+    @Body() paymentData: { paymentMethod: string },
+  ) {
+    try {
+      // Here you would implement the actual payment processing logic
+      // For now, we'll just return the redirect response
+      const redirectUrl = `/members/payment/${paymentData.paymentMethod}/instructions`;
+      await Promise.resolve(); // Add await to satisfy the linter
+      return {
+        url: redirectUrl,
+        statusCode: 302,
+      };
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      return {
+        url: '/members/payment?error=payment_failed',
+        statusCode: 302,
+      };
+    }
+  }
 }
