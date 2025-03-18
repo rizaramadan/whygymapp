@@ -242,3 +242,10 @@ SELECT id, member_id, price, reference_id, order_status, url, created_at, update
 FROM whygym.orders
 WHERE reference_id = $1
 LIMIT 1;
+
+-- name: getWaitingPaymentOrders :many  
+SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
+       FROM whygym.orders o 
+       INNER JOIN whygym.members m ON m.id = o.member_id
+       WHERE o.order_status = 'waiting payment method'
+       LIMIT 100;

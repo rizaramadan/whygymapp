@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting Payment Orders - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-white">
+    <!-- Sidebars -->
+    <div class="hidden lg:block fixed left-0 top-0 h-full w-16 bg-green-50/30"></div>
+    <div class="hidden lg:block fixed right-0 top-0 h-full w-16 bg-green-50/30"></div>
+
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col px-4 py-2">
+        <div class="w-full max-w-8xl mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-green-800">Waiting Payment Orders</h1>
+                <div hx-get="/fo/waiting-payment-method-orders" 
+                     hx-trigger="every 30s"
+                     hx-target="#orders-list-container" 
+                     hx-swap="innerHTML">
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="bg-white rounded-xl shadow p-4">
+                <div class="space-y-2" id="orders-list-container">
+                    {{#each orders}}
+                    <div class="flex items-center p-3 rounded-lg border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
+                        <div class="flex-1 min-w-0 grid grid-cols-6 gap-4 items-center">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Reference ID</p>
+                                <p class="text-sm font-medium text-green-900">{{this.referenceId}}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-sm font-medium text-gray-500">Member</p>
+                                <p class="text-sm font-medium text-green-900">{{this.nickname}}</p>
+                                <p class="text-sm text-green-600">{{this.email}}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Price</p>
+                                <p class="text-sm font-medium text-green-900">{{formatCurrency this.price}}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Status</p>
+                                <p class="text-sm font-medium text-yellow-600">{{this.orderStatus}}</p>
+                            </div>
+                            <div class="flex space-x-2 justify-end">
+                                <button 
+                                    class="px-3 py-1 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors"
+                                    hx-post="/fo/orders/{{this.referenceId}}/cashback"
+                                    hx-confirm="Are you sure you want to give cashback for this order?"
+                                    hx-target="#orders-list-container"
+                                >
+                                    Give Cashback
+                                </button>
+                                <button 
+                                    class="px-3 py-1 text-xs font-medium text-white bg-green-500 rounded hover:bg-green-600 transition-colors"
+                                    hx-post="/fo/orders/{{this.referenceId}}/extend"
+                                    hx-confirm="Are you sure you want to extend membership for this order?"
+                                    hx-target="#orders-list-container"
+                                >
+                                    Extend Membership
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-4">
+                <p class="text-xs text-green-600/60 text-center">
+                    © 2025 whygym. All rights reserved.
+                </p>
+            </footer>
+        </div>
+    </div>
+</body>
+</html> 

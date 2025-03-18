@@ -27,7 +27,7 @@ import { ErrorApp } from 'src/common/result';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { HttpStatus } from '@nestjs/common';
-import { HttpError, JwtPayload, OtpVerifyApiResponse } from 'src/auth/auth.interfaces';
+import { HttpError, JwtPayload } from 'src/auth/auth.interfaces';
 import type { Multer } from 'multer';
 import { JwtService } from '@nestjs/jwt';
 import { UserMeResponse } from './interfaces/user-response.interface';
@@ -209,7 +209,7 @@ export class UsersService {
       const formData = new FormData();
       const blob = new Blob([args.file.buffer], { type: args.file.mimetype });
       formData.append('avatar', blob, args.file.originalname);
-      formData.append('fullName', "some fullname");
+      formData.append('fullName', 'some fullname');
       formData.append('gender', args.gender);
       formData.append('phoneNumber', '+628000000000');
       formData.append('birthDate', '2000-01-01T10:10:10.111Z');

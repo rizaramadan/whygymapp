@@ -1071,3 +1071,43 @@ export async function getOrderByReferenceId(client: Client, args: getOrderByRefe
     };
 }
 
+export const getWaitingPaymentOrdersQuery = `-- name: getWaitingPaymentOrders :many
+SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
+       FROM whygym.orders o 
+       INNER JOIN whygym.members m ON m.id = o.member_id
+       WHERE o.order_status = 'waiting payment method'
+       LIMIT 100`;
+
+export interface getWaitingPaymentOrdersRow {
+    id: number;
+    price: string;
+    referenceId: string;
+    memberId: number | null;
+    orderStatus: string;
+    additionalInfo: any | null;
+    email: string | null;
+    nickname: string;
+    additionalData: any | null;
+}
+
+export async function getWaitingPaymentOrders(client: Client): Promise<getWaitingPaymentOrdersRow[]> {
+    const result = await client.query({
+        text: getWaitingPaymentOrdersQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            price: row[1],
+            referenceId: row[2],
+            memberId: row[3],
+            orderStatus: row[4],
+            additionalInfo: row[5],
+            email: row[6],
+            nickname: row[7],
+            additionalData: row[8]
+        };
+    });
+}
+
