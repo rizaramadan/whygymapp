@@ -236,3 +236,9 @@ FROM whygym.orders o
 WHERE m.membership_status = 'pending'
     AND m.email = $1
 LIMIT 1;
+
+-- name: getOrderByReferenceId :one
+SELECT id, member_id, price, reference_id, order_status, url, created_at, updated_at, notes, additional_info
+FROM whygym.orders
+WHERE reference_id = $1
+LIMIT 1;

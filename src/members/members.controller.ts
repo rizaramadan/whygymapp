@@ -172,18 +172,22 @@ export class MembersController {
     }
   }
 
-  @Get('payment/:memberId')
+  @Get('payment/:referenceId')
   @Render('members/payment')
-  payment(@Request() req: { user: User }, @Param('memberId') memberId: string) {
+  async payment(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+  ) {
+    const order = await this.membersService.getOrderByReferenceId(referenceId);
     // Mock payment data
-    const membershipFee = 500000; // 500k IDR
+    const membershipFee = parseFloat(order?.price || '0');
     const taxRate = 0.11; // 11% tax
     const tax = membershipFee * taxRate;
     const total = membershipFee + tax;
 
     return {
       user: req.user,
-      memberId: memberId,
+      memberId: order?.memberId,
       membershipFee,
       tax,
       total,

@@ -1024,3 +1024,50 @@ export async function getOrderReferenceIdByEmail(client: Client, args: GetOrderR
     };
 }
 
+export const getOrderByReferenceIdQuery = `-- name: getOrderByReferenceId :one
+SELECT id, member_id, price, reference_id, order_status, url, created_at, updated_at, notes, additional_info
+FROM whygym.orders
+WHERE reference_id = $1
+LIMIT 1`;
+
+export interface getOrderByReferenceIdArgs {
+    referenceId: string;
+}
+
+export interface getOrderByReferenceIdRow {
+    id: number;
+    memberId: number | null;
+    price: string;
+    referenceId: string;
+    orderStatus: string;
+    url: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    notes: string | null;
+    additionalInfo: any | null;
+}
+
+export async function getOrderByReferenceId(client: Client, args: getOrderByReferenceIdArgs): Promise<getOrderByReferenceIdRow | null> {
+    const result = await client.query({
+        text: getOrderByReferenceIdQuery,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        price: row[2],
+        referenceId: row[3],
+        orderStatus: row[4],
+        url: row[5],
+        createdAt: row[6],
+        updatedAt: row[7],
+        notes: row[8],
+        additionalInfo: row[9]
+    };
+}
+

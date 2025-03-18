@@ -20,6 +20,8 @@ import {
   CreateMemberOrderRow,
   GetOrderReferenceIdByEmailRow,
   getOrderReferenceIdByEmail,
+  getOrderByReferenceId,
+  getOrderByReferenceIdRow,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -202,5 +204,11 @@ export class MembersService {
     email: string,
   ): Promise<GetMonthlyVisitsByEmailRow[]> {
     return await getMonthlyVisitsByEmail(this.pool, { email });
+  }
+
+  async getOrderByReferenceId(
+    referenceId: string,
+  ): Promise<getOrderByReferenceIdRow | null> {
+    return await getOrderByReferenceId(this.pool, { referenceId });
   }
 }
