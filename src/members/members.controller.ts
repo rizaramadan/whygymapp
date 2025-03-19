@@ -22,19 +22,9 @@ export class MembersController {
   // Define static property for payment options
   private static paymentOptions = [
     {
-      id: 'bank_transfer',
-      name: 'Bank Transfer',
-      description: 'Transfer directly to our bank account',
-    },
-    {
       id: 'qris',
       name: 'QRIS',
       description: 'Pay using any QRIS-supported e-wallet',
-    },
-    {
-      id: 'virtual_account',
-      name: 'Virtual Account',
-      description: 'Pay through virtual account number',
     },
   ];
 
@@ -179,6 +169,9 @@ export class MembersController {
     @Param('referenceId') referenceId: string,
   ) {
     const order = await this.membersService.getOrderByReferenceId(referenceId);
+    const paymentMethod = await this.membersService.getPaymentMethods(
+      parseFloat(order?.price || '0'),
+    );
     // Mock payment data
     const membershipFee = parseFloat(order?.price || '0');
     const taxRate = 0.11; // 11% tax
@@ -195,6 +188,7 @@ export class MembersController {
       user: req.user,
       memberId: order?.memberId,
       membershipFee,
+      paymentMethod,
       tax,
       total,
       order,

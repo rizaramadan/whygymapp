@@ -7,8 +7,17 @@ import { MembersModule } from './members/members.module';
 import { MembersService } from './members/members.service';
 import { DatabaseModule } from './database.module';
 import { FoModule } from './fo/fo.module';
+import { HttpModule } from '@nestjs/axios';
+
 @Module({
-  imports: [AuthModule, UsersModule, MembersModule, DatabaseModule, FoModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    MembersModule,
+    DatabaseModule,
+    FoModule,
+    HttpModule,
+  ],
   controllers: [AppController],
   providers: [AppService, MembersService],
 })

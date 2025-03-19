@@ -28,7 +28,7 @@ import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-
+import { PaymentMethod, PaymentMethodsResponse } from './members.interfaces';
 @Injectable()
 export class MembersService {
   private readonly authApiUrl: string;
@@ -222,18 +222,15 @@ export class MembersService {
     return await getOrderByReferenceId(this.pool, { referenceId });
   }
 
-  async handleCheckout(referenceId: string): Promise<void> {
-    const order = await this.getOrderByReferenceId(referenceId);
-    if (!order) {
-      throw new Error('Order not found');
-    }
-
+  async getPaymentMethods(price: number): Promise<{
+    paymentMethod: PaymentMethod | undefined;
+  }> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(
+        this.httpService.post<PaymentMethodsResponse>(
           `${this.authApiUrl}/v1/payment/methods`,
           {
-            amount: order.price,
+            amount: price,
           },
           {
             headers: {
@@ -242,11 +239,15 @@ export class MembersService {
           },
         ),
       );
+      //find payment method by code QRIS and retrieve the data
+      const paymentMethod = response.data.data.find(
+        (method) => method.code === 'QRIS',
+      );
       // return response
-      return;
+      return { paymentMethod };
     } catch (error) {
       // handle error
-      throw new Error('Failed to handle checkout');
+      throw new Error('Failed to handle checkout' + error);
     }
   }
 }
