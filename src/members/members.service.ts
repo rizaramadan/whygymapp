@@ -26,9 +26,13 @@ import {
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class MembersService {
+  private readonly authApiUrl: string;
+  private readonly apiKey: string;
   private static readonly priceMap: {
     [key in 'normal' | 'discount']: {
       [key in 'male' | 'female']: {
@@ -38,31 +42,37 @@ export class MembersService {
   } = {
     normal: {
       male: {
-        '90': 9,
-        '180': 18,
-        '360': 36,
-      },
-      female: {
         '90': 90,
         '180': 180,
         '360': 360,
       },
+      female: {
+        '90': 180,
+        '180': 360,
+        '360': 720,
+      },
     },
     discount: {
       male: {
-        '90': 8,
-        '180': 17,
-        '360': 35,
-      },
-      female: {
         '90': 80,
         '180': 170,
         '360': 350,
       },
+      female: {
+        '90': 160,
+        '180': 320,
+        '360': 640,
+      },
     },
   };
 
-  constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
+  constructor(
+    @Inject('DATABASE_POOL') private readonly pool: Pool,
+    private readonly httpService: HttpService,
+  ) {
+    this.authApiUrl = process.env.AUTH_API_URL || 'https://authapi.com';
+    this.apiKey = process.env.API_KEY || '1234567890';
+  }
 
   async createVisit(
     email: string,
@@ -210,5 +220,33 @@ export class MembersService {
     referenceId: string,
   ): Promise<getOrderByReferenceIdRow | null> {
     return await getOrderByReferenceId(this.pool, { referenceId });
+  }
+
+  async handleCheckout(referenceId: string): Promise<void> {
+    const order = await this.getOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `${this.authApiUrl}/v1/payment/methods`,
+          {
+            amount: order.price,
+          },
+          {
+            headers: {
+              'x-api-key': this.apiKey,
+            },
+          },
+        ),
+      );
+      // return response
+      return;
+    } catch (error) {
+      // handle error
+      throw new Error('Failed to handle checkout');
+    }
   }
 }

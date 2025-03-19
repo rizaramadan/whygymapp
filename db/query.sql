@@ -298,4 +298,7 @@ SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
-
+-- name: CreateDarisinicomLog :one
+INSERT INTO whygym.darisinicom_log (reference_id, notes, additional_info)
+VALUES ($1, $2, $3)
+RETURNING id, reference_id, notes, additional_info;
