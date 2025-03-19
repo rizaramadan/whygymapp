@@ -17,20 +17,4 @@ export class FoController {
       orders,
     };
   }
-
-  @Post('orders/:referenceId/cashback')
-  @Roles('front-officer')
-  async giveCashback(@Param('referenceId') referenceId: string) {
-    await this.foService.giveCashback(referenceId);
-    const orders = await this.foService.getWaitingPaymentOrders();
-    return orders;
-  }
-
-  @Post('orders/:referenceId/extend')
-  @Roles('front-officer')
-  async extendMembership(@Param('referenceId') referenceId: string) {
-    await this.foService.extendMembership(referenceId);
-    const orders = await this.foService.getWaitingPaymentOrders();
-    return orders;
-  }
 }

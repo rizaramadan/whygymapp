@@ -127,10 +127,35 @@
                     <span class="text-gray-600">Tax (11%)</span>
                     <span>{{formatCurrency tax}}</span>
                 </div>
+                {{#if order.additionalInfo.cashback100}}
+                    <div class="summary-row">
+                        <span class="text-gray-600">Cashback 100K</span>
+                        <span class="text-green-600">- Rp. 100.000</span>
+                    </div>
+                {{/if}}
+                {{#if order.additionalInfo.cashback200}}
+                    <div class="summary-row">
+                        <span class="text-gray-600">Cashback 200K</span>
+                        <span class="text-green-600">- Rp. 200.000</span>
+                    </div>
+                {{/if}}
                 <div class="summary-row summary-total">
                     <span>Total</span>
                     <span class="text-green-600">{{formatCurrency total}}</span>
                 </div>
+                {{#if order.additionalInfo.extend30}}
+                    <div class="summary-row">
+                        <span class="text-sm text-gray-600">Bonus Membership</span>
+                        <span class="text-sm text-green-600">+ 30 Days</span>
+                    </div>
+                {{/if}}
+                {{#if order.additionalInfo.extend90}}
+                    <div class="summary-row">
+                        <span class="text-sm text-gray-600">Bonus Membership</span>
+                        <span class="text-sm text-green-600">+ 90 Days</span>
+                    </div>
+                {{/if}}
+
             </div>
 
             <div class="payment-options">

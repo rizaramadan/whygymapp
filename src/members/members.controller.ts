@@ -183,14 +183,21 @@ export class MembersController {
     const membershipFee = parseFloat(order?.price || '0');
     const taxRate = 0.11; // 11% tax
     const tax = membershipFee * taxRate;
-    const total = membershipFee + tax;
+    let total = membershipFee + tax;
 
+    if (order?.additionalInfo?.cashback100) {
+      total -= 100000;
+    }
+    if (order?.additionalInfo?.cashback200) {
+      total -= 200000;
+    }
     return {
       user: req.user,
       memberId: order?.memberId,
       membershipFee,
       tax,
       total,
+      order,
       paymentOptions: MembersController.paymentOptions, // Access static property
     };
   }
