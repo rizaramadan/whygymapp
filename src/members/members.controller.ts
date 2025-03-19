@@ -169,7 +169,7 @@ export class MembersController {
     @Param('referenceId') referenceId: string,
   ) {
     const order = await this.membersService.getOrderByReferenceId(referenceId);
-    const paymentMethod = await this.membersService.getPaymentMethods(
+    const { paymentMethod } = await this.membersService.getPaymentMethods(
       parseFloat(order?.price || '0'),
     );
     // Mock payment data
@@ -184,11 +184,17 @@ export class MembersController {
     if (order?.additionalInfo?.cashback200) {
       total -= 200000;
     }
+
+    const paymentGatewayFee = paymentMethod?.paymentGatewayFee || 0;
+
+    total = total + paymentGatewayFee;
+
+    console.log(paymentMethod);
     return {
       user: req.user,
       memberId: order?.memberId,
       membershipFee,
-      paymentMethod,
+      paymentGatewayFee,
       tax,
       total,
       order,

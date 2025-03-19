@@ -123,6 +123,12 @@
                     <span class="text-gray-600">Membership Fee</span>
                     <span>{{formatCurrency membershipFee}}</span>
                 </div>
+
+                <div class="summary-row">   
+                    <span class="text-gray-600">Payment Service Fee</span>
+                    <span>{{formatCurrency paymentGatewayFee }}</span>
+                </div>
+
                 <div class="summary-row">
                     <span class="text-gray-600">Tax (11%)</span>
                     <span>{{formatCurrency tax}}</span>
@@ -159,17 +165,7 @@
             </div>
 
             <div class="payment-options">
-                <div class="payment-option" onclick="selectPayment('bank_transfer')">
-                    <div class="flex items-center gap-4">
-                        <img src="/img/bank-transfer.webp" alt="Bank Transfer" class="payment-icon">
-                        <div>
-                            <div class="payment-title text-lg font-semibold">Bank Transfer</div>
-                            <div class="payment-description text-gray-600">Transfer directly to our bank account</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="bank_transfer" style="display: none;">
-                </div>
-
+                
                 <div class="payment-option" onclick="selectPayment('qris')">
                     <div class="flex items-center gap-4">
                         <img src="/img/qris.webp" alt="QRIS" class="payment-icon">
@@ -181,16 +177,7 @@
                     <input type="radio" name="paymentMethod" value="qris" style="display: none;">
                 </div>
 
-                <div class="payment-option" onclick="selectPayment('virtual_account')">
-                    <div class="flex items-center gap-4">
-                        <img src="/img/virtual-account.webp" alt="Virtual Account" class="payment-icon">
-                        <div>
-                            <div class="payment-title text-lg font-semibold">Virtual Account</div>
-                            <div class="payment-description text-gray-600">Pay through virtual account number</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="virtual_account" style="display: none;">
-                </div>
+                
             </div>
 
             <button type="submit" class="continue-btn" disabled id="continueBtn">
