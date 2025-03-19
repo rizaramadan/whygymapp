@@ -1,9 +1,9 @@
-import { Controller, Get, Render, Request } from '@nestjs/common';
+import { Controller, Get, Render, Request, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User } from './users/users.service';
 import { Roles } from './roles/decorators/roles.decorator';
 import { MembersService } from './members/members.service';
-
+import { Response } from 'express';
 @Controller()
 export class AppController {
   constructor(
@@ -67,5 +67,11 @@ export class AppController {
       result,
       theAccessToken: req.user.accessToken,
     };
+  }
+
+  @Get('/logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.cookie('access_token', null);
+    return '<script>window.location.href = "/auth/login";</script>';
   }
 }
