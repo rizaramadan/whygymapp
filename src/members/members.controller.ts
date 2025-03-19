@@ -28,6 +28,8 @@ export class MembersController {
     },
   ];
 
+  private static darisiniFee = 5000;
+
   constructor(private readonly membersService: MembersService) {}
 
   @Get('visit')
@@ -185,13 +187,16 @@ export class MembersController {
       total -= 200000;
     }
 
-    const paymentGatewayFee = paymentMethod?.paymentGatewayFee || 0;
+    const paymentGatewayFee =
+      (paymentMethod?.paymentGatewayFee || 0) + MembersController.darisiniFee;
+    console.log('paymentGatewayFee', paymentGatewayFee);
 
     total = total + paymentGatewayFee;
 
     console.log(paymentMethod);
     return {
       user: req.user,
+      referenceId: referenceId,
       memberId: order?.memberId,
       membershipFee,
       paymentGatewayFee,
@@ -202,15 +207,16 @@ export class MembersController {
     };
   }
 
-  @Post('process-payment')
-  @Redirect()
+  @Post('process-payment/:referenceId')
   async processPayment(
     @Request() req: { user: User },
     @Body() paymentData: { paymentMethod: string },
+    @Param('referenceId') referenceId: string,
   ) {
     try {
       // Here you would implement the actual payment processing logic
-      // For now, we'll just return the redirect response
+      const order = await this.membersService.getOrderByReferenceId(referenceId);
+
       const redirectUrl = `/members/payment/${paymentData.paymentMethod}/instructions`;
       await Promise.resolve(); // Add await to satisfy the linter
       return {

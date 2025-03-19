@@ -115,6 +115,9 @@
         <!-- Payment Form -->
         <form action="/members/process-payment" method="POST" id="paymentForm">
             <input type="hidden" name="memberId" value="{{memberId}}">
+            <input type="hidden" name="referenceId" value="{{referenceId}}">
+            <input type="hidden" name="paymentGatewayFee" value="{{paymentGatewayFee}}">
+            <input type="hidden" name="total" value="{{total}}">
             
             <!-- Payment Summary -->
             <div class="payment-summary">
@@ -122,11 +125,6 @@
                 <div class="summary-row">
                     <span class="text-gray-600">Membership Fee</span>
                     <span>{{formatCurrency membershipFee}}</span>
-                </div>
-
-                <div class="summary-row">   
-                    <span class="text-gray-600">Payment Service Fee</span>
-                    <span>{{formatCurrency paymentGatewayFee }}</span>
                 </div>
 
                 <div class="summary-row">
@@ -145,10 +143,17 @@
                         <span class="text-green-600">- Rp. 200.000</span>
                     </div>
                 {{/if}}
+
+                <div class="summary-row">   
+                    <span class="text-gray-600">Payment Service Fee</span>
+                    <span>{{formatCurrency paymentGatewayFee}}</span>
+                </div>
+
                 <div class="summary-row summary-total">
                     <span>Total</span>
                     <span class="text-green-600">{{formatCurrency total}}</span>
                 </div>
+
                 {{#if order.additionalInfo.extend30}}
                     <div class="summary-row">
                         <span class="text-sm text-gray-600">Bonus Membership</span>

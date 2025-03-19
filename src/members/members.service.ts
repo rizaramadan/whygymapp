@@ -250,4 +250,12 @@ export class MembersService {
       throw new Error('Failed to handle checkout' + error);
     }
   }
+
+  async createDarisiniInvoice(user: User, referenceId: string, method: string) {
+    const order = await this.getOrderByReferenceId(referenceId);
+    //const paymentMethod = await this.getPaymentMethods(order.price);
+    //const paymentMethod = paymentMethod.paymentMethod;
+    //const paymentGatewayFee = paymentMethod.paymentGatewayFee;
+  }
 }
+
