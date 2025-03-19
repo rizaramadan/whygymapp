@@ -88,7 +88,7 @@
     <div class="card-container">
         <!-- Header with logo and logout -->
         <div class="flex justify-between items-center p-4 border-b border-gray-100">
-            <h1 class="text-xl font-bold text-green-800">Gym App</h1>
+            <h1 class="text-xl font-bold text-green-800">WhyGym App</h1>
             <a href="/logout" class="text-green-600 text-sm">Logout</a>
         </div>
 
@@ -110,22 +110,6 @@
                     </div>
                 {{/if}}
             </div>
-        </div>
-
-        <!-- QR Code section -->
-        <div class="qr-code-container" id="tap-qr-code-container">
-            <div id="start-scan-button" onclick="startScanner(this)" class="qr-code border-2 border-green-200 cursor-pointer">
-                <!-- QR Code placeholder -->
-                <div id="qr-placeholder" class="flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                    </svg>
-                    <p class="text-green-600 text-sm font-medium">Tap to Scan QR Code</p>
-                </div>
-            </div>
-        </div>
-        <div id="scanner-container" class="hidden p-4 flex justify-center">
-            <div id="qr-reader" class="w-full max-w-xs rounded-xl overflow-hidden" style="min-height: 400px;"></div>
         </div>
 
         <!-- Stats section -->
@@ -166,49 +150,5 @@
             <p class="text-xs text-gray-500">© 2025 Gym App. All rights reserved.</p>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <script>
-        var html5QrcodeScanner;
-        var onScanSuccess;
-        function docReady(fn) {
-            if (document.readyState === "complete" || document.readyState === "interactive") {
-                setTimeout(fn, 1);
-            } else {
-                document.addEventListener("DOMContentLoaded", fn);
-            }
-        }
-
-        docReady(function () {
-            var lastResult, countResults = 0;
-            onScanSuccess = function onScanSuccess(decodedText, decodedResult) {
-                if (decodedText !== lastResult) {
-                    ++countResults;
-                    lastResult = decodedText;
-                    console.log(`Scan result ${decodedText}`, decodedResult);
-                    if(decodedText == "/members/visit"){
-                        var url = decodedText;
-                        window.location.href = url;
-                    }
-                }
-            }
-
-            let config = {
-                fps: 10,
-                qrbox: 160,
-                rememberLastUsedCamera: true,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-            };
-            html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config);
-        });
-
-        function startScanner(buttonElement) {
-            document.getElementById('qr-placeholder').style.display = 'none';
-            document.getElementById('tap-qr-code-container').style.display = 'none';
-            document.getElementById('scanner-container').classList.remove('hidden');
-            html5QrcodeScanner.render(onScanSuccess);
-        }
-    </script>
 </body>
 </html>

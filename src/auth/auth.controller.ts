@@ -9,6 +9,7 @@ import {
   Render,
   Res,
   Query,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OtpAuthService } from './otp-auth.service';
@@ -28,7 +29,23 @@ export class AuthController {
   @Public()
   @Get('login')
   @Render('auth/login')
-  getLoginPage(@Query('action') action?: string) {
+  async getLoginPage(@Request() req, @Query('action') action?: string) {
+    if (action === 'member-visit') {
+      //try call http /me and log the result
+      try {
+        const me = await fetch('https://whygym.mvp.my.id/me', {
+          headers: {
+            Cookie: `access_token=${req.cookies?.access_token}`,
+          },
+        });
+        if (me.status === 200) {
+          return { redirect: true };
+        }
+        console.log(me);
+      } catch (error) {
+        console.log(error);
+      }
+    }
     return { action };
   }
 

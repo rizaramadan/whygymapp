@@ -1,3 +1,4 @@
+{{#unless redirect}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,3 +141,18 @@
 </body>
 <script src="/dialog/dialog.js"></script>
 </html> 
+{{/unless}}
+{{#if redirect}}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    window.location.href = "/members/visit";
+  </script>
+</head>
+<body>
+  <p>If you are not redirected, <a href="/members/visit">click here</a>.</p>
+</body>
+</html>
+{{/if}}
