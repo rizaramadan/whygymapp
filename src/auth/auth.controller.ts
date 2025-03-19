@@ -9,7 +9,6 @@ import {
   Render,
   Res,
   Query,
-  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OtpAuthService } from './otp-auth.service';
