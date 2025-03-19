@@ -249,3 +249,53 @@ SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_
        INNER JOIN whygym.members m ON m.id = o.member_id
        WHERE o.order_status = 'waiting payment method'
        LIMIT 100;
+
+-- name: turnOnCashback100 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffCashback100 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOnCashback200 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffCashback200 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOnExtend30 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffExtend30 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{extend30}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOnExtend90 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffExtend90 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+

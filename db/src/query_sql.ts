@@ -1111,3 +1111,267 @@ export async function getWaitingPaymentOrders(client: Client): Promise<getWaitin
     });
 }
 
+export const turnOnCashback100Query = `-- name: turnOnCashback100 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnCashback100Args {
+    referenceId: string;
+}
+
+export interface turnOnCashback100Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnCashback100(client: Client, args: turnOnCashback100Args): Promise<turnOnCashback100Row | null> {
+    const result = await client.query({
+        text: turnOnCashback100Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffCashback100Query = `-- name: turnOffCashback100 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffCashback100Args {
+    referenceId: string;
+}
+
+export interface turnOffCashback100Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffCashback100(client: Client, args: turnOffCashback100Args): Promise<turnOffCashback100Row | null> {
+    const result = await client.query({
+        text: turnOffCashback100Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOnCashback200Query = `-- name: turnOnCashback200 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnCashback200Args {
+    referenceId: string;
+}
+
+export interface turnOnCashback200Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnCashback200(client: Client, args: turnOnCashback200Args): Promise<turnOnCashback200Row | null> {
+    const result = await client.query({
+        text: turnOnCashback200Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffCashback200Query = `-- name: turnOffCashback200 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffCashback200Args {
+    referenceId: string;
+}
+
+export interface turnOffCashback200Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffCashback200(client: Client, args: turnOffCashback200Args): Promise<turnOffCashback200Row | null> {
+    const result = await client.query({
+        text: turnOffCashback200Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOnExtend30Query = `-- name: turnOnExtend30 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnExtend30Args {
+    referenceId: string;
+}
+
+export interface turnOnExtend30Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnExtend30(client: Client, args: turnOnExtend30Args): Promise<turnOnExtend30Row | null> {
+    const result = await client.query({
+        text: turnOnExtend30Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffExtend30Query = `-- name: turnOffExtend30 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{extend30}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffExtend30Args {
+    referenceId: string;
+}
+
+export interface turnOffExtend30Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffExtend30(client: Client, args: turnOffExtend30Args): Promise<turnOffExtend30Row | null> {
+    const result = await client.query({
+        text: turnOffExtend30Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOnExtend90Query = `-- name: turnOnExtend90 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnExtend90Args {
+    referenceId: string;
+}
+
+export interface turnOnExtend90Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnExtend90(client: Client, args: turnOnExtend90Args): Promise<turnOnExtend90Row | null> {
+    const result = await client.query({
+        text: turnOnExtend90Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffExtend90Query = `-- name: turnOffExtend90 :one
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffExtend90Args {
+    referenceId: string;
+}
+
+export interface turnOffExtend90Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffExtend90(client: Client, args: turnOffExtend90Args): Promise<turnOffExtend90Row | null> {
+    const result = await client.query({
+        text: turnOffExtend90Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+

@@ -55,9 +55,10 @@
                                     {{#if this.additionalInfo.cashback100}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-white hover:text-blue-900 bg-blue-500 rounded-l hover:bg-blue-100 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/cashback100/off"
+                                            hx-post="/fo/orders/{{this.referenceId}}/cashback100/false"
                                             hx-confirm="Are you sure you want to cancel Rp. 100.000 cashback?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             &check; 100K Cashback
                                         </button>
@@ -65,9 +66,10 @@
                                     {{#unless this.additionalInfo.cashback100}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-blue-900 hover:text-white bg-blue-100 rounded-r hover:bg-blue-500 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/cashback100/on"
+                                            hx-post="/fo/orders/{{this.referenceId}}/cashback100/true"
                                             hx-confirm="Are you sure you want to give Rp. 100.000 cashback?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             100K Cashback
                                         </button>
@@ -75,9 +77,10 @@
                                     {{#if this.additionalInfo.cashback200}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-white hover:text-blue-900 bg-blue-500 rounded-l hover:bg-blue-100 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/cashback200/off"
+                                            hx-post="/fo/orders/{{this.referenceId}}/cashback200/false"
                                             hx-confirm="Are you sure you want to cancel Rp. 200.000 cashback??"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                              &check; 200K Cashback
                                         </button>
@@ -85,9 +88,10 @@
                                     {{#unless this.additionalInfo.cashback200}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-blue-900 hover:text-white bg-blue-100 rounded-r hover:bg-blue-500 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/cashback200/on"
-                                            hx-confirm="Are you sure you want to give Rp. 100.000 cashback?"
+                                            hx-post="/fo/orders/{{this.referenceId}}/cashback200/true"
+                                            hx-confirm="Are you sure you want to give Rp. 200.000 cashback?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             200K Cashback
                                         </button>
@@ -97,9 +101,10 @@
                                     {{#if this.additionalInfo.extend30}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-white hover:text-green-900 bg-green-600 rounded-r hover:bg-green-100 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/extend30/off"
+                                            hx-post="/fo/orders/{{this.referenceId}}/extend30/false"
                                             hx-confirm="Are you sure you want to cancel extend membership for 30 days?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             &check; +30 Days
                                         </button>
@@ -107,9 +112,10 @@
                                     {{#unless this.additionalInfo.extend30}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-green-900 hover:text-white bg-green-100 rounded-l hover:bg-green-600 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/extend30/on"
+                                            hx-post="/fo/orders/{{this.referenceId}}/extend30/true"
                                             hx-confirm="Are you sure you want to turn on extend membership for 30 days?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             +30 Days
                                         </button>
@@ -117,9 +123,10 @@
                                     {{#if this.additionalInfo.extend90}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-white hover:text-green-900 bg-green-600 rounded-r hover:bg-green-700 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/extend90/off"
+                                            hx-post="/fo/orders/{{this.referenceId}}/extend90/false"
                                             hx-confirm="Are you sure you want to cancel extend membership for 90 days?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             &check; +90 Days
                                         </button>
@@ -127,9 +134,10 @@
                                     {{#unless this.additionalInfo.extend90}}
                                         <button 
                                             class="px-2 py-1 text-xs font-medium text-green-900 hover:text-white bg-green-100 rounded-l hover:bg-green-600 transition-colors"
-                                            hx-post="/fo/orders/{{this.referenceId}}/extend90/on"
+                                            hx-post="/fo/orders/{{this.referenceId}}/extend90/true"
                                             hx-confirm="Are you sure you want to turn on extend membership for 90 days?"
                                             hx-target="#buttons-{{this.referenceId}}"
+                                            hx-swap="innerHTML"
                                         >
                                             +90 Days
                                         </button>
