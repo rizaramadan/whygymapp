@@ -17,13 +17,21 @@ export function registerHelpers() {
   hbs.registerHelper('json', function (context) {
     return JSON.stringify(context);
   });
-}
 
-hbs.registerHelper('formatCurrency', function (amount: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-});
+  hbs.registerHelper('eq', function (a: any, b: any) {
+    return a === b;
+  });
+
+  hbs.registerHelper('formatCurrency', function (amount: number) {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  });
+
+  hbs.registerHelper('multiply', function (a: number, b: number) {
+    return a * b;
+  });
+}
