@@ -20,10 +20,14 @@ import { ErrorApp } from 'src/common/result';
 import { CreateOtpDto, VerifyOtpDto } from './auth.dto';
 @Controller('auth')
 export class AuthController {
+  private readonly meApiUrl: string;
+
   constructor(
     private authService: AuthService,
     private otpAuthService: OtpAuthService,
-  ) {}
+  ) {
+    this.meApiUrl = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+  }
 
   @Public()
   @Get('login')
@@ -32,7 +36,7 @@ export class AuthController {
     if (action === 'member-visit') {
       //try call http /me and log the result
       try {
-        const me = await fetch('https://whygym.mvp.my.id/me', {
+        const me = await fetch(`${this.meApiUrl}/me`, {
           headers: {
             Cookie: `access_token=${req.cookies?.access_token}`,
           },

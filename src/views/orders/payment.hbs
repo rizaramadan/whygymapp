@@ -169,24 +169,9 @@
 
             </div>
 
-            <div class="payment-options">
-                
-                <div class="payment-option" onclick="selectPayment('qris')">
-                    <div class="flex items-center gap-4">
-                        <img src="/img/qris.webp" alt="QRIS" class="payment-icon">
-                        <div>
-                            <div class="payment-title text-lg font-semibold">QRIS</div>
-                            <div class="payment-description text-gray-600">Pay using any QRIS-supported e-wallet</div>
-                        </div>
-                    </div>
-                    <input type="radio" name="paymentMethod" value="qris" style="display: none;">
-                </div>
 
-                
-            </div>
-
-            <button type="submit" class="continue-btn" disabled id="continueBtn">
-                Continue to Payment <span class="ml-2">→</span>
+            <button type="submit" class="continue-btn" id="continueBtn">
+                Pay with QRIS<span class="ml-2">→</span>
             </button>
         </form>
 
@@ -195,24 +180,5 @@
             <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
         </footer>
     </div>
-
-    <script>
-        function selectPayment(method) {
-            // Remove selected class from all options
-            document.querySelectorAll('.payment-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked option
-            const selectedOption = document.querySelector(`[value="${method}"]`).parentElement.parentElement;
-            selectedOption.classList.add('selected');
-            
-            // Select the radio input
-            document.querySelector(`[value="${method}"]`).checked = true;
-            
-            // Enable continue button
-            document.getElementById('continueBtn').disabled = false;
-        }
-    </script>
 </body>
 </html>

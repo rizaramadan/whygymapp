@@ -20,19 +20,13 @@ import {
   CreateMemberOrderRow,
   GetOrderReferenceIdByEmailRow,
   getOrderReferenceIdByEmail,
-  getOrderByReferenceId,
-  getOrderByReferenceIdRow,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
-import { PaymentMethod, PaymentMethodsResponse } from './members.interfaces';
+
 @Injectable()
 export class MembersService {
-  private readonly authApiUrl: string;
-  private readonly apiKey: string;
   private static readonly priceMap: {
     [key in 'normal' | 'discount']: {
       [key in 'male' | 'female']: {
@@ -66,13 +60,7 @@ export class MembersService {
     },
   };
 
-  constructor(
-    @Inject('DATABASE_POOL') private readonly pool: Pool,
-    private readonly httpService: HttpService,
-  ) {
-    this.authApiUrl = process.env.AUTH_API_URL || 'https://authapi.com';
-    this.apiKey = process.env.API_KEY || '1234567890';
-  }
+  constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
 
   async createVisit(
     email: string,
@@ -128,22 +116,6 @@ export class MembersService {
         rules: applicationData.rulesAgree,
       },
       frontOfficer: applicationData.frontOfficer,
-    };
-  }
-
-  private createMemberParams(
-    user: User,
-    applicationData: MembershipApplicationDto,
-    additionalData: ReturnType<typeof this.createAdditionalData>,
-  ) {
-    return {
-      email: user.email || user.username,
-      nickname: applicationData.nickname,
-      dateOfBirth: new Date(applicationData.dateOfBirth),
-      phoneNumber: applicationData.wa,
-      membershipStatus: 'PENDING' as const,
-      additionalData,
-      notes: user.email ? user.email : 'username in email field',
     };
   }
 
@@ -215,47 +187,4 @@ export class MembersService {
   ): Promise<GetMonthlyVisitsByEmailRow[]> {
     return await getMonthlyVisitsByEmail(this.pool, { email });
   }
-
-  async getOrderByReferenceId(
-    referenceId: string,
-  ): Promise<getOrderByReferenceIdRow | null> {
-    return await getOrderByReferenceId(this.pool, { referenceId });
-  }
-
-  async getPaymentMethods(price: number): Promise<{
-    paymentMethod: PaymentMethod | undefined;
-  }> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post<PaymentMethodsResponse>(
-          `${this.authApiUrl}/v1/payment/methods`,
-          {
-            amount: price,
-          },
-          {
-            headers: {
-              'x-api-key': this.apiKey,
-            },
-          },
-        ),
-      );
-      //find payment method by code QRIS and retrieve the data
-      const paymentMethod = response.data.data.find(
-        (method) => method.code === 'QRIS',
-      );
-      // return response
-      return { paymentMethod };
-    } catch (error) {
-      // handle error
-      throw new Error('Failed to handle checkout' + error);
-    }
-  }
-
-  async createDarisiniInvoice(user: User, referenceId: string, method: string) {
-    const order = await this.getOrderByReferenceId(referenceId);
-    //const paymentMethod = await this.getPaymentMethods(order.price);
-    //const paymentMethod = paymentMethod.paymentMethod;
-    //const paymentGatewayFee = paymentMethod.paymentGatewayFee;
-  }
 }
-

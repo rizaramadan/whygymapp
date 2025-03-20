@@ -19,17 +19,6 @@ import { MembershipApplicationDto } from './dto/membership-application.dto';
 
 @Controller('members')
 export class MembersController {
-  // Define static property for payment options
-  private static paymentOptions = [
-    {
-      id: 'qris',
-      name: 'QRIS',
-      description: 'Pay using any QRIS-supported e-wallet',
-    },
-  ];
-
-  private static darisiniFee = 5000;
-
   constructor(private readonly membersService: MembersService) {}
 
   @Get('visit')
@@ -104,9 +93,9 @@ export class MembersController {
       );
 
       if (result) {
-        // Successful submission - redirect to success page
+        // Successful submission - redirect to payment page
         return {
-          url: `/members/payment/${result.referenceId}`,
+          url: `/orders/checkout/${result.referenceId}`,
           statusCode: 302,
         };
       } else {
@@ -161,74 +150,6 @@ export class MembersController {
         err.message || 'An error occurred while cancelling the application',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    }
-  }
-
-  @Get('payment/:referenceId')
-  @Render('members/payment')
-  async payment(
-    @Request() req: { user: User },
-    @Param('referenceId') referenceId: string,
-  ) {
-    const order = await this.membersService.getOrderByReferenceId(referenceId);
-    const { paymentMethod } = await this.membersService.getPaymentMethods(
-      parseFloat(order?.price || '0'),
-    );
-    // Mock payment data
-    const membershipFee = parseFloat(order?.price || '0');
-    const taxRate = 0.11; // 11% tax
-    const tax = membershipFee * taxRate;
-    let total = membershipFee + tax;
-
-    if (order?.additionalInfo?.cashback100) {
-      total -= 100000;
-    }
-    if (order?.additionalInfo?.cashback200) {
-      total -= 200000;
-    }
-
-    const paymentGatewayFee =
-      (paymentMethod?.paymentGatewayFee || 0) + MembersController.darisiniFee;
-    console.log('paymentGatewayFee', paymentGatewayFee);
-
-    total = total + paymentGatewayFee;
-
-    console.log(paymentMethod);
-    return {
-      user: req.user,
-      referenceId: referenceId,
-      memberId: order?.memberId,
-      membershipFee,
-      paymentGatewayFee,
-      tax,
-      total,
-      order,
-      paymentOptions: MembersController.paymentOptions, // Access static property
-    };
-  }
-
-  @Post('process-payment/:referenceId')
-  async processPayment(
-    @Request() req: { user: User },
-    @Body() paymentData: { paymentMethod: string },
-    @Param('referenceId') referenceId: string,
-  ) {
-    try {
-      // Here you would implement the actual payment processing logic
-      const order = await this.membersService.getOrderByReferenceId(referenceId);
-
-      const redirectUrl = `/members/payment/${paymentData.paymentMethod}/instructions`;
-      await Promise.resolve(); // Add await to satisfy the linter
-      return {
-        url: redirectUrl,
-        statusCode: 302,
-      };
-    } catch (error) {
-      console.error('Payment processing error:', error);
-      return {
-        url: '/members/payment?error=payment_failed',
-        statusCode: 302,
-      };
     }
   }
 }
