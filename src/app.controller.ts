@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Request, Res } from '@nestjs/common';
+import { Controller, Get, Render, Request, Res, Param } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User } from './users/users.service';
 import { Roles } from './roles/decorators/roles.decorator';
@@ -73,5 +73,10 @@ export class AppController {
   logout(@Res({ passthrough: true }) res: Response) {
     res.cookie('access_token', null);
     return '<script>window.location.href = "/auth/login";</script>';
+  }
+
+  @Get('/payment/:referenceId/success')
+  success(@Param('referenceId') referenceId: string) {
+    return `oke ${referenceId}`;
   }
 }

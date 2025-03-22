@@ -195,6 +195,44 @@ ALTER SEQUENCE whygym.orders_id_seq OWNED BY whygym.orders.id;
 
 
 --
+-- Name: orders_status_log; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.orders_status_log (
+    id integer NOT NULL,
+    reference_id character varying(40) NOT NULL,
+    order_status character varying(40) DEFAULT 'failed'::character varying NOT NULL,
+    notes text,
+    additional_info jsonb,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.orders_status_log OWNER TO postgres;
+
+--
+-- Name: orders_status_log_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.orders_status_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.orders_status_log_id_seq OWNER TO postgres;
+
+--
+-- Name: orders_status_log_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.orders_status_log_id_seq OWNED BY whygym.orders_status_log.id;
+
+
+--
 -- Name: roles; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -377,6 +415,13 @@ ALTER TABLE ONLY whygym.orders ALTER COLUMN id SET DEFAULT nextval('whygym.order
 
 
 --
+-- Name: orders_status_log id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders_status_log ALTER COLUMN id SET DEFAULT nextval('whygym.orders_status_log_id_seq'::regclass);
+
+
+--
 -- Name: roles id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -442,6 +487,14 @@ ALTER TABLE ONLY whygym.members
 
 ALTER TABLE ONLY whygym.orders
     ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders_status_log orders_status_log_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders_status_log
+    ADD CONSTRAINT orders_status_log_pkey PRIMARY KEY (id);
 
 
 --
@@ -540,6 +593,13 @@ CREATE INDEX idx_orders_order_status ON whygym.orders USING btree (order_status)
 --
 
 CREATE UNIQUE INDEX idx_orders_reference_id ON whygym.orders USING btree (reference_id);
+
+
+--
+-- Name: idx_orders_status_log_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_orders_status_log_reference_id ON whygym.orders_status_log USING btree (reference_id);
 
 
 --

@@ -298,7 +298,25 @@ SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
--- name: CreateDarisinicomLog :one
-INSERT INTO whygym.darisinicom_log (reference_id, notes, additional_info)
-VALUES ($1, $2, $3)
-RETURNING id, reference_id, notes, additional_info;
+-- name: insertOrderStatusLog :one
+INSERT INTO whygym.orders_status_log (reference_id, order_status, notes, additional_info)
+VALUES ($1, $2, $3, $4)
+RETURNING id, reference_id, order_status, notes, additional_info;
+
+
+-- name: getOrderAndMemberByReferenceId :one
+SELECT o.id, o.member_id, o.price, o.reference_id, o.order_status, o.url, o.created_at, o.updated_at, o.notes, o.additional_info, m.email, m.nickname, m.additional_data, m.phone_number
+FROM whygym.orders o
+    INNER JOIN whygym.members m ON o.member_id = m.id   
+WHERE o.reference_id = $1
+LIMIT 1;
+
+-- name: setOrderInvoiceResponse :one
+WITH data AS (
+    SELECT $1::text AS content, $2::text as ref_id
+)
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{invoice_response}', data.content::jsonb)
+FROM data
+WHERE reference_id = data.ref_id
+RETURNING id, additional_info, reference_id;

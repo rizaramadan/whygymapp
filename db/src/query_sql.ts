@@ -1375,3 +1375,136 @@ export async function turnOffExtend90(client: Client, args: turnOffExtend90Args)
     };
 }
 
+export const insertOrderStatusLogQuery = `-- name: insertOrderStatusLog :one
+INSERT INTO whygym.orders_status_log (reference_id, order_status, notes, additional_info)
+VALUES ($1, $2, $3, $4)
+RETURNING id, reference_id, order_status, notes, additional_info`;
+
+export interface insertOrderStatusLogArgs {
+    referenceId: string;
+    orderStatus: string;
+    notes: string | null;
+    additionalInfo: any | null;
+}
+
+export interface insertOrderStatusLogRow {
+    id: number;
+    referenceId: string;
+    orderStatus: string;
+    notes: string | null;
+    additionalInfo: any | null;
+}
+
+export async function insertOrderStatusLog(client: Client, args: insertOrderStatusLogArgs): Promise<insertOrderStatusLogRow | null> {
+    const result = await client.query({
+        text: insertOrderStatusLogQuery,
+        values: [args.referenceId, args.orderStatus, args.notes, args.additionalInfo],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        referenceId: row[1],
+        orderStatus: row[2],
+        notes: row[3],
+        additionalInfo: row[4]
+    };
+}
+
+export const getOrderAndMemberByReferenceIdQuery = `-- name: getOrderAndMemberByReferenceId :one
+SELECT o.id, o.member_id, o.price, o.reference_id, o.order_status, o.url, o.created_at, o.updated_at, o.notes, o.additional_info, m.email, m.nickname, m.additional_data, m.phone_number
+FROM whygym.orders o
+    INNER JOIN whygym.members m ON o.member_id = m.id   
+WHERE o.reference_id = $1
+LIMIT 1`;
+
+export interface getOrderAndMemberByReferenceIdArgs {
+    referenceId: string;
+}
+
+export interface getOrderAndMemberByReferenceIdRow {
+    id: number;
+    memberId: number | null;
+    price: string;
+    referenceId: string;
+    orderStatus: string;
+    url: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    notes: string | null;
+    additionalInfo: any | null;
+    email: string | null;
+    nickname: string;
+    additionalData: any | null;
+    phoneNumber: string | null;
+}
+
+export async function getOrderAndMemberByReferenceId(client: Client, args: getOrderAndMemberByReferenceIdArgs): Promise<getOrderAndMemberByReferenceIdRow | null> {
+    const result = await client.query({
+        text: getOrderAndMemberByReferenceIdQuery,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        price: row[2],
+        referenceId: row[3],
+        orderStatus: row[4],
+        url: row[5],
+        createdAt: row[6],
+        updatedAt: row[7],
+        notes: row[8],
+        additionalInfo: row[9],
+        email: row[10],
+        nickname: row[11],
+        additionalData: row[12],
+        phoneNumber: row[13]
+    };
+}
+
+export const setOrderInvoiceResponseQuery = `-- name: setOrderInvoiceResponse :one
+WITH data AS (
+    SELECT $1::text AS content, $2::text as ref_id
+)
+UPDATE whygym.orders
+SET additional_info = jsonb_set(additional_info, '{invoice_response}', data.content::jsonb)
+FROM data
+WHERE reference_id = data.ref_id
+RETURNING id, additional_info, reference_id`;
+
+export interface setOrderInvoiceResponseArgs {
+   content : string;
+   refId : string;
+}
+
+export interface setOrderInvoiceResponseRow {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function setOrderInvoiceResponse(client: Client, args: setOrderInvoiceResponseArgs): Promise<setOrderInvoiceResponseRow | null> {
+    const result = await client.query({
+        text: setOrderInvoiceResponseQuery,
+        values: [args.content, args.refId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+

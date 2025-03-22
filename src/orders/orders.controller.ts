@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Render, Request, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Render,
+  Request,
+  Body,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { User } from '../users/users.service';
 
@@ -12,22 +20,7 @@ export class OrdersController {
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
   ) {
-    //call AUTH_API_URL/v1/payment/methods with body {"amount": price}, price from order retrieved using referenceId
-    const order = await this.ordersService.getOrderByReferenceId(referenceId);
-    
-    const paymentMethods = await this.ordersService.getPaymentMethods(
-      parseFloat(order?.price || '0'),
-    );
-
-    const retval = {
-      user: req.user,
-      referenceId: referenceId,
-      order,
-      paymentMethods,
-    };
-    console.log("payment method",paymentMethods);
-    console.log("orders checkout retval:",retval);
-    return retval;
+    return await this.ordersService.getCheckoutData(referenceId, req.user);
   }
 
   @Post('payment/:referenceId')
@@ -38,20 +31,29 @@ export class OrdersController {
     @Body('selectedMethod') paymentMethod: string,
     @Body('paymentGatewayFee') paymentGatewayFee: string,
   ) {
-    const order = await this.ordersService.getOrderByReferenceId(referenceId);
-
-    const paymentDetails = this.ordersService.calculatePaymentDetails(
-      order,
+    const retval = await this.ordersService.processPayment(
+      req.user,
+      referenceId,
+      paymentMethod,
       parseFloat(paymentGatewayFee),
     );
+    //console.log(retval);
+    return retval;
+  }
 
-    return {
-      user: req.user,
-      referenceId: referenceId,
-      memberId: order?.memberId,
-      ...paymentDetails,
-      order,
-      paymentMethod,
-    };
+  @Get('payment/:referenceId/success')
+  @Render('orders/success')
+  async success(@Param('referenceId') referenceId: string) {
+    await this.ordersService.insertOrderStatusLog(referenceId, 'success');
+    const retval = await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
+    console.log(retval);
+    return retval;
+  }
+
+  @Get('payment/:referenceId/fail')
+  @Render('orders/fail')
+  async fail(@Param('referenceId') referenceId: string) {
+    await this.ordersService.insertOrderStatusLog(referenceId, 'fail');
+    return await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
   }
 }
