@@ -37,7 +37,6 @@ export class OrdersController {
       paymentMethod,
       parseFloat(paymentGatewayFee),
     );
-    //console.log(retval);
     return retval;
   }
 
@@ -45,7 +44,8 @@ export class OrdersController {
   @Render('orders/success')
   async success(@Param('referenceId') referenceId: string) {
     await this.ordersService.insertOrderStatusLog(referenceId, 'success');
-    const retval = await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
+    const retval =
+      await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
     console.log(retval);
     return retval;
   }
