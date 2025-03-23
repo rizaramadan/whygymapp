@@ -106,10 +106,15 @@ export class OrdersService {
     if (
       (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data?.id
     ) {
-      invoice = await this.getInvoiceStatus(
-        (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
-          ?.id,
-      );
+      const createInvoiceResponse: CreateInvoiceResponse =
+        await this.getInvoiceStatus(
+          (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+            ?.id,
+          referenceId,
+        );
+      if (createInvoiceResponse.data.status === 'PAID') {
+        invoice = createInvoiceResponse;
+      }
     }
 
     const { membershipFee, paymentGatewayFee, tax, total } =
@@ -214,7 +219,10 @@ export class OrdersService {
     return response.data;
   }
 
-  async getInvoiceStatus(invoiceId: string): Promise<CreateInvoiceResponse> {
+  async getInvoiceStatus(
+    invoiceId: string,
+    referenceId: string,
+  ): Promise<CreateInvoiceResponse> {
     try {
       const response = await firstValueFrom(
         this.httpService.get<CreateInvoiceResponse>(
@@ -226,6 +234,8 @@ export class OrdersService {
           },
         ),
       );
+
+      await this.setOrderInvoiceResponse(referenceId, response.data);
 
       return response.data;
     } catch (error) {

@@ -40,11 +40,6 @@ export class OrdersController {
     return retval;
   }
 
-  @Get('payment/:invoiceId')
-  async getInvoiceStatus(@Param('invoiceId') invoiceId: string) {
-    const retval = await this.ordersService.getInvoiceStatus(invoiceId);
-    return retval;
-  }
 
   @Get('payment/:referenceId/success')
   @Render('orders/success')

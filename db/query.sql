@@ -325,4 +325,5 @@ RETURNING id, additional_info, reference_id;
 SELECT name as roles FROM whygym.user_roles ur
     INNER JOIN whygym.roles r ON r.id =  ur.role_id
     WHERE ur.user_id = $1;
-    
+
+
