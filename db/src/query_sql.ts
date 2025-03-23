@@ -41,7 +41,7 @@ export interface GetAllUsersRolesRow {
 }
 
 export async function getAllUsersRoles(client: Client): Promise<GetAllUsersRolesRow[]> {
-    const result = await client.query({
+     const result = await client.query({
         text: getAllUsersRolesQuery,
         values: [],
         rowMode: "array"
@@ -1481,8 +1481,8 @@ WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
 
 export interface setOrderInvoiceResponseArgs {
-   content : string;
-   refId : string;
+    content: string;
+    refId: string;
 }
 
 export interface setOrderInvoiceResponseRow {
@@ -1506,5 +1506,31 @@ export async function setOrderInvoiceResponse(client: Client, args: setOrderInvo
         additionalInfo: row[1],
         referenceId: row[2]
     };
+}
+
+export const getUserRolesQuery = `-- name: getUserRoles :many
+SELECT name as roles FROM whygym.user_roles ur
+    INNER JOIN whygym.roles r ON r.id =  ur.role_id
+    WHERE ur.user_id = $1`;
+
+export interface getUserRolesArgs {
+    userId: number;
+}
+
+export interface getUserRolesRow {
+    roles: string;
+}
+
+export async function getUserRoles(client: Client, args: getUserRolesArgs): Promise<getUserRolesRow[]> {
+    const result = await client.query({
+        text: getUserRolesQuery,
+        values: [args.userId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            roles: row[0]
+        };
+    });
 }
 

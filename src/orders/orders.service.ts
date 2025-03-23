@@ -28,6 +28,17 @@ interface OrderWithAdditionalInfo {
   };
   price: number;
 }
+
+interface OrderWithInvoiceId {
+  additionalInfo: {
+    invoice_response: {
+      data: {
+        id: string;
+      };
+    };
+  };
+}
+
 @Injectable()
 export class OrdersService {
   private readonly darisiniFee = 0;
@@ -87,6 +98,20 @@ export class OrdersService {
     user: User,
   ): Promise<CheckoutResponse> {
     const order = await this.getOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    let invoice: CreateInvoiceResponse | null = null;
+    if (
+      (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data?.id
+    ) {
+      invoice = await this.getInvoiceStatus(
+        (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+          ?.id,
+      );
+    }
+
     const { membershipFee, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);
     const paymentMethods = await this.getPaymentMethods(total);
@@ -100,6 +125,7 @@ export class OrdersService {
       paymentGatewayFee,
       tax,
       total,
+      invoice,
     };
   }
 
@@ -186,6 +212,26 @@ export class OrdersService {
       ),
     );
     return response.data;
+  }
+
+  async getInvoiceStatus(invoiceId: string): Promise<CreateInvoiceResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<CreateInvoiceResponse>(
+          `${process.env.AUTH_API_URL}/v1/marketplace/invoices/${invoiceId}`,
+          {
+            headers: {
+              'x-api-key': process.env.API_KEY,
+            },
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error getting invoice status:', error);
+      throw error;
+    }
   }
 
   async postPaymentProcess(amount: number): Promise<PaymentMethodsResponse> {

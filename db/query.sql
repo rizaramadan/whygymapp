@@ -320,3 +320,9 @@ SET additional_info = jsonb_set(additional_info, '{invoice_response}', data.cont
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id;
+
+-- name: getUserRoles :many
+SELECT name as roles FROM whygym.user_roles ur
+    INNER JOIN whygym.roles r ON r.id =  ur.role_id
+    WHERE ur.user_id = $1;
+    

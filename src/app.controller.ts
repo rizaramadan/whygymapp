@@ -22,7 +22,6 @@ export class AppController {
     // Mock data for membership applications
     const membershipApplication =
       await this.membersService.getOrderReferenceIdByEmail(req.user.email);
-    console.log(membershipApplication);
     return {
       user: req.user,
       membershipApplication: membershipApplication,
@@ -31,7 +30,6 @@ export class AppController {
 
   @Get('/member-dashboard')
   @Render('member-dashboard')
-  @Roles('member')
   memberDashboard(@Request() req: { user: User }) {
     return {
       user: req.user,

@@ -1,3 +1,4 @@
+{{#if invoice}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -253,3 +254,8 @@
     </script>
 </body>
 </html>
+{{else}}
+<div class="mobile-container">
+    <h1>Payment Failed</h1>
+</div>
+{{/if}}

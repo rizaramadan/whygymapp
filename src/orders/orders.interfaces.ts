@@ -27,6 +27,7 @@ export interface CheckoutResponse {
   paymentGatewayFee: number;
   tax: number;
   total: number;
+  invoice: CreateInvoiceResponse | null;
 }
 
 export interface AdditionalData {
@@ -96,4 +97,5 @@ export interface InvoiceData {
   paymentUrl: string;
   paymentMethod: string;
   paymentChannel: string;
+  paidAt: string | null;
 }
