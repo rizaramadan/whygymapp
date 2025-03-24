@@ -171,6 +171,10 @@ RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, n
 SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
 WHERE membership_status = 'pending' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1;
 
+-- name: GetActiveMembershipByEmail :one
+SELECT id, email, nickname, date_of_birth, phone_number, membership_status, created_at, notes, additional_data FROM whygym.members
+WHERE membership_status = 'active' AND email = $1  LIMIT 1;
+
 -- name: DeletePendingMembership :one
 DELETE FROM whygym.members
 WHERE id = $1 AND membership_status = 'pending' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id;
@@ -325,5 +329,24 @@ RETURNING id, additional_info, reference_id;
 SELECT name as roles FROM whygym.user_roles ur
     INNER JOIN whygym.roles r ON r.id =  ur.role_id
     WHERE ur.user_id = $1;
+
+-- name: setInvoiceStatusResponseAndActivateMembership :one
+WITH the_row AS (
+    SELECT id FROM whygym.orders_status_log osl WHERE osl.reference_id = $1
+    ORDER BY created_at DESC LIMIT 1),
+save_invoice_status AS (UPDATE whygym.orders_status_log l SET additional_info = jsonb_set(coalesce(additional_info, '{}'),'{invoiceStatusResponse}', $2::jsonb)
+                                FROM the_row t
+                                WHERE l.id = t.id
+RETURNING l.reference_id, l.id, additional_info),
+the_member_id AS (
+    SELECT member_id FROM whygym.orders o
+                                   INNER JOIN save_invoice_status sis ON o.reference_id = sis.reference_id
+                                   LIMIT 1
+)
+UPDATE whygym.members m SET membership_status = 'active'
+    FROM the_member_id o WHERE m.id = o.member_id
+    RETURNING m.id;
+
+
 
 

@@ -13,6 +13,8 @@ import {
   insertOrderStatusLog,
   setOrderInvoiceResponseArgs,
   setOrderInvoiceResponse,
+  setInvoiceStatusResponseAndActivateMembershipArgs,
+  setInvoiceStatusResponseAndActivateMembership,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -270,5 +272,30 @@ export class OrdersService {
     };
     const result = await insertOrderStatusLog(this.pool, args);
     return result;
+  }
+
+  async setInvoiceStatusResponseAndActivateMembership(referenceId: string) {
+    const order = await this.getOrderAndMemberByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    const createInvoiceResponse: CreateInvoiceResponse =
+      await this.getInvoiceStatus(
+        (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+          ?.id,
+        referenceId,
+      );
+
+    if (createInvoiceResponse.data.status === 'PAID') {
+      const args: setInvoiceStatusResponseAndActivateMembershipArgs = {
+        referenceId,
+        content: createInvoiceResponse,
+      };
+      const result = await setInvoiceStatusResponseAndActivateMembership(
+        this.pool,
+        args,
+      );
+      return result;
+    }
   }
 }

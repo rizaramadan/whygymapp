@@ -40,15 +40,21 @@ export class OrdersController {
     return retval;
   }
 
-
   @Get('payment/:referenceId/success')
   @Render('orders/success')
   async success(@Param('referenceId') referenceId: string) {
     await this.ordersService.insertOrderStatusLog(referenceId, 'success');
     const retval =
       await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
-    console.log(retval);
     return retval;
+  }
+
+  @Get('payment/:referenceId/complete')
+  @Render('orders/complete')
+  async complete(@Param('referenceId') referenceId: string) {
+    return await this.ordersService.setInvoiceStatusResponseAndActivateMembership(
+      referenceId,
+    );
   }
 
   @Get('payment/:referenceId/fail')

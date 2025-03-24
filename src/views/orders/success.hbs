@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Success</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
         * {
             margin: 0;
@@ -39,12 +40,75 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .success-icon.show {
+            opacity: 1;
         }
 
         .success-icon svg {
             width: 40px;
             height: 40px;
             fill: white;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .hourglass {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .hourglass::before,
+        .hourglass::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+        }
+
+        .hourglass::before {
+            top: 0;
+            border-top: 30px solid #4CAF50;
+            animation: topSand 2s linear infinite;
+        }
+
+        .hourglass::after {
+            bottom: 0;
+            border-bottom: 30px solid #4CAF50;
+            animation: bottomSand 2s linear infinite;
+        }
+
+        @keyframes topSand {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(0.8); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        @keyframes bottomSand {
+            0% { transform: translateX(-50%) scale(0.8); }
+            50% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(0.8); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
 
         h1 {
@@ -77,6 +141,12 @@
             font-weight: 500;
             margin-top: 1rem;
             transition: background-color 0.2s;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-button.show {
+            opacity: 1;
         }
 
         .back-button:hover {
@@ -117,10 +187,27 @@
 
         <div class="order-details">
             <p><strong>Order ID:</strong> {{referenceId}}</p>
-            
         </div>
 
-        <a href="/" class="back-button">Back to Home</a>
+        <div class="loading-container" id="loadingContainer">
+            <div class="hourglass"></div>
+            <p class="loading-text">Verifying payment status...</p>
+        </div>
+
+        <a href="/user-dashboard" class="back-button">Back to Home</a>
     </div>
+
+    <div 
+        hx-get="/orders/payment/{{referenceId}}/complete"
+        hx-trigger="load, every 5s"
+        hx-swap="none"
+        hx-on::after-request="
+            if(event.detail.successful) {
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.querySelector('.success-icon').classList.add('show');
+                document.querySelector('.back-button').classList.add('show');
+            }
+        "
+    ></div>
 </body>
 </html>

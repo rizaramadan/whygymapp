@@ -1,3 +1,16 @@
+{{#if activeMembership}}
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    window.location.href = "/member-dashboard";
+  </script>
+</head>
+<body>
+  <p>If you are not redirected, <a href="/member-dashboard">click here</a>.</p>
+</body>
+</html>
+{{else}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -137,3 +150,4 @@
     </div>
 </body>
 </html>
+{{/if}}
