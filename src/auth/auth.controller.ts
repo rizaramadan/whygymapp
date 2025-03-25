@@ -18,6 +18,13 @@ import { User } from 'src/users/users.service';
 import { Response } from 'express';
 import { ErrorApp } from 'src/common/result';
 import { CreateOtpDto, VerifyOtpDto } from './auth.dto';
+
+interface RequestCookieAccessToken {
+  cookies: {
+    access_token: string;
+  };
+}
+
 @Controller('auth')
 export class AuthController {
   private readonly meApiUrl: string;
@@ -38,7 +45,7 @@ export class AuthController {
       try {
         const me = await fetch(`${this.meApiUrl}/me`, {
           headers: {
-            Cookie: `access_token=${req.cookies?.access_token}`,
+            Cookie: `access_token=${(req as RequestCookieAccessToken).cookies?.access_token}`,
           },
         });
         if (me.status === 200) {
