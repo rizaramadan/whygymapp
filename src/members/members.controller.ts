@@ -57,7 +57,6 @@ export class MembersController {
   }
 
   @Get('new-visitors')
-  @Roles('front-officer')
   @Render('members/new-visitors')
   async newVisitors(@Query('lastVisitId') lastVisitId: string) {
     const visitors = await this.membersService.getNewVisitors(lastVisitId);
