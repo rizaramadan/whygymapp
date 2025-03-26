@@ -113,7 +113,7 @@
         </header>
 
         <!-- Payment Form -->
-        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
+        <form action="/orders/payment/{{referenceId}}/redirect" method="POST" id="paymentForm">
             <input type="hidden" name="memberId" value="{{memberId}}">
             <input type="hidden" name="referenceId" value="{{referenceId}}">
             <input type="hidden" name="paymentGatewayFee" value="{{paymentGatewayFee}}">
@@ -151,7 +151,7 @@
 
                 <div class="summary-row summary-total">
                     <span>Total</span>
-                    <span class="text-green-600">{{formatCurrency total}}</span>
+                    <span class="text-green-600">{{formatCurrency totalWithFee}}</span>
                 </div>
 
                 {{#if order.additionalInfo.extend30}}

@@ -15,6 +15,9 @@ import {
   setOrderInvoiceResponse,
   setInvoiceStatusResponseAndActivateMembershipArgs,
   setInvoiceStatusResponseAndActivateMembership,
+  getPaymentUrlByReferenceIdArgs,
+  getPaymentUrlByReferenceId,
+  getPaymentUrlByReferenceIdRow
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -151,13 +154,14 @@ export class OrdersService {
       total -= 200000;
     }
 
-    total = total + paymentGatewayFee + this.darisiniFee;
+    const totalWithFee = total + paymentGatewayFee + this.darisiniFee;
 
     return {
       membershipFee,
       paymentGatewayFee,
       tax,
       total,
+      totalWithFee,
     };
   }
 
@@ -297,5 +301,14 @@ export class OrdersService {
       );
       return result;
     }
+  }
+
+  async getPaymentUrlByReferenceId(referenceId: string) {
+    const args: getPaymentUrlByReferenceIdArgs = { referenceId };
+    const result: getPaymentUrlByReferenceIdRow | null = await getPaymentUrlByReferenceId(this.pool, args);
+    if (!result) {
+      throw new Error('Payment URL not found');
+    }
+    return result?.paymenturl || '';
   }
 }

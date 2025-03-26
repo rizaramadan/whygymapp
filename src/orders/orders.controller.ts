@@ -63,4 +63,12 @@ export class OrdersController {
     await this.ordersService.insertOrderStatusLog(referenceId, 'fail');
     return await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
   }
+
+  //get payment url by reference id and ask client to redirect to payment url
+  @Post('payment/:referenceId/redirect')
+  async redirect(@Param('referenceId') referenceId: string) {
+    const paymentUrl = 
+      await this.ordersService.getPaymentUrlByReferenceId(referenceId);
+    return `<script>window.location.href = '${paymentUrl}';</script>`;
+  }
 }

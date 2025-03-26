@@ -320,7 +320,7 @@ WITH data AS (
     SELECT $1::text AS content, $2::text as ref_id
 )
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{invoice_response}', data.content::jsonb)
+SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb)
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id;
@@ -347,6 +347,12 @@ UPDATE whygym.members m SET membership_status = 'active'
     FROM the_member_id o WHERE m.id = o.member_id
     RETURNING m.id;
 
+
+-- name: getPaymentUrlByReferenceId :one
+SELECT additional_info->'invoice_response'->'data'->'paymentUrl' AS paymentUrl
+FROM whygym.orders WHERE reference_id = $1
+    AND additional_info->'invoice_response'->'data'->'paymentUrl' IS NOT NULL
+LIMIT 1;
 
 
 

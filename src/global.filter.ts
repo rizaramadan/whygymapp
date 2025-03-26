@@ -5,6 +5,6 @@ import { SentryExceptionCaptured } from '@sentry/nestjs';
 export class YourCatchAllExceptionFilter implements ExceptionFilter {
   @SentryExceptionCaptured()
   catch(exception, host): void {
-    console.log(exception);
+    console.log(host);
   }
 }
