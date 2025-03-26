@@ -1,9 +1,20 @@
-import { Controller, Get, Render, Request, Res, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Render,
+  Request,
+  Res,
+  Param,
+  Sse,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { User } from './users/users.service';
 import { Roles } from './roles/decorators/roles.decorator';
 import { MembersService } from './members/members.service';
 import { Response } from 'express';
+import { interval, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
 @Controller()
 export class AppController {
   constructor(
@@ -12,8 +23,11 @@ export class AppController {
   ) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Render('index')
+  getHello() {
+    return {
+      message: this.appService.getHello(),
+    };
   }
 
   @Get('/user-dashboard')
@@ -83,5 +97,12 @@ export class AppController {
   @Get('/debug-sentry')
   getError() {
     throw new Error('My first Sentry error!');
+  }
+
+  @Sse('sse')
+  sse(): Observable<MessageEvent> {
+    return interval(1000).pipe(
+      map((_) => ({ data: { hello: 'world' } }) as MessageEvent),
+    );
   }
 }
