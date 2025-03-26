@@ -50,7 +50,6 @@ export class AppController {
 
   @Get('/front-officer-dashboard')
   @Render('front-officer-dashboard')
-  @Roles('front-officer')
   async frontOfficerDashboard() {
     const visitors = await this.membersService.getTodayVisitors();
     const lastVisitId = await this.membersService.getLastVisitId();
