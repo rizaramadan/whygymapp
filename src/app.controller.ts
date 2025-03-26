@@ -80,4 +80,9 @@ export class AppController {
   success(@Param('referenceId') referenceId: string) {
     return `oke ${referenceId}`;
   }
+
+  @Get('/debug-sentry')
+  getError() {
+    throw new Error('My first Sentry error!');
+  }
 }
