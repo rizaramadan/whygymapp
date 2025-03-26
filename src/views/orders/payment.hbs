@@ -113,7 +113,7 @@
         </header>
 
         <!-- Payment Form -->
-        <form action="/members/process-payment" method="POST" id="paymentForm">
+        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
             <input type="hidden" name="memberId" value="{{memberId}}">
             <input type="hidden" name="referenceId" value="{{referenceId}}">
             <input type="hidden" name="paymentGatewayFee" value="{{paymentGatewayFee}}">
