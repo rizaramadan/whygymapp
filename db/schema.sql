@@ -152,6 +152,46 @@ ALTER SEQUENCE whygym.members_id_seq OWNED BY whygym.members.id;
 
 
 --
+-- Name: order_groups; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.order_groups (
+    id integer NOT NULL,
+    main_reference_id character varying(40) NOT NULL,
+    part_id integer NOT NULL,
+    part_reference_id character varying(40) NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    notes text,
+    additional_info jsonb,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.order_groups OWNER TO postgres;
+
+--
+-- Name: order_groups_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.order_groups_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.order_groups_id_seq OWNER TO postgres;
+
+--
+-- Name: order_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.order_groups_id_seq OWNED BY whygym.order_groups.id;
+
+
+--
 -- Name: orders; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -408,6 +448,13 @@ ALTER TABLE ONLY whygym.members ALTER COLUMN id SET DEFAULT nextval('whygym.memb
 
 
 --
+-- Name: order_groups id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_groups ALTER COLUMN id SET DEFAULT nextval('whygym.order_groups_id_seq'::regclass);
+
+
+--
 -- Name: orders id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -479,6 +526,14 @@ ALTER TABLE ONLY whygym.create_user_requests
 
 ALTER TABLE ONLY whygym.members
     ADD CONSTRAINT members_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: order_groups order_groups_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_groups
+    ADD CONSTRAINT order_groups_pkey PRIMARY KEY (id);
 
 
 --
@@ -554,6 +609,13 @@ ALTER TABLE ONLY whygym.visits
 
 
 --
+-- Name: idx_members_email_pic; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_members_email_pic ON whygym.members USING btree (((additional_data ->> 'emailPic'::text)));
+
+
+--
 -- Name: idx_members_membership_status; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -564,7 +626,7 @@ CREATE INDEX idx_members_membership_status ON whygym.members USING btree (member
 -- Name: idx_members_pending_email; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
-CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHERE ((membership_status)::text = 'PENDING'::text);
+CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHERE ((membership_status)::text = 'pending'::text);
 
 
 --
@@ -572,6 +634,20 @@ CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHE
 --
 
 CREATE INDEX idx_members_user_id ON whygym.members USING btree (email);
+
+
+--
+-- Name: idx_order_groups_main_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_order_groups_main_reference_id ON whygym.order_groups USING btree (main_reference_id);
+
+
+--
+-- Name: idx_order_groups_part_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_order_groups_part_reference_id ON whygym.order_groups USING btree (part_reference_id);
 
 
 --

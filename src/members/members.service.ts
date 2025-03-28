@@ -22,6 +22,9 @@ import {
   getOrderReferenceIdByEmail,
   GetActiveMembershipByEmailRow,
   getActiveMembershipByEmail,
+  getPotentialGroupDataRow,
+  getPotentialGroupDataArgs,
+  getPotentialGroupData,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -194,5 +197,12 @@ export class MembersService {
     email: string,
   ): Promise<GetActiveMembershipByEmailRow | null> {
     return await getActiveMembershipByEmail(this.pool, { email });
+  }
+
+  async getPotentialGroupData(email: string) {
+    const args: getPotentialGroupDataArgs = { email };
+    const result: getPotentialGroupDataRow[] | null =
+      await getPotentialGroupData(this.pool, args);
+    return result;
   }
 }

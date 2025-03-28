@@ -17,7 +17,10 @@ import {
   setInvoiceStatusResponseAndActivateMembership,
   getPaymentUrlByReferenceIdArgs,
   getPaymentUrlByReferenceId,
-  getPaymentUrlByReferenceIdRow
+  getPaymentUrlByReferenceIdRow,
+  getPotentialGroupDataRow,
+  getPotentialGroupDataArgs,
+  getPotentialGroupData,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -292,8 +295,8 @@ export class OrdersService {
 
     if (createInvoiceResponse.data.status === 'PAID') {
       const args: setInvoiceStatusResponseAndActivateMembershipArgs = {
-        referenceId,
-        content: createInvoiceResponse,
+        mainReferenceId: referenceId,
+        invoiceStatusResponse: createInvoiceResponse,
       };
       const result = await setInvoiceStatusResponseAndActivateMembership(
         this.pool,
@@ -305,7 +308,8 @@ export class OrdersService {
 
   async getPaymentUrlByReferenceId(referenceId: string) {
     const args: getPaymentUrlByReferenceIdArgs = { referenceId };
-    const result: getPaymentUrlByReferenceIdRow | null = await getPaymentUrlByReferenceId(this.pool, args);
+    const result: getPaymentUrlByReferenceIdRow | null =
+      await getPaymentUrlByReferenceId(this.pool, args);
     if (!result) {
       throw new Error('Payment URL not found');
     }

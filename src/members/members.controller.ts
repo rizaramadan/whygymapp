@@ -94,7 +94,7 @@ export class MembersController {
       if (result) {
         // Successful submission - redirect to payment page
         return {
-          url: `/orders/checkout/${result.referenceId}`,
+          url: `/orders/checkout/${result.mainReferenceId}`,
           statusCode: 302,
         };
       } else {

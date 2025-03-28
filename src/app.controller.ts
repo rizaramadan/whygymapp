@@ -38,10 +38,14 @@ export class AppController {
       await this.membersService.getOrderReferenceIdByEmail(req.user.email);
     const activeMembership =
       await this.membersService.getActiveMembershipByEmail(req.user.email);
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
     return {
       user: req.user,
       membershipApplication: membershipApplication,
       activeMembership: activeMembership,
+      potentialGroupData: potentialGroupData,
     };
   }
 

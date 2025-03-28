@@ -988,10 +988,16 @@ WITH im AS (
     INSERT INTO whygym.members (email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data)
     VALUES ($1, $2, $3, $4, 'pending', $5, $6)
     RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at
+),
+inserted_orders AS (
+    INSERT INTO whygym.orders (member_id, price, order_status)
+    SELECT im.id, $7, 'waiting payment method' FROM im LIMIT 1
+    RETURNING id, reference_id, member_id, price
 )
-INSERT INTO whygym.orders (member_id, price, order_status)
-SELECT im.id, $7, 'waiting payment method' FROM im LIMIT 1
-RETURNING id, reference_id, member_id, price`;
+INSERT INTO whygym.order_groups (main_reference_id, part_id, part_reference_id, notes)
+SELECT reference_id, member_id, reference_id, cast(price as varchar) 
+FROM inserted_orders
+returning id, main_reference_id, part_id, notes::numeric`;
 
 export interface CreateMemberOrderArgs {
     email: string | null;
@@ -1005,9 +1011,9 @@ export interface CreateMemberOrderArgs {
 
 export interface CreateMemberOrderRow {
     id: number;
-    referenceId: string;
-    memberId: number | null;
-    price: string;
+    mainReferenceId: string;
+    partId: number;
+    notes: string;
 }
 
 export async function createMemberOrder(client: Client, args: CreateMemberOrderArgs): Promise<CreateMemberOrderRow | null> {
@@ -1022,9 +1028,9 @@ export async function createMemberOrder(client: Client, args: CreateMemberOrderA
     const row = result.rows[0];
     return {
         id: row[0],
-        referenceId: row[1],
-        memberId: row[2],
-        price: row[3]
+        mainReferenceId: row[1],
+        partId: row[2],
+        notes: row[3]
     };
 }
 
@@ -1518,7 +1524,7 @@ WITH data AS (
     SELECT $1::text AS content, $2::text as ref_id
 )
 UPDATE whygym.orders
-SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb)
+SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status'
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
@@ -1585,18 +1591,26 @@ save_invoice_status AS (UPDATE whygym.orders_status_log l SET additional_info = 
                                 FROM the_row t
                                 WHERE l.id = t.id
 RETURNING l.reference_id, l.id, additional_info),
-the_member_id AS (
-    SELECT member_id FROM whygym.orders o
-                                   INNER JOIN save_invoice_status sis ON o.reference_id = sis.reference_id
-                                   LIMIT 1
+the_payer_id AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'complete'
+    FROM save_invoice_status sis WHERE o.reference_id = sis.reference_id
+    RETURNING o.id, o.member_id
+),
+the_follower AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'completed by ' || the_payer_id.id
+    FROM the_payer_id
+    WHERE o.member_id != the_payer_id.member_id
+              AND o.member_id IN
+                  (SELECT part_id FROM whygym.order_groups og WHERE og.main_reference_id = $1)
+    RETURNING o.member_id
 )
-UPDATE whygym.members m SET membership_status = 'active'
-    FROM the_member_id o WHERE m.id = o.member_id
+UPDATE whygym.members m SET updated_at = current_timestamp, membership_status = 'active'
+    WHERE m.id IN (SELECT part_id FROM whygym.order_groups og WHERE og.main_reference_id = $1)
     RETURNING m.id`;
 
 export interface setInvoiceStatusResponseAndActivateMembershipArgs {
-    referenceId: string;
-    content: any;
+    mainReferenceId: string;
+    invoiceStatusResponse: any;
 }
 
 export interface setInvoiceStatusResponseAndActivateMembershipRow {
@@ -1606,7 +1620,7 @@ export interface setInvoiceStatusResponseAndActivateMembershipRow {
 export async function setInvoiceStatusResponseAndActivateMembership(client: Client, args: setInvoiceStatusResponseAndActivateMembershipArgs): Promise<setInvoiceStatusResponseAndActivateMembershipRow | null> {
     const result = await client.query({
         text: setInvoiceStatusResponseAndActivateMembershipQuery,
-        values: [args.referenceId, args.content],
+        values: [args.mainReferenceId, args.invoiceStatusResponse],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -1645,5 +1659,44 @@ export async function getPaymentUrlByReferenceId(client: Client, args: getPaymen
     return {
         paymenturl: row[0]
     };
+}
+
+export const getPotentialGroupDataQuery = `-- name: getPotentialGroupData :many
+WITH email_pic AS (
+SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id AS memberId,
+       m.additional_data ->> 'emailPic'::text as email_pic
+FROM whygym.orders o
+    INNER JOIN whygym.members m ON o.member_id = m.id
+WHERE m.membership_status = 'pending'
+    AND m.email = $1
+    AND m.additional_data ->> 'emailPic'::text = $1
+LIMIT 1)
+SELECT m.email, m.additional_data->> 'gender' AS gender, m.additional_data->> 'duration' AS duration
+FROM whygym.members m INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+WHERE m.membership_status = 'pending' LIMIT 10`;
+
+export interface getPotentialGroupDataArgs {
+    email: string | null;
+}
+
+export interface getPotentialGroupDataRow {
+    email: string | null;
+    gender: string | null;
+    duration: string | null;
+}
+
+export async function getPotentialGroupData(client: Client, args: getPotentialGroupDataArgs): Promise<getPotentialGroupDataRow[]> {
+    const result = await client.query({
+        text: getPotentialGroupDataQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            email: row[0],
+            gender: row[1],
+            duration: row[2]
+        };
+    });
 }
 
