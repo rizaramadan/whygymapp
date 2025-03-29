@@ -1,17 +1,17 @@
-{{#if haveLength}}
+{{#unless haveLength}}
 <!DOCTYPE html>
 <html>
 <head>
   <title>Redirecting...</title>
   <script>
-    window.location.href = "/orders/checkout-group/{{referenceId}}";
+    window.location.href = "/orders/checkout/{{referenceId}}";
   </script>
 </head>
 <body>
-  <p>If you are not redirected, <a href="/orders/checkout-group/{{referenceId}}">click here</a>.</p>
+  <p>If you are not redirected, <a href="/orders/checkout/{{referenceId}}">click here</a>.</p>
 </body>
 </html>
-{{/if}}
+{{/unless}}
 
 {{#unless invoice}}
 <!DOCTYPE html>
@@ -144,9 +144,13 @@
             <a href="/logout" class="text-green-500 font-medium">Logout</a>
         </header>
 
-        <!-- Payment Summary -->
+        
+        
+        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
+<!-- Payment Summary -->
             <div class="payment-summary">
                 <h2 class="text-xl font-semibold mb-4">Payment Summary</h2>
+                
                 <div class="summary-row">
                     <span class="text-gray-600">Membership Fee</span>
                     <span>{{formatCurrency membershipFee}}</span>
@@ -172,10 +176,34 @@
                     <span>Sub Total</span>
                     <span class="text-green-600">{{formatCurrency total}}</span>
                 </div>
+
+                <div class="border-t border-gray-200 pt-6 mt-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Group Summary</h3>
+                    <div class="space-y-4">
+                        {{#each potentialGroupData}}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <input type="checkbox" id="{{id}}" name="memberId" value="{{id}}" checked>
+                                <div class="flex items-center space-x-4">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{nickname}}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-3 py-1 text-sm font-medium rounded-full 
+                                        {{#if (eq gender "male")}}
+                                            bg-blue-100 text-blue-800
+                                        {{else}}
+                                            bg-pink-100 text-pink-800
+                                        {{/if}}">
+                                        {{gender}}
+                                    </span>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
-        
-        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
-            <!-- Payment Methods -->
+
             <div class="payment-methods">
                 <!-- E-Wallets -->
                 <div class="method-group">

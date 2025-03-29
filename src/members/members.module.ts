@@ -3,9 +3,11 @@ import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { DatabaseModule } from 'src/database.module';
 import { HttpModule } from '@nestjs/axios';
+
 @Module({
   imports: [DatabaseModule, HttpModule],
   controllers: [MembersController],
   providers: [MembersService],
+  exports: [MembersService],
 })
 export class MembersModule {}

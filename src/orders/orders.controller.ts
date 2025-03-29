@@ -8,11 +8,15 @@ import {
   Body,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly membersService: MembersService,
+  ) {}
 
   @Get('checkout/:referenceId')
   @Render('orders/checkout')
@@ -20,7 +24,49 @@ export class OrdersController {
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
   ) {
-    return await this.ordersService.getCheckoutData(referenceId, req.user);
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
+    //check if potentialGroupData have more than 1 member
+    let haveLength = false;
+    if (potentialGroupData.length > 1) {
+      haveLength = true;
+    }
+    const checkoutData = await this.ordersService.getCheckoutData(
+      referenceId,
+      req.user,
+    );
+    return {
+      ...checkoutData,
+      haveLength,
+      potentialGroupData,
+    };
+  }
+
+  @Get('checkout-group/:referenceId')
+  @Render('orders/checkout-group')
+  async checkoutGroup(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+  ) {
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
+    //check if potentialGroupData have more than 1 member
+    let haveLength = false;
+    if (potentialGroupData.length > 1) {
+      haveLength = true;
+    }
+    const checkoutData = await this.ordersService.getCheckoutGroupData(
+      referenceId,
+      req.user,
+      potentialGroupData,
+    );
+    return {
+      ...checkoutData,
+      haveLength,
+      potentialGroupData,
+    };
   }
 
   @Post('payment/:referenceId')
