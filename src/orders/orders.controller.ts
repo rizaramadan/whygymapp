@@ -10,6 +10,7 @@ import {
 import { OrdersService } from './orders.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
+import { getPotentialGroupDataRow } from '../../db/src/query_sql';
 
 @Controller('orders')
 export class OrdersController {
@@ -52,16 +53,19 @@ export class OrdersController {
     const potentialGroupData = await this.membersService.getPotentialGroupData(
       req.user.email,
     );
+
     //check if potentialGroupData have more than 1 member
     let haveLength = false;
     if (potentialGroupData.length > 1) {
       haveLength = true;
     }
+
     const checkoutData = await this.ordersService.getCheckoutGroupData(
       referenceId,
       req.user,
       potentialGroupData,
     );
+
     return {
       ...checkoutData,
       haveLength,

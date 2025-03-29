@@ -370,14 +370,30 @@ LIMIT 1;
 -- name: getPotentialGroupData :many
 WITH email_pic AS (
 SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id AS memberId,
-       m.additional_data ->> 'emailPic'::text as email_pic
+       m.additional_data ->> 'emailPic'::text as email_pic,
+       m.additional_data ->> 'duration'::text as duration
 FROM whygym.orders o
     INNER JOIN whygym.members m ON o.member_id = m.id
 WHERE m.membership_status = 'pending'
     AND m.email = $1
     AND m.additional_data ->> 'emailPic'::text = $1
 LIMIT 1)
-SELECT m.email, m.additional_data->> 'gender' AS gender, m.additional_data->> 'duration' AS duration
-FROM whygym.members m INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+SELECT m.id, m.email, m.nickname, m.additional_data->> 'gender' AS gender, m.additional_data->> 'duration' AS duration, 
+    CASE WHEN og.main_reference_id = email_pic.reference_id THEN true ELSE false END AS checked
+FROM whygym.members m 
+    INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+        AND m.additional_data ->> 'duration'::text = email_pic.duration
+    INNER JOIN whygym.order_groups og ON og.part_id = m.id
 WHERE m.membership_status = 'pending' LIMIT 10;
 
+-- name: updatePairOrderGroup :many
+UPDATE whygym.order_groups SET created_at = current_timestamp,
+                               main_reference_id = $1
+WHERE part_id = $2
+RETURNING id, main_reference_id, part_id, part_reference_id;
+
+-- name: updateQuadOrderGroup :many
+UPDATE whygym.order_groups SET created_at = current_timestamp,
+                               main_reference_id = $1
+WHERE part_id in ($2,$3,$4,$5)
+RETURNING id, main_reference_id, part_id, part_reference_id;

@@ -145,7 +145,6 @@
         </header>
 
         
-        
         <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
 <!-- Payment Summary -->
             <div class="payment-summary">
@@ -182,10 +181,16 @@
                     <div class="space-y-4">
                         {{#each potentialGroupData}}
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                <input type="checkbox" id="{{id}}" name="memberId" value="{{id}}" checked>
                                 <div class="flex items-center space-x-4">
+                                    <input type="checkbox" 
+                                           id="member_{{@index}}" 
+                                           name="memberId" 
+                                           data-gender="{{gender}}"
+                                           value="{{id}}" 
+                                           {{#if checked}}checked{{/if}}
+                                           class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500">
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">{{nickname}}</p>
+                                        <p class="text-xs text-gray-900">{{nickname}}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2">
@@ -200,6 +205,13 @@
                                 </div>
                             </div>
                         {{/each}}
+                    </div>
+                    <div class="mt-4">
+                        <button type="button" 
+                                onclick="updateGroupComposition()"
+                                class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors duration-200">
+                            Update Group Composition
+                        </button>
                     </div>
                 </div>
             </div>
@@ -293,6 +305,23 @@
             document.getElementById('selectedMethod').value = code;
             document.getElementById('paymentGatewayFee').value = fee;
             document.getElementById('continueBtn').disabled = false;
+        }
+
+        function updateGroupComposition() {
+            const selectedMembers = Array.from(document.querySelectorAll('input[name="memberId"]:checked'));
+            const hasFemale = selectedMembers.some(member => member.getAttribute('data-gender') === 'female');
+            
+            
+            const validCounts = hasFemale ? [1, 2, 5] : [1, 2];
+            
+            if (!validCounts.includes(selectedMembers.length)) {
+                alert(hasFemale ? 
+                    'Group must consist of either 2 or 5 members' : 
+                    'Group must consist of 2 members');
+                return;
+            }
+            const referenceId = "{{referenceId}}";
+            console.log(`post to /orders/checkout-group/${referenceId} with ${selectedMembers.length} members id: ${selectedMembers.map(member => member.value).join(',')}`);
         }
     </script>
 </body>

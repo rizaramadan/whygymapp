@@ -1664,15 +1664,20 @@ export async function getPaymentUrlByReferenceId(client: Client, args: getPaymen
 export const getPotentialGroupDataQuery = `-- name: getPotentialGroupData :many
 WITH email_pic AS (
 SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id AS memberId,
-       m.additional_data ->> 'emailPic'::text as email_pic
+       m.additional_data ->> 'emailPic'::text as email_pic,
+       m.additional_data ->> 'duration'::text as duration
 FROM whygym.orders o
     INNER JOIN whygym.members m ON o.member_id = m.id
 WHERE m.membership_status = 'pending'
     AND m.email = $1
     AND m.additional_data ->> 'emailPic'::text = $1
 LIMIT 1)
-SELECT m.email, m.additional_data->> 'gender' AS gender, m.additional_data->> 'duration' AS duration
-FROM whygym.members m INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+SELECT m.id, m.email, m.nickname, m.additional_data->> 'gender' AS gender, m.additional_data->> 'duration' AS duration, 
+    CASE WHEN og.main_reference_id = email_pic.reference_id THEN true ELSE false END AS checked
+FROM whygym.members m 
+    INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+        AND m.additional_data ->> 'duration'::text = email_pic.duration
+    INNER JOIN whygym.order_groups og ON og.part_id = m.id
 WHERE m.membership_status = 'pending' LIMIT 10`;
 
 export interface getPotentialGroupDataArgs {
@@ -1680,9 +1685,12 @@ export interface getPotentialGroupDataArgs {
 }
 
 export interface getPotentialGroupDataRow {
+    id: number;
     email: string | null;
+    nickname: string;
     gender: string | null;
     duration: string | null;
+    checked: boolean;
 }
 
 export async function getPotentialGroupData(client: Client, args: getPotentialGroupDataArgs): Promise<getPotentialGroupDataRow[]> {
@@ -1693,9 +1701,83 @@ export async function getPotentialGroupData(client: Client, args: getPotentialGr
     });
     return result.rows.map(row => {
         return {
-            email: row[0],
-            gender: row[1],
-            duration: row[2]
+            id: row[0],
+            email: row[1],
+            nickname: row[2],
+            gender: row[3],
+            duration: row[4],
+            checked: row[5]
+        };
+    });
+}
+
+export const updatePairOrderGroupQuery = `-- name: updatePairOrderGroup :many
+UPDATE whygym.order_groups SET created_at = current_timestamp,
+                               main_reference_id = $1
+WHERE part_id = $2
+RETURNING id, main_reference_id, part_id, part_reference_id`;
+
+export interface updatePairOrderGroupArgs {
+    mainReferenceId: string;
+    partId: number;
+}
+
+export interface updatePairOrderGroupRow {
+    id: number;
+    mainReferenceId: string;
+    partId: number;
+    partReferenceId: string;
+}
+
+export async function updatePairOrderGroup(client: Client, args: updatePairOrderGroupArgs): Promise<updatePairOrderGroupRow[]> {
+    const result = await client.query({
+        text: updatePairOrderGroupQuery,
+        values: [args.mainReferenceId, args.partId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            mainReferenceId: row[1],
+            partId: row[2],
+            partReferenceId: row[3]
+        };
+    });
+}
+
+export const updateQuadOrderGroupQuery = `-- name: updateQuadOrderGroup :many
+UPDATE whygym.order_groups SET created_at = current_timestamp,
+                               main_reference_id = $1
+WHERE part_id in ($2,$3,$4,$5)
+RETURNING id, main_reference_id, part_id, part_reference_id`;
+
+export interface updateQuadOrderGroupArgs {
+    mainReferenceId: string;
+    partId1: number;
+    partId2: number;
+    partId3: number;
+    partId4: number;
+}
+
+export interface updateQuadOrderGroupRow {
+    id: number;
+    mainReferenceId: string;
+    partId: number;
+    partReferenceId: string;
+}
+
+export async function updateQuadOrderGroup(client: Client, args: updateQuadOrderGroupArgs): Promise<updateQuadOrderGroupRow[]> {
+    const result = await client.query({
+        text: updateQuadOrderGroupQuery,
+        values: [args.mainReferenceId, args.partId1, args.partId2, args.partId3, args.partId4],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            mainReferenceId: row[1],
+            partId: row[2],
+            partReferenceId: row[3]
         };
     });
 }

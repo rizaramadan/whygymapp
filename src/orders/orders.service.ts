@@ -19,8 +19,6 @@ import {
   getPaymentUrlByReferenceId,
   getPaymentUrlByReferenceIdRow,
   getPotentialGroupDataRow,
-  getPotentialGroupDataArgs,
-  getPotentialGroupData,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -29,6 +27,7 @@ import {
   PaymentMethodsResponse,
 } from './orders.interfaces';
 import { User } from '../users/users.service';
+import { MembersService } from 'src/members/members.service';
 interface OrderWithAdditionalInfo {
   additionalInfo: {
     cashback100: boolean;
@@ -124,6 +123,67 @@ export class OrdersService {
         invoice = createInvoiceResponse;
       }
     }
+
+    const { membershipFee, paymentGatewayFee, tax, total } =
+      this.calculatePaymentDetails(order, 0);
+    const paymentMethods = await this.getPaymentMethods(total);
+
+    return {
+      user,
+      referenceId,
+      order,
+      paymentMethods,
+      membershipFee,
+      paymentGatewayFee,
+      tax,
+      total,
+      invoice,
+    };
+  }
+
+  async getCheckoutGroupData(
+    referenceId: string,
+    user: User,
+    potentialGroupData: getPotentialGroupDataRow[],
+  ): Promise<CheckoutResponse> {
+    const order = await this.getOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    let invoice: CreateInvoiceResponse | null = null;
+    if (
+      (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data?.id
+    ) {
+      const createInvoiceResponse: CreateInvoiceResponse =
+        await this.getInvoiceStatus(
+          (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+            ?.id,
+          referenceId,
+        );
+      if (createInvoiceResponse.data.status === 'PAID') {
+        invoice = createInvoiceResponse;
+      }
+    }
+
+    const priceType = 'normal';
+    //get price from potentialGroupData, gender and duration from there, and then calculate the total price, in iterate with map
+    const totalPrice = potentialGroupData
+      .filter((member) => member.checked)
+      .reduce((acc, curr) => {
+        const gender = curr.gender || 'male';
+        const duration = curr.duration || '90';
+        if (!MembersService.priceMap[priceType]?.[gender]?.[duration]) {
+          throw new Error('Invalid price parameters');
+        }
+
+        const price = String(
+          MembersService.priceMap[priceType][gender][duration],
+        );
+        return acc + parseFloat(price);
+      }, 0);
+
+    order.price = String(totalPrice);
 
     const { membershipFee, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);

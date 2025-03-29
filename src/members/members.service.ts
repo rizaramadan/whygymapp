@@ -32,7 +32,7 @@ import { User } from 'src/users/users.service';
 
 @Injectable()
 export class MembersService {
-  private static readonly priceMap: {
+  public static readonly priceMap: {
     [key in 'normal' | 'discount']: {
       [key in 'male' | 'female']: {
         [key in '90' | '180' | '360']: number;
