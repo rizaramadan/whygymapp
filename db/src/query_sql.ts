@@ -306,7 +306,7 @@ export async function createUserRequest(client: Client, args: CreateUserRequestA
 
 export const approveUserRequestQuery = `-- name: ApproveUserRequest :one
 UPDATE whygym.create_user_requests
-SET status = 'approved', approved_by = $1
+SET status = 'approved', approved_by = $1, updated_at = current_timestamp
 WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at`;
 
@@ -348,7 +348,7 @@ export async function approveUserRequest(client: Client, args: ApproveUserReques
 
 export const rejectUserRequestQuery = `-- name: RejectUserRequest :one
 UPDATE whygym.create_user_requests
-SET status = 'rejected', approved_by = $1
+SET status = 'rejected', approved_by = $1, updated_at = current_timestamp
 WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at`;
 
@@ -462,7 +462,7 @@ export const approveAndApplyUserQuery = `-- name: ApproveAndApplyUser :one
 WITH approve_create_user AS
     (
         UPDATE whygym.create_user_requests cur
-        SET status = 'approved', approved_by = $1
+        SET status = 'approved', approved_by = $1, updated_at = current_timestamp
         WHERE cur.id = $2
         RETURNING cur.username, cur.password, cur.email, cur.status, cur.created_at, cur.updated_at, gen_salt('md5') as salt
     )
@@ -1162,7 +1162,7 @@ export async function getWaitingPaymentOrders(client: Client): Promise<getWaitin
 
 export const turnOnCashback100Query = `-- name: turnOnCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1195,7 +1195,7 @@ export async function turnOnCashback100(client: Client, args: turnOnCashback100A
 
 export const turnOffCashback100Query = `-- name: turnOffCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false')
+SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1228,7 +1228,7 @@ export async function turnOffCashback100(client: Client, args: turnOffCashback10
 
 export const turnOnCashback200Query = `-- name: turnOnCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1261,7 +1261,7 @@ export async function turnOnCashback200(client: Client, args: turnOnCashback200A
 
 export const turnOffCashback200Query = `-- name: turnOffCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false')
+SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1294,7 +1294,7 @@ export async function turnOffCashback200(client: Client, args: turnOffCashback20
 
 export const turnOnExtend30Query = `-- name: turnOnExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1327,7 +1327,7 @@ export async function turnOnExtend30(client: Client, args: turnOnExtend30Args): 
 
 export const turnOffExtend30Query = `-- name: turnOffExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend30}', 'false')
+SET additional_info = jsonb_set(additional_info, '{extend30}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1360,7 +1360,7 @@ export async function turnOffExtend30(client: Client, args: turnOffExtend30Args)
 
 export const turnOnExtend90Query = `-- name: turnOnExtend90 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1393,7 +1393,7 @@ export async function turnOnExtend90(client: Client, args: turnOnExtend90Args): 
 
 export const turnOffExtend90Query = `-- name: turnOffExtend90 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
+SET additional_info = jsonb_set(additional_info, '{extend90}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1524,7 +1524,7 @@ WITH data AS (
     SELECT $1::text AS content, $2::text as ref_id
 )
 UPDATE whygym.orders
-SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status'
+SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status', updated_at = current_timestamp
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
@@ -1678,7 +1678,7 @@ FROM whygym.members m
     INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
         AND m.additional_data ->> 'duration'::text = email_pic.duration
     INNER JOIN whygym.order_groups og ON og.part_id = m.id
-WHERE m.membership_status = 'pending' LIMIT 10`;
+WHERE m.membership_status = 'pending' ORDER BY m.nickname LIMIT 10`;
 
 export interface getPotentialGroupDataArgs {
     email: string | null;
@@ -1711,74 +1711,74 @@ export async function getPotentialGroupData(client: Client, args: getPotentialGr
     });
 }
 
-export const updatePairOrderGroupQuery = `-- name: updatePairOrderGroup :many
-UPDATE whygym.order_groups SET created_at = current_timestamp,
+export const joinToGroupQuery = `-- name: joinToGroup :one
+UPDATE whygym.order_groups SET updated_at = current_timestamp,
                                main_reference_id = $1
 WHERE part_id = $2
 RETURNING id, main_reference_id, part_id, part_reference_id`;
 
-export interface updatePairOrderGroupArgs {
+export interface joinToGroupArgs {
     mainReferenceId: string;
     partId: number;
 }
 
-export interface updatePairOrderGroupRow {
+export interface joinToGroupRow {
     id: number;
     mainReferenceId: string;
     partId: number;
     partReferenceId: string;
 }
 
-export async function updatePairOrderGroup(client: Client, args: updatePairOrderGroupArgs): Promise<updatePairOrderGroupRow[]> {
+export async function joinToGroup(client: Client, args: joinToGroupArgs): Promise<joinToGroupRow | null> {
     const result = await client.query({
-        text: updatePairOrderGroupQuery,
+        text: joinToGroupQuery,
         values: [args.mainReferenceId, args.partId],
         rowMode: "array"
     });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            mainReferenceId: row[1],
-            partId: row[2],
-            partReferenceId: row[3]
-        };
-    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        mainReferenceId: row[1],
+        partId: row[2],
+        partReferenceId: row[3]
+    };
 }
 
-export const updateQuadOrderGroupQuery = `-- name: updateQuadOrderGroup :many
-UPDATE whygym.order_groups SET created_at = current_timestamp,
-                               main_reference_id = $1
-WHERE part_id in ($2,$3,$4,$5)
+export const removeFromGroupQuery = `-- name: removeFromGroup :one
+UPDATE whygym.order_groups SET updated_at = current_timestamp,
+                               main_reference_id = part_reference_id
+WHERE part_id = $1
 RETURNING id, main_reference_id, part_id, part_reference_id`;
 
-export interface updateQuadOrderGroupArgs {
-    mainReferenceId: string;
-    partId1: number;
-    partId2: number;
-    partId3: number;
-    partId4: number;
+export interface removeFromGroupArgs {
+    partId: number;
 }
 
-export interface updateQuadOrderGroupRow {
+export interface removeFromGroupRow {
     id: number;
     mainReferenceId: string;
     partId: number;
     partReferenceId: string;
 }
 
-export async function updateQuadOrderGroup(client: Client, args: updateQuadOrderGroupArgs): Promise<updateQuadOrderGroupRow[]> {
+export async function removeFromGroup(client: Client, args: removeFromGroupArgs): Promise<removeFromGroupRow | null> {
     const result = await client.query({
-        text: updateQuadOrderGroupQuery,
-        values: [args.mainReferenceId, args.partId1, args.partId2, args.partId3, args.partId4],
+        text: removeFromGroupQuery,
+        values: [args.partId],
         rowMode: "array"
     });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            mainReferenceId: row[1],
-            partId: row[2],
-            partReferenceId: row[3]
-        };
-    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        mainReferenceId: row[1],
+        partId: row[2],
+        partReferenceId: row[3]
+    };
 }
 

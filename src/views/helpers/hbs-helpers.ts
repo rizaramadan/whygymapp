@@ -22,6 +22,10 @@ export function registerHelpers() {
     return a === b;
   });
 
+  hbs.registerHelper('neq', function (a: any, b: any) {
+    return a !== b;
+  });
+
   hbs.registerHelper('formatCurrency', function (amount: number) {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',

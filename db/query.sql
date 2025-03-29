@@ -74,13 +74,13 @@ RETURNING id, username, password, email, status, created_at, updated_at;
 
 -- name: ApproveUserRequest :one
 UPDATE whygym.create_user_requests
-SET status = 'approved', approved_by = $1
+SET status = 'approved', approved_by = $1, updated_at = current_timestamp
 WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at;
 
 -- name: RejectUserRequest :one
 UPDATE whygym.create_user_requests
-SET status = 'rejected', approved_by = $1
+SET status = 'rejected', approved_by = $1, updated_at = current_timestamp
 WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at;
 
@@ -98,7 +98,7 @@ ORDER BY created_at DESC;
 WITH approve_create_user AS
     (
         UPDATE whygym.create_user_requests cur
-        SET status = 'approved', approved_by = $1
+        SET status = 'approved', approved_by = $1, updated_at = current_timestamp
         WHERE cur.id = $2
         RETURNING cur.username, cur.password, cur.email, cur.status, cur.created_at, cur.updated_at, gen_salt('md5') as salt
     )
@@ -262,49 +262,49 @@ SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_
 
 -- name: turnOnCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false')
+SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOnCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false')
+SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOnExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend30}', 'false')
+SET additional_info = jsonb_set(additional_info, '{extend30}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOnExtend90 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true')
+SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffExtend90 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend90}', 'false')
+SET additional_info = jsonb_set(additional_info, '{extend90}', 'false'), updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
@@ -326,7 +326,7 @@ WITH data AS (
     SELECT $1::text AS content, $2::text as ref_id
 )
 UPDATE whygym.orders
-SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status'
+SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status', updated_at = current_timestamp
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id;
@@ -384,16 +384,17 @@ FROM whygym.members m
     INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
         AND m.additional_data ->> 'duration'::text = email_pic.duration
     INNER JOIN whygym.order_groups og ON og.part_id = m.id
-WHERE m.membership_status = 'pending' LIMIT 10;
+WHERE m.membership_status = 'pending' ORDER BY m.nickname LIMIT 10;
 
--- name: updatePairOrderGroup :many
-UPDATE whygym.order_groups SET created_at = current_timestamp,
+-- name: joinToGroup :one
+UPDATE whygym.order_groups SET updated_at = current_timestamp,
                                main_reference_id = $1
 WHERE part_id = $2
 RETURNING id, main_reference_id, part_id, part_reference_id;
 
--- name: updateQuadOrderGroup :many
-UPDATE whygym.order_groups SET created_at = current_timestamp,
-                               main_reference_id = $1
-WHERE part_id in ($2,$3,$4,$5)
+-- name: removeFromGroup :one
+UPDATE whygym.order_groups SET updated_at = current_timestamp,
+                               main_reference_id = part_reference_id
+WHERE part_id = $1
 RETURNING id, main_reference_id, part_id, part_reference_id;
+

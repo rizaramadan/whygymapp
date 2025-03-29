@@ -19,6 +19,10 @@ import {
   getPaymentUrlByReferenceId,
   getPaymentUrlByReferenceIdRow,
   getPotentialGroupDataRow,
+  joinToGroupArgs,
+  removeFromGroupArgs,
+  joinToGroup,
+  removeFromGroup,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -200,6 +204,23 @@ export class OrdersService {
       total,
       invoice,
     };
+  }
+
+  async joinToGroup(mainReferenceId: string, partId: string) {
+    const args: joinToGroupArgs = {
+      mainReferenceId,
+      partId: parseInt(partId),
+    };
+    const result = await joinToGroup(this.pool, args);
+    return result;
+  }
+
+  async removeFromGroup(partId: string) {
+    const args: removeFromGroupArgs = {
+      partId: parseInt(partId),
+    };
+    const result = await removeFromGroup(this.pool, args);
+    return result;
   }
 
   calculatePaymentDetails(order: any, paymentGatewayFee: number) {

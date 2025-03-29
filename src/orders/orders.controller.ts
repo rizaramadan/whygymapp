@@ -70,6 +70,7 @@ export class OrdersController {
       ...checkoutData,
       haveLength,
       potentialGroupData,
+      payer: req.user.email,
     };
   }
 
@@ -120,5 +121,37 @@ export class OrdersController {
     const paymentUrl =
       await this.ordersService.getPaymentUrlByReferenceId(referenceId);
     return `<script>window.location.href = '${paymentUrl}';</script>`;
+  }
+
+  @Post('checkout-group-update/:referenceId/:action/:memberId')
+  @Render('orders/checkout-group-update')
+  async updateCheckoutGroup(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+    @Param('action') action: string,
+    @Param('memberId') memberId: string,
+  ) {
+    if (action === 'uncheck') {
+      await this.ordersService.removeFromGroup(memberId);
+    } else if (action === 'check') {
+      await this.ordersService.joinToGroup(referenceId, memberId);
+    }
+
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
+
+    const checkoutData = await this.ordersService.getCheckoutGroupData(
+      referenceId,
+      req.user,
+      potentialGroupData,
+    );
+
+    return {
+      ...checkoutData,
+      haveLength: potentialGroupData.length > 1,
+      potentialGroupData,
+      payer: req.user.email,
+    };
   }
 }
