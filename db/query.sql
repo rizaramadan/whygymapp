@@ -52,9 +52,20 @@ VALUES ($1, $2, $3)
 RETURNING id, member_id, email, pic_url, check_in_time, visit_code;
 
 -- name: GetMemberIdByEmail :one
-SELECT id FROM whygym.members
+SELECT id,email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
 WHERE email = $1
 LIMIT 1;
+
+-- name: UpdateMemberAdditionalData :one
+UPDATE whygym.members SET updated_at = current_timestamp, additional_data = jsonb_set(
+     jsonb_set(
+             jsonb_set(
+                     additional_data::jsonb,
+                     '{duration}'::text[], $4::jsonb)
+         , '{gender}'::text[], $5::jsonb
+     ),
+     '{emailPic}'::text[], $3::jsonb)
+WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, email;
 
 -- name: GetVisitsAfterId :many 
 SELECT id, member_id, email, pic_url, check_in_time, visit_code

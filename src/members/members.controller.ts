@@ -15,7 +15,7 @@ import {
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';
 import { Roles } from 'src/roles/decorators/roles.decorator';
-import { MembershipApplicationDto } from './dto/membership-application.dto';
+import { EditMembershipApplicationDto, MembershipApplicationDto } from './dto/membership-application.dto';
 
 @Controller('members')
 export class MembersController {
@@ -73,9 +73,20 @@ export class MembersController {
 
   @Get('membership-apply')
   @Render('members/membership-apply')
-  getApply() {
+  async getApply(@Request() req: { user: User }) {
+    const member = await this.membersService.getMemberIdByEmail(req.user.email);
+
+    if (member?.membershipStatus === 'pending') {
+      return {
+        url: `/members/edit-membership-apply`,
+        statusCode: 302,
+      };
+    }
+
     return {
       getCurrentDate: new Date().toISOString().split('T')[0],
+      user: req.user,
+      member: member,
     };
   }
 
@@ -111,6 +122,36 @@ export class MembersController {
         statusCode: 302,
       };
     }
+  }
+
+  @Get('edit-membership-apply')
+  @Render('members/edit-membership-apply')
+  async getEditApply(@Request() req: { user: User }) {
+    const member = await this.membersService.getMemberIdByEmail(req.user.email);
+
+    return {
+      getCurrentDate: new Date().toISOString().split('T')[0],
+      user: req.user,
+      member: member,
+    };
+  }
+
+  @Post('edit-membership-apply/:id')
+  async submitEditMembershipApplication(
+    @Param('id') id: string,
+    @Request() req: { user: User },
+    @Body() applicationData: EditMembershipApplicationDto,
+  ) {
+    console.log(applicationData);
+    await this.membersService.updateMemberAdditionalData(
+      parseInt(id),
+      req.user.email,
+      `"${applicationData.emailPic}"`,
+      `"${applicationData.duration}"`,
+      `"${applicationData.gender}"`,
+    );
+
+    return '<script>window.location.href = "/user-dashboard";</script>';
   }
 
   @Get('application-success')

@@ -25,6 +25,9 @@ import {
   getPotentialGroupDataRow,
   getPotentialGroupDataArgs,
   getPotentialGroupData,
+  updateMemberAdditionalData,
+  UpdateMemberAdditionalDataArgs,
+  UpdateMemberAdditionalDataRow,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -204,5 +207,19 @@ export class MembersService {
     const result: getPotentialGroupDataRow[] | null =
       await getPotentialGroupData(this.pool, args);
     return result;
+  }
+
+  async getMemberIdByEmail(email: string) {
+    return await getMemberIdByEmail(this.pool, { email });
+  }
+
+  async updateMemberAdditionalData(
+    id: number,
+    email: string,
+    emailPic: string,
+    duration: string,
+    gender: string,
+  ) {
+    return await updateMemberAdditionalData(this.pool, { id, email, emailPic, duration, gender });
   }
 }

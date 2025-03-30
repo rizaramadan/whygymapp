@@ -25,8 +25,13 @@ const TOKEN = env.TEST_TOKEN;
 export default function () {
   // Step 1: Apply for membership
   const membershipData = {
+    // Group/duo email (required for group/duo membership)
     emailPic: 'riza.ramadan+duo1@gmail.com',
-    duration: '90',
+    
+    // Membership duration (required)
+    duration: '90', // 90 days (3 months)
+    
+    // Personal Information
     fullName: 'Riza Notif',
     nickname: 'duo satu',
     gender: 'male',
@@ -34,15 +39,23 @@ export default function () {
     address: 'Cipaganti',
     wa: '1123',
     identityNumber: '123',
+    
+    // Health Information
     healthConditionPreset: 'none',
     healthCondition: 'Saya dalam kondisi sehat untuk melakukan aktivitas fisik',
+    
+    // Parent Information (optional)
     parentName: '',
     parentIdentityNumber: '',
     parentContact: '',
+    
+    // Agreements
     termsAgree: 'on',
     riskAgree: 'on',
     dataAgree: 'on',
     rulesAgree: 'on',
+    
+    // Front Officer
     frontOfficer: 'Heru'
   };
 

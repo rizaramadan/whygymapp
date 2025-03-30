@@ -87,3 +87,13 @@ export class MembershipApplicationDto {
   @IsString()
   frontOfficer: string;
 }
+export class EditMembershipApplicationDto {
+  @IsEmail()
+  emailPic: string;
+
+  @IsString()
+  duration: string;
+
+  @IsString()
+  gender: string;
+}
