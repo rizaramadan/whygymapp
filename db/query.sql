@@ -409,3 +409,9 @@ UPDATE whygym.order_groups SET updated_at = current_timestamp,
 WHERE part_id = $1
 RETURNING id, main_reference_id, part_id, part_reference_id;
 
+-- name: getActiveMemberBreakdown :many
+select email, additional_data->> 'gender' as gender,
+       additional_data->> 'promoType' as promo_type,
+       additional_data->> 'groupType' as group_type,
+       additional_data->> 'duration' as duration
+from whygym.members where membership_status = 'active' order by id;

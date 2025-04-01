@@ -192,4 +192,11 @@ export class MembersController {
       );
     }
   }
+
+  @Get('active-member-breakdown')
+  @Render('members/active-member-breakdown')
+  async getActiveMemberBreakdown() {
+    const breakdown = await this.membersService.getActiveMemberBreakdown();
+    return { breakdown };
+  }
 }

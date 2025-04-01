@@ -1,1 +1,193 @@
-this is admin dashboard
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-green-600">WhyGym Analytics (Dummy Data)</h1>
+            <a href="/logout" class="text-green-500 font-medium hover:text-green-600">Logout</a>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-gray-500 text-sm">Total Members</h3>
+                <p class="text-3xl font-bold text-green-600">1,234</p>
+                <p class="text-green-500 text-sm">+12% from last month</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-gray-500 text-sm">Active Members</h3>
+                <p class="text-3xl font-bold text-green-600">892</p>
+                <p class="text-green-500 text-sm">+8% from last month</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-gray-500 text-sm">Total Orders</h3>
+                <p class="text-3xl font-bold text-green-600">456</p>
+                <p class="text-green-500 text-sm">+15% from last month</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-gray-500 text-sm">Total Revenue</h3>
+                <p class="text-3xl font-bold text-green-600">Rp 123.450.000</p>
+                <p class="text-green-500 text-sm">+18% from last month</p>
+            </div>
+        </div>
+
+        <!-- Member Breakdown -->
+        <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200 mb-8">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Member Breakdown</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Gender Breakdown -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-4">By Gender</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Male</span>
+                            <span class="text-sm font-medium text-green-600">65% (580)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Female</span>
+                            <span class="text-sm font-medium text-green-600">35% (312)</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Membership Duration -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-500 mb-4">By Duration</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">3 Months</span>
+                            <span class="text-sm font-medium text-green-600">45% (401)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">6 Months</span>
+                            <span class="text-sm font-medium text-green-600">35% (312)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">12 Months</span>
+                            <span class="text-sm font-medium text-green-600">20% (179)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">Membership Growth</h3>
+                <canvas id="membershipChart"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">Revenue Trend</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="bg-white rounded-lg shadow p-6 border-2 border-gray-200">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Recent Orders</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#12345</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">John Doe</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp 999.000</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completed</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-03-15</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#12344</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Jane Smith</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp 1.499.000</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-03-14</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Membership Growth Chart
+        const membershipCtx = document.getElementById('membershipChart').getContext('2d');
+        new Chart(membershipCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Total Members',
+                    data: [1000, 1050, 1100, 1150, 1200, 1234],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Revenue Trend Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Revenue (Rp)',
+                    data: [80000000, 90000000, 100000000, 110000000, 120000000, 123450000],
+                    backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

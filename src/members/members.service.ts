@@ -28,6 +28,8 @@ import {
   updateMemberAdditionalData,
   UpdateMemberAdditionalDataArgs,
   UpdateMemberAdditionalDataRow,
+  getActiveMemberBreakdown,
+  getActiveMemberBreakdownRow,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -220,6 +222,15 @@ export class MembersService {
     duration: string,
     gender: string,
   ) {
-    return await updateMemberAdditionalData(this.pool, { id, email, emailPic, duration, gender });
+    return await updateMemberAdditionalData(
+      this.pool,
+      { id, email, emailPic, duration, gender },
+    );
+  }
+
+  async getActiveMemberBreakdown(): Promise<getActiveMemberBreakdownRow[]> {
+    const data = await getActiveMemberBreakdown(this.pool);
+    console.log(data);
+    return data;
   }
 }

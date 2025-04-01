@@ -1834,3 +1834,35 @@ export async function removeFromGroup(client: Client, args: removeFromGroupArgs)
     };
 }
 
+export const getActiveMemberBreakdownQuery = `-- name: getActiveMemberBreakdown :many
+select email, additional_data->> 'gender' as gender,
+       additional_data->> 'promoType' as promo_type,
+       additional_data->> 'groupType' as group_type,
+       additional_data->> 'duration' as duration
+from whygym.members where membership_status = 'active' order by id`;
+
+export interface getActiveMemberBreakdownRow {
+    email: string | null;
+    gender: string | null;
+    promoType: string | null;
+    groupType: string | null;
+    duration: string | null;
+}
+
+export async function getActiveMemberBreakdown(client: Client): Promise<getActiveMemberBreakdownRow[]> {
+    const result = await client.query({
+        text: getActiveMemberBreakdownQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            email: row[0],
+            gender: row[1],
+            promoType: row[2],
+            groupType: row[3],
+            duration: row[4]
+        };
+    });
+}
+
