@@ -16,6 +16,7 @@ import { User } from '../users/users.service';
 import { MembersService } from './members.service';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { EditMembershipApplicationDto, MembershipApplicationDto } from './dto/membership-application.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('members')
 export class MembersController {
@@ -193,6 +194,7 @@ export class MembersController {
     }
   }
 
+  @Public()
   @Get('active-member-breakdown')
   @Render('members/active-member-breakdown')
   async getActiveMemberBreakdown() {
