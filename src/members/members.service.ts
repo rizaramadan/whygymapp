@@ -30,6 +30,7 @@ import {
   UpdateMemberAdditionalDataRow,
   getActiveMemberBreakdown,
   getActiveMemberBreakdownRow,
+  linkGroupOrder,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -159,6 +160,7 @@ export class MembersService {
 
       // Create member using the provided function
       const member = await createMemberOrder(this.pool, memberParams);
+      await linkGroupOrder(this.pool, { id: member?.partId || 0 });
 
       return member;
     } catch (error) {

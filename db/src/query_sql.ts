@@ -227,9 +227,9 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    emailPic: string;
-    duration: string;
-    gender: string;
+    duration: any;
+    gender: any;
+    emailPic: any;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -1083,6 +1083,51 @@ export async function createMemberOrder(client: Client, args: CreateMemberOrderA
         mainReferenceId: row[1],
         partId: row[2],
         notes: row[3]
+    };
+}
+
+export const linkGroupOrderQuery = `-- name: linkGroupOrder :one
+with email_pic AS (
+select m.additional_data ->> 'emailPic' as email_pic, m.email, m.id as ori_id
+                  from whygym.members m
+                  where m.id = $1
+                  and additional_data->>'emailPic' != email
+                  limit 1
+),
+   main_member AS (
+        select m.id, o.reference_id, email_pic, email_pic.ori_id from whygym.members m
+                        inner join email_pic on m.email = email_pic.email_pic
+                        inner join whygym.orders o on m.id = o.member_id
+
+                    and m.additional_data->> 'emailPic' = m.email
+                  limit 1
+) update whygym.order_groups og set updated_at = current_timestamp,
+                                 main_reference_id = main_member.reference_id
+from main_member where main_member.ori_id = og.part_id
+returning og.part_id, og.main_reference_id`;
+
+export interface linkGroupOrderArgs {
+    id: number;
+}
+
+export interface linkGroupOrderRow {
+    partId: number;
+    mainReferenceId: string;
+}
+
+export async function linkGroupOrder(client: Client, args: linkGroupOrderArgs): Promise<linkGroupOrderRow | null> {
+    const result = await client.query({
+        text: linkGroupOrderQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        partId: row[0],
+        mainReferenceId: row[1]
     };
 }
 

@@ -17,7 +17,6 @@ import {
   CreateUserRequestRow,
   ApproveAndApplyUserArgs,
   RejectUserRequestArgs,
-  AddOrUpdateUserPictureArgs,
 } from '../../db/src/query_sql';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { User, UsersService } from './users.service';
@@ -40,13 +39,9 @@ export class UsersController {
   // create user request for front officer
   @Post('create-user-request')
   @Roles('front-officer')
-  async createUserRequest(
-    @Body() body: CreateUserRequestArgs,
-    @Response() res: ExpressResponse,
-  ): Promise<CreateUserRequestRow | null> {
-    const result = await this.usersService.createUserRequest(body);
-    res.setHeader('HX-Redirect', '/users/user-requests');
-    return result;
+  async createUserRequest(@Body() body: CreateUserRequestArgs) {
+    await this.usersService.createUserRequest(body);
+    return '<script>window.location.href="/users/user-requests"</script>';
   }
 
   // view all user requests for front officer

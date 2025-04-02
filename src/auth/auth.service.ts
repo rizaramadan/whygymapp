@@ -27,6 +27,7 @@ export class AuthService {
         id: user.id,
         username: user.username,
         roles: user.roles,
+        email: `${user.username}@whygym.id`,
       };
       return {
         access_token: await this.jwtService.signAsync(payload),

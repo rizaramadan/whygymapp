@@ -248,7 +248,25 @@ SELECT reference_id, member_id, reference_id, cast(price as varchar)
 FROM inserted_orders
 returning id, main_reference_id, part_id, notes::numeric;
 
+-- name: linkGroupOrder :one
+with email_pic AS (
+select m.additional_data ->> 'emailPic' as email_pic, m.email, m.id as ori_id
+                  from whygym.members m
+                  where m.id = $1
+                  and additional_data->>'emailPic' != email
+                  limit 1
+),
+   main_member AS (
+        select m.id, o.reference_id, email_pic, email_pic.ori_id from whygym.members m
+                        inner join email_pic on m.email = email_pic.email_pic
+                        inner join whygym.orders o on m.id = o.member_id
 
+                    and m.additional_data->> 'emailPic' = m.email
+                  limit 1
+) update whygym.order_groups og set updated_at = current_timestamp,
+                                 main_reference_id = main_member.reference_id
+from main_member where main_member.ori_id = og.part_id
+returning og.part_id, og.main_reference_id;
 
 -- name: GetOrderReferenceIdByEmail :one
 SELECT reference_id, m.additional_data, m.nickname, o.created_at, m.id as memberId
@@ -415,3 +433,4 @@ select email, additional_data->> 'gender' as gender,
        additional_data->> 'groupType' as group_type,
        additional_data->> 'duration' as duration
 from whygym.members where membership_status = 'active' order by id;
+
