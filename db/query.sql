@@ -284,10 +284,12 @@ LIMIT 1;
 
 -- name: getWaitingPaymentOrders :many  
 SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
-       FROM whygym.orders o 
+       FROM whygym.orders o
        INNER JOIN whygym.members m ON m.id = o.member_id
-       WHERE o.order_status = 'waiting payment method'
-       LIMIT 100;
+       INNER JOIN whygym.order_groups og ON og.main_reference_id = o.reference_id
+       WHERE o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status')
+       ORDER BY m.created_at desc
+       LIMIT 500;
 
 -- name: turnOnCashback100 :one
 UPDATE whygym.orders
