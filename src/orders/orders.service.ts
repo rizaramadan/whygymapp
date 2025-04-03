@@ -241,7 +241,7 @@ export class OrdersService {
     const membershipFee = parseFloat(
       (order as OrderWithAdditionalInfo)?.price.toString() || '0',
     );
-    const taxRate = 0.11;
+    const taxRate = 0.1;
     const tax = membershipFee * taxRate;
     let total = membershipFee + tax;
 
