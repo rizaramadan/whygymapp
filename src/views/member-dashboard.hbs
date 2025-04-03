@@ -96,7 +96,7 @@
         <div class="p-4 flex justify-between items-center">
             <div>
                 <h2 class="text-lg font-semibold text-gray-800">Welcome back, {{user.fullName}}</h2>
-                <p class="text-sm text-gray-500">Your membership is active until March 30, 2024</p>
+                <p class="text-sm text-gray-500">Your membership is active until {{formatDate memberActiveDate.endDate}}</p>
             </div>
             <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
                 {{#if user.picUrl}}

@@ -463,3 +463,11 @@ select email, additional_data->> 'gender' as gender,
        additional_data->> 'duration' as duration
 from whygym.members where membership_status = 'active' order by id;
 
+-- name: getMemberActiveDate :one
+WITH data as (
+select
+    case when created_at < '2025-04-01 00:00:00' THEN '2025-04-01' else created_at::date end as start_date,
+    additional_data->>'duration' || ' days' as duration
+from whygym.members where email = $1 and membership_status = 'active' limit 1)
+select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date
+from data limit 1;

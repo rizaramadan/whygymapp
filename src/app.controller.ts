@@ -47,9 +47,13 @@ export class AppController {
 
   @Get('/member-dashboard')
   @Render('member-dashboard')
-  memberDashboard(@Request() req: { user: User }) {
+  async memberDashboard(@Request() req: { user: User }) { 
+    const memberActiveDate = await this.membersService.getMemberActiveDate(
+      req.user.email,
+    );
     return {
       user: req.user,
+      memberActiveDate,
     };
   }
 

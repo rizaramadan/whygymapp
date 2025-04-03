@@ -228,8 +228,8 @@ export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
     emailPic: string | null;
-    duration: string | null;
-    gender: string | null;
+    duration: string;
+    gender: string;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -1966,5 +1966,41 @@ export async function getActiveMemberBreakdown(client: Client): Promise<getActiv
             duration: row[4]
         };
     });
+}
+
+export const getMemberActiveDateQuery = `-- name: getMemberActiveDate :one
+WITH data as (
+select
+    case when created_at < '2025-04-01 00:00:00' THEN '2025-04-01' else created_at::date end as start_date,
+    additional_data->>'duration' || ' days' as duration
+from whygym.members where email = $1 and membership_status = 'active' limit 1)
+select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date
+from data limit 1`;
+
+export interface getMemberActiveDateArgs {
+    email: string | null;
+}
+
+export interface getMemberActiveDateRow {
+    startDate: Date;
+    duration: string | null;
+    endDate: Date;
+}
+
+export async function getMemberActiveDate(client: Client, args: getMemberActiveDateArgs): Promise<getMemberActiveDateRow | null> {
+    const result = await client.query({
+        text: getMemberActiveDateQuery,
+        values: [args.email],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        startDate: row[0],
+        duration: row[1],
+        endDate: row[2]
+    };
 }
 

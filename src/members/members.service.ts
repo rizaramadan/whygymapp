@@ -31,6 +31,8 @@ import {
   getActiveMemberBreakdown,
   getActiveMemberBreakdownRow,
   linkGroupOrder,
+  getMemberActiveDate,
+  getMemberActiveDateRow,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -204,5 +206,11 @@ export class MembersService {
     const data = await getActiveMemberBreakdown(this.pool);
     console.log(data);
     return data;
+  }
+
+  async getMemberActiveDate(
+    email: string,
+  ): Promise<getMemberActiveDateRow | null> {
+    return await getMemberActiveDate(this.pool, { email });
   }
 }
