@@ -109,17 +109,14 @@ export class MemberPricingService {
     const priceType = 'promo';
     //extract if member is single, duo, or group
     //if member is more than 5, then single is used
-    const groupType =
-      memberData.length === 1
-        ? 'single'
-        : memberData.length >= 5
-          ? 'group'
-          : 'duo';
 
-    ///const hasMale = memberData.some((member) => member.gender === 'male');
-    //if (hasMale && groupType === 'group') {
-    //  groupType = 'duo';
-    //}
+    //numbers female members
+    const femaleMembers = memberData.filter(
+      (member) => member.gender === 'female',
+    ).length;
+
+    const groupType =
+      memberData.length === 1 ? 'single' : femaleMembers >= 5 ? 'group' : 'duo';
 
     const total = memberData.reduce((acc, curr) => {
       const gender = curr.gender || 'female';
