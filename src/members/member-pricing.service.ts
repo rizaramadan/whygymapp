@@ -19,9 +19,9 @@ export class MemberPricingService {
     normal: {
       single: {
         male: {
-          '90': 550000,
-          '180': 1000000,
-          '360': 1800000,
+          '90': 650000,
+          '180': 1200000,
+          '360': 1950000,
         },
         female: {
           '90': 1100000,
@@ -31,9 +31,9 @@ export class MemberPricingService {
       },
       duo: {
         male: {
-          '90': 500000,
-          '180': 900000,
-          '360': 1650000,
+          '90': 550000,
+          '180': 1000000,
+          '360': 1800000,
         },
         female: {
           '90': 1000000,
@@ -43,9 +43,9 @@ export class MemberPricingService {
       },
       group: {
         male: {
-          '90': 500000,
-          '180': 900000,
-          '360': 1650000,
+          '90': 550000,
+          '180': 1000000,
+          '360': 1800000,
         },
         female: {
           '90': 850000,
@@ -109,19 +109,17 @@ export class MemberPricingService {
     const priceType = 'promo';
     //extract if member is single, duo, or group
     //if member is more than 5, then single is used
-    let groupType =
+    const groupType =
       memberData.length === 1
         ? 'single'
-        : memberData.length === 5
+        : memberData.length >= 5
           ? 'group'
-          : memberData.length > 5
-            ? 'single' //if member is more than 5, then single is used
-            : 'duo'; //if member is less than 5, then duo is used
+          : 'duo';
 
-    const hasMale = memberData.some((member) => member.gender === 'male');
-    if (hasMale && groupType === 'group') {
-      groupType = 'duo';
-    }
+    ///const hasMale = memberData.some((member) => member.gender === 'male');
+    //if (hasMale && groupType === 'group') {
+    //  groupType = 'duo';
+    //}
 
     const total = memberData.reduce((acc, curr) => {
       const gender = curr.gender || 'female';
