@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Payment Method - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .hero-section {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .hero-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+        }
+        .payment-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .payment-option {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-option:hover {
+            border-color: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .payment-option.selected {
+            border-color: #22c55e;
+            background-color: #f0fdf4;
+        }
+        .payment-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+        }
+        .continue-btn {
+            background-color: #22c55e;
+            color: white;
+            padding: 1rem;
+            border-radius: 9999px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .continue-btn:hover {
+            background-color: #16a34a;
+        }
+        .continue-btn:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+        }
+        .payment-summary {
+            background-color: white;
+            border-radius: 1rem;
+            margin: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .summary-total {
+            border-top: 2px solid #e2e8f0;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <a href="javascript:history.back()" class="text-2xl">←</a>
+            <h1 class="text-xl font-bold">WhyGym</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
+
+        <!-- Payment Form -->
+        <form action="/orders/payment/{{referenceId}}/redirect" method="POST" id="paymentForm">
+            <input type="hidden" name="memberId" value="{{memberId}}">
+            <input type="hidden" name="referenceId" value="{{referenceId}}">
+            <input type="hidden" name="paymentGatewayFee" value="{{paymentGatewayFee}}">
+            <input type="hidden" name="total" value="{{total}}">
+            
+            <!-- Payment Summary -->
+            <div class="payment-summary">
+                <h2 class="text-xl font-semibold mb-4">Payment Summary</h2>
+                <div class="summary-row">
+                    <span class="text-gray-600">Membership Fee</span>
+                    <span>{{formatCurrency membershipFee}}</span>
+                </div>
+
+                <div class="summary-row">
+                    <span class="text-gray-600">Tax (11%)</span>
+                    <span>{{formatCurrency tax}}</span>
+                </div>
+                {{#if order.additionalInfo.cashback100}}
+                    <div class="summary-row">
+                        <span class="text-gray-600">Cashback 100K</span>
+                        <span class="text-green-600">- Rp. 100.000</span>
+                    </div>
+                {{/if}}
+                {{#if order.additionalInfo.cashback200}}
+                    <div class="summary-row">
+                        <span class="text-gray-600">Cashback 200K</span>
+                        <span class="text-green-600">- Rp. 200.000</span>
+                    </div>
+                {{/if}}
+
+                <div class="summary-row">   
+                    <span class="text-gray-600">Payment Service Fee</span>
+                    <span>{{formatCurrency paymentGatewayFee}}</span>
+                </div>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span class="text-green-600">{{formatCurrency totalWithFee}}</span>
+                </div>
+
+                {{#if order.additionalInfo.extend30}}
+                    <div class="summary-row">
+                        <span class="text-sm text-gray-600">Bonus Membership</span>
+                        <span class="text-sm text-green-600">+ 30 Days</span>
+                    </div>
+                {{/if}}
+                {{#if order.additionalInfo.extend90}}
+                    <div class="summary-row">
+                        <span class="text-sm text-gray-600">Bonus Membership</span>
+                        <span class="text-sm text-green-600">+ 90 Days</span>
+                    </div>
+                {{/if}}
+
+            </div>
+
+
+            <button type="submit" class="continue-btn" id="continueBtn">
+                Pay with {{paymentMethod}}<span class="ml-2">→</span>
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

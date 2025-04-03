@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="/htmx.min.js"></script>
     <style>
         .mobile-container {
             max-width: 430px;
@@ -171,7 +171,7 @@
             <a href="/logout" class="text-green-500 font-medium">Logout</a>
         </header>
 
-        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm" class="relative">
+        <form action="/orders/payment-group/{{referenceId}}" method="POST" id="paymentForm" class="relative">
             <!-- Loading Overlay -->
             <div class="loading-overlay" id="loadingOverlay">
                 <div class="loading-spinner"></div>

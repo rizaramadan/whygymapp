@@ -62,7 +62,7 @@ export class CreateInvoiceRequest {
     this.amount = amount;
     this.invoiceDuration = 3600;
     this.customerEmail = email;
-    if (customerFullName.length > 0) {
+    if (customerFullName && customerFullName.length > 0) {
       this.customerFullName = customerFullName;
     } else {
       this.customerFullName = email;

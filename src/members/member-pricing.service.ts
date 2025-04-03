@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { group } from 'console';
 
 export interface MemberData {
   gender: 'male' | 'female';
@@ -9,61 +8,118 @@ export interface MemberData {
 @Injectable()
 export class MemberPricingService {
   private static readonly priceMap: {
-    [key in 'normal' | 'discount']: {
-      [key in 'male' | 'female']: {
-        [key in '90' | '180' | '360']: number;
+    [key in 'normal' | 'promo']: {
+      [key in 'single' | 'duo' | 'group']: {
+        [key in 'male' | 'female']: {
+          [key in '90' | '180' | '360']: number;
+        };
       };
     };
   } = {
     normal: {
-      male: {
-        '90': 605000,
-        '180': 1185000,
-        '360': 2250000,
+      single: {
+        male: {
+          '90': 550000,
+          '180': 1000000,
+          '360': 1800000,
+        },
+        female: {
+          '90': 1100000,
+          '180': 2150000,
+          '360': 4000000,
+        },
       },
-      female: {
-        '90': 1331000,
-        '180': 2601500,
-        '360': 4840000,
+      duo: {
+        male: {
+          '90': 500000,
+          '180': 900000,
+          '360': 1650000,
+        },
+        female: {
+          '90': 1000000,
+          '180': 2000000,
+          '360': 3800000,
+        },
+      },
+      group: {
+        male: {
+          '90': 500000,
+          '180': 900000,
+          '360': 1650000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1700000,
+          '360': 3000000,
+        },
       },
     },
-    discount: {
-      male: {
-        '90': 550000,
-        '180': 1089000,
-        '360': 1936000,
+    promo: {
+      single: {
+        male: {
+          '90': 550000,
+          '180': 1000000,
+          '360': 1800000,
+        },
+        female: {
+          '90': 1100000,
+          '180': 2150000,
+          '360': 4000000,
+        },
       },
-      female: {
-        '90': 1210000,
-        '180': 2365000,
-        '360': 4400000,
+      duo: {
+        male: {
+          '90': 500000,
+          '180': 900000,
+          '360': 1650000,
+        },
+        female: {
+          '90': 1000000,
+          '180': 2000000,
+          '360': 3800000,
+        },
+      },
+      group: {
+        male: {
+          '90': 500000,
+          '180': 900000,
+          '360': 1650000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1700000,
+          '360': 3000000,
+        },
       },
     },
   };
 
   getSinglePrice(
-    priceType: 'normal' | 'discount',
+    priceType: 'normal' | 'promo',
     gender: 'male' | 'female',
     duration: '90' | '180' | '360',
   ): number {
     return (
-      MemberPricingService.priceMap[priceType][gender][duration] /
+      MemberPricingService.priceMap[priceType]['single'][gender][duration] /
       parseInt(process.env.PRICE_DIVISOR ?? '1')
     );
   }
 
   calculateTotalPrice(memberData: MemberData[]): number {
-    const priceType = 'normal';
+    const priceType = 'promo';
     //extract if member is single, duo, or group
+    //if member is more than 5, then single is used
     let groupType =
       memberData.length === 1
         ? 'single'
         : memberData.length === 5
           ? 'group'
-          : 'duo'; //if members not 5, then duo pricing is used
+          : memberData.length > 5
+            ? 'single' //if member is more than 5, then single is used
+            : 'duo'; //if member is less than 5, then duo is used
 
-    const hasFemale = memberData.some((member) => member.gender === 'female');
-    if (!hasFemale && groupType === 'group') {
+    const hasMale = memberData.some((member) => member.gender === 'male');
+    if (hasMale && groupType === 'group') {
       groupType = 'duo';
     }
 
@@ -71,12 +127,16 @@ export class MemberPricingService {
       const gender = curr.gender || 'female';
       const duration = curr.duration || '360';
 
-      if (!MemberPricingService.priceMap[priceType]?.[gender]?.[duration]) {
+      if (
+        !MemberPricingService.priceMap[priceType]?.[groupType]?.[gender]?.[
+          duration
+        ]
+      ) {
         throw new Error('Invalid price parameters');
       }
 
       const price = String(
-        MemberPricingService.priceMap[priceType][gender][duration],
+        MemberPricingService.priceMap[priceType][groupType][gender][duration],
       );
       return acc + parseFloat(price);
     }, 0);

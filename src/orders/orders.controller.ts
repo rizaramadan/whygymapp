@@ -10,7 +10,6 @@ import {
 import { OrdersService } from './orders.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
-import { getPotentialGroupDataRow } from '../../db/src/query_sql';
 
 @Controller('orders')
 export class OrdersController {
@@ -33,10 +32,9 @@ export class OrdersController {
     if (potentialGroupData.length > 1) {
       haveLength = true;
     }
-    const checkoutData = await this.ordersService.getCheckoutData(
-      referenceId,
-      req.user,
-    );
+    const checkoutData = haveLength
+      ? { referenceId }
+      : await this.ordersService.getCheckoutData(referenceId, req.user);
     return {
       ...checkoutData,
       haveLength,
@@ -89,6 +87,28 @@ export class OrdersController {
       referenceId,
       paymentMethod,
       parseFloat(paymentGatewayFee),
+    );
+    return retval;
+  }
+
+  @Post('payment-group/:referenceId')
+  @Render('orders/payment-group')
+  async paymentGroup(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+    @Body('selectedMethod') paymentMethod: string,
+    @Body('paymentGatewayFee') paymentGatewayFee: string,
+  ) {
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
+
+    const retval = await this.ordersService.processPaymentGroup(
+      req.user,
+      referenceId,
+      paymentMethod,
+      parseFloat(paymentGatewayFee),
+      potentialGroupData,
     );
     return retval;
   }

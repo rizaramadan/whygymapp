@@ -355,10 +355,39 @@ WITH data AS (
     SELECT $1::text AS content, $2::text as ref_id
 )
 UPDATE whygym.orders
-SET additional_info = jsonb_set(coalesce(additional_info, '{}'), '{invoice_response}', data.content::jsonb), order_status = 'waiting invoice status', updated_at = current_timestamp
+SET updated_at = current_timestamp,
+    additional_info = 
+        jsonb_set(
+            coalesce(additional_info, '{}'),
+            '{invoice_response}', 
+            data.content::jsonb
+        ), 
+    order_status = 'waiting invoice status' 
 FROM data
 WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id;
+
+-- name: setOrderInvoiceRequestResponse :one
+WITH data AS (
+    SELECT $1::text AS content, $2::text as ref_id, $3::text AS request
+)
+UPDATE whygym.orders
+SET updated_at = current_timestamp,
+    additional_info = 
+        jsonb_set(
+            jsonb_set(
+                coalesce(additional_info, '{}'), 
+                '{invoice_request}', 
+                data.request::jsonb
+            ), 
+            '{invoice_response}', 
+            data.content::jsonb
+        ), 
+    order_status = 'waiting invoice status' 
+FROM data
+WHERE reference_id = data.ref_id
+RETURNING id, additional_info, reference_id;
+
 
 -- name: getUserRoles :many
 SELECT name as roles FROM whygym.user_roles ur

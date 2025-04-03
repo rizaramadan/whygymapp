@@ -23,6 +23,8 @@ import {
   removeFromGroupArgs,
   joinToGroup,
   removeFromGroup,
+  setOrderInvoiceRequestResponseArgs,
+  setOrderInvoiceRequestResponse,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -81,6 +83,20 @@ export class OrdersService {
       refId: referenceId,
     };
     const result = await setOrderInvoiceResponse(this.pool, args);
+    return result;
+  }
+
+  async setOrderInvoiceRequestResponse(
+    referenceId: string,
+    invoice: CreateInvoiceResponse,
+    request: CreateInvoiceRequest,
+  ) {
+    const args: setOrderInvoiceRequestResponseArgs = {
+      content: JSON.stringify(invoice),
+      refId: referenceId,
+      request: JSON.stringify(request),
+    };
+    const result = await setOrderInvoiceRequestResponse(this.pool, args);
     return result;
   }
 
@@ -276,7 +292,7 @@ export class OrdersService {
     );
 
     const invoice = await this.postCreateInvoice(request);
-    await this.setOrderInvoiceResponse(referenceId, invoice);
+    await this.setOrderInvoiceRequestResponse(referenceId, invoice, request);
 
     const retval = {
       user,
@@ -289,6 +305,64 @@ export class OrdersService {
 
     return retval;
   }
+
+  async processPaymentGroup(
+    user: User,
+    referenceId: string,
+    paymentMethod: string,
+    paymentGatewayFee: number,
+    potentialGroupData: getPotentialGroupDataRow[],
+  ) {
+    const order: getOrderAndMemberByReferenceIdRow | null =
+      await this.getOrderAndMemberByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    const memberData: MemberData[] = potentialGroupData
+      .filter((member) => member.checked)
+      .map((member) => ({
+        gender: (member.gender ?? 'female') as 'male' | 'female',
+        duration: (member.duration ?? '360') as '90' | '180' | '360',
+      }));
+
+    const totalPrice =
+      this.memberPricingService.calculateTotalPrice(memberData);
+
+    order.price = String(totalPrice);
+
+    const paymentDetails = this.calculatePaymentDetails(
+      order,
+      paymentGatewayFee,
+    );
+
+    const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+    const request = new CreateInvoiceRequest(
+      referenceId,
+      url,
+      user.email,
+      order.additionalData,
+      paymentDetails.total,
+      user.fullName,
+      order.phoneNumber || '',
+      paymentMethod,
+    );
+
+    const invoice = await this.postCreateInvoice(request);
+    await this.setOrderInvoiceRequestResponse(referenceId, invoice, request);
+
+    const retval = {
+      user,
+      referenceId: referenceId,
+      memberId: order?.memberId,
+      ...paymentDetails,
+      order,
+      paymentMethod,
+    };
+
+    return retval;
+  }
+
 
   async postCreateInvoice(
     request: CreateInvoiceRequest,
