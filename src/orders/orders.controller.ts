@@ -60,6 +60,8 @@ export class OrdersController {
       haveLength = true;
     }
 
+    console.log(potentialGroupData);
+
     const checkoutData = await this.ordersService.getCheckoutGroupData(
       referenceId,
       req.user,

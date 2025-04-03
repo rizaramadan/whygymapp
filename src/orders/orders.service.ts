@@ -31,7 +31,11 @@ import {
   PaymentMethodsResponse,
 } from './orders.interfaces';
 import { User } from '../users/users.service';
-import { MembersService } from 'src/members/members.service';
+import {
+  MemberData,
+  MemberPricingService,
+} from '../members/member-pricing.service';
+
 interface OrderWithAdditionalInfo {
   additionalInfo: {
     cashback100: boolean;
@@ -57,6 +61,7 @@ export class OrdersService {
   constructor(
     @Inject('DATABASE_POOL') private pool: Pool,
     private readonly httpService: HttpService,
+    private readonly memberPricingService: MemberPricingService,
   ) {}
 
   async getOrderByReferenceId(
@@ -169,23 +174,16 @@ export class OrdersService {
         invoice = createInvoiceResponse;
       }
     }
-
-    const priceType = 'normal';
-    //get price from potentialGroupData, gender and duration from there, and then calculate the total price, in iterate with map
-    const totalPrice = potentialGroupData
+    //translate potentialGroupData to MemberData
+    const memberData: MemberData[] = potentialGroupData
       .filter((member) => member.checked)
-      .reduce((acc, curr) => {
-        const gender = curr.gender || 'male';
-        const duration = curr.duration || '90';
-        if (!MembersService.priceMap[priceType]?.[gender]?.[duration]) {
-          throw new Error('Invalid price parameters');
-        }
+      .map((member) => ({
+        gender: (member.gender ?? 'female') as 'male' | 'female',
+        duration: (member.duration ?? '360') as '90' | '180' | '360',
+      }));
 
-        const price = String(
-          MembersService.priceMap[priceType][gender][duration],
-        );
-        return acc + parseFloat(price);
-      }, 0);
+    const totalPrice =
+      this.memberPricingService.calculateTotalPrice(memberData);
 
     order.price = String(totalPrice);
 

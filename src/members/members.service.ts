@@ -35,43 +35,14 @@ import {
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';
+import { MemberPricingService } from './member-pricing.service';
 
 @Injectable()
 export class MembersService {
-  public static readonly priceMap: {
-    [key in 'normal' | 'discount']: {
-      [key in 'male' | 'female']: {
-        [key in '90' | '180' | '360']: number;
-      };
-    };
-  } = {
-    normal: {
-      male: {
-        '90': 90,
-        '180': 180,
-        '360': 360,
-      },
-      female: {
-        '90': 180,
-        '180': 360,
-        '360': 720,
-      },
-    },
-    discount: {
-      male: {
-        '90': 80,
-        '180': 170,
-        '360': 350,
-      },
-      female: {
-        '90': 160,
-        '180': 320,
-        '360': 640,
-      },
-    },
-  };
-
-  constructor(@Inject('DATABASE_POOL') private readonly pool: Pool) {}
+  constructor(
+    @Inject('DATABASE_POOL') private pool: Pool,
+    private readonly memberPricingService: MemberPricingService,
+  ) {}
 
   async createVisit(
     email: string,
@@ -140,12 +111,8 @@ export class MembersService {
       const duration = applicationData.duration as '90' | '180' | '360';
       const gender = additionalData.gender.toLowerCase() as 'male' | 'female';
 
-      if (!MembersService.priceMap[priceType]?.[gender]?.[duration]) {
-        throw new Error('Invalid price parameters');
-      }
-
       const price = String(
-        MembersService.priceMap[priceType][gender][duration],
+        this.memberPricingService.getSinglePrice(priceType, gender, duration),
       );
 
       const memberParams = {
@@ -224,10 +191,13 @@ export class MembersService {
     duration: string,
     gender: string,
   ) {
-    return await updateMemberAdditionalData(
-      this.pool,
-      { id, email, emailPic, duration, gender },
-    );
+    return await updateMemberAdditionalData(this.pool, {
+      id,
+      email,
+      emailPic,
+      duration,
+      gender,
+    });
   }
 
   async getActiveMemberBreakdown(): Promise<getActiveMemberBreakdownRow[]> {

@@ -237,7 +237,7 @@
                                            class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500 opacity-50 cursor-not-allowed">
                                     {{/if}}
                                     <div>
-                                        <p class="text-xs text-gray-900">{{nickname}}</p>
+                                        <p class="text-xs text-gray-900">{{nickname}} ({{duration}} days)</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-2">
@@ -257,6 +257,26 @@
             </div>
 
             <div class="payment-methods">
+
+                <!-- QRIS -->
+                <div class="method-group">
+                    <div class="group-title">QR Payment</div>
+                    {{#each paymentMethods.data}}
+                        {{#if (eq this.method "QR_CODE")}}
+                            <div class="payment-method {{#if (eq this.status 'DISABLED')}}disabled{{/if}}"
+                                 data-method="{{this.code}}"
+                                 onclick="{{#if (eq this.status 'ACTIVE')}}selectMethod('{{this.code}}', {{this.paymentGatewayFee}}) {{/if}}">
+                                <img src="{{this.logo.url}}" alt="{{this.name}}" class="payment-logo">
+                                <div class="payment-info">
+                                    <div class="method-name">{{this.name}}</div>
+                                    <div class="method-type">Scan QR to pay</div>
+                                </div>
+                                <div class="fee-badge">Fee: {{formatCurrency this.paymentGatewayFee}}</div>
+                            </div>
+                        {{/if}}
+                    {{/each}}
+                </div>
+
                 <!-- E-Wallets -->
                 <div class="method-group">
                     <div class="group-title">E-Wallet</div>
@@ -295,24 +315,7 @@
                     {{/each}}
                 </div>
 
-                <!-- QRIS -->
-                <div class="method-group">
-                    <div class="group-title">QR Payment</div>
-                    {{#each paymentMethods.data}}
-                        {{#if (eq this.method "QR_CODE")}}
-                            <div class="payment-method {{#if (eq this.status 'DISABLED')}}disabled{{/if}}"
-                                 data-method="{{this.code}}"
-                                 onclick="{{#if (eq this.status 'ACTIVE')}}selectMethod('{{this.code}}', {{this.paymentGatewayFee}}) {{/if}}">
-                                <img src="{{this.logo.url}}" alt="{{this.name}}" class="payment-logo">
-                                <div class="payment-info">
-                                    <div class="method-name">{{this.name}}</div>
-                                    <div class="method-type">Scan QR to pay</div>
-                                </div>
-                                <div class="fee-badge">Fee: {{formatCurrency this.paymentGatewayFee}}</div>
-                            </div>
-                        {{/if}}
-                    {{/each}}
-                </div>
+                
             </div>
 
             <input type="hidden" name="selectedMethod" id="selectedMethod">

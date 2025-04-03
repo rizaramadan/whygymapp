@@ -15,7 +15,10 @@ import {
 import { User } from '../users/users.service';
 import { MembersService } from './members.service';
 import { Roles } from 'src/roles/decorators/roles.decorator';
-import { EditMembershipApplicationDto, MembershipApplicationDto } from './dto/membership-application.dto';
+import {
+  EditMembershipApplicationDto,
+  MembershipApplicationDto,
+} from './dto/membership-application.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('members')
