@@ -40,6 +40,7 @@ import {
 
 interface OrderWithAdditionalInfo {
   additionalInfo: {
+    cashback50: boolean;
     cashback100: boolean;
     cashback200: boolean;
   };

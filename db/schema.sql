@@ -123,7 +123,8 @@ CREATE TABLE whygym.members (
     notes text,
     additional_data json,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    start_date date DEFAULT CURRENT_DATE
 );
 
 
@@ -149,6 +150,45 @@ ALTER TABLE whygym.members_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE whygym.members_id_seq OWNED BY whygym.members.id;
+
+
+--
+-- Name: order_extra_time; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.order_extra_time (
+    id integer NOT NULL,
+    member_id integer NOT NULL,
+    extra_time integer NOT NULL,
+    reason text,
+    order_reference_id character varying(40) NOT NULL,
+    created_by integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE whygym.order_extra_time OWNER TO postgres;
+
+--
+-- Name: order_extra_time_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.order_extra_time_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE whygym.order_extra_time_id_seq OWNER TO postgres;
+
+--
+-- Name: order_extra_time_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.order_extra_time_id_seq OWNED BY whygym.order_extra_time.id;
 
 
 --
@@ -448,6 +488,13 @@ ALTER TABLE ONLY whygym.members ALTER COLUMN id SET DEFAULT nextval('whygym.memb
 
 
 --
+-- Name: order_extra_time id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_extra_time ALTER COLUMN id SET DEFAULT nextval('whygym.order_extra_time_id_seq'::regclass);
+
+
+--
 -- Name: order_groups id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -526,6 +573,14 @@ ALTER TABLE ONLY whygym.create_user_requests
 
 ALTER TABLE ONLY whygym.members
     ADD CONSTRAINT members_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: order_extra_time order_extra_time_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_extra_time
+    ADD CONSTRAINT order_extra_time_pkey PRIMARY KEY (id);
 
 
 --
@@ -651,6 +706,13 @@ CREATE INDEX idx_order_groups_part_reference_id ON whygym.order_groups USING btr
 
 
 --
+-- Name: idx_order_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_order_reference_id ON whygym.order_extra_time USING btree (order_reference_id);
+
+
+--
 -- Name: idx_orders_member_id; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -754,6 +816,22 @@ CREATE INDEX idx_visits_member_id ON whygym.visits USING btree (member_id);
 
 ALTER TABLE ONLY whygym.create_user_requests
     ADD CONSTRAINT create_user_requests_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES whygym.users(id);
+
+
+--
+-- Name: order_extra_time fk_member_id; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_extra_time
+    ADD CONSTRAINT fk_member_id FOREIGN KEY (member_id) REFERENCES whygym.members(id);
+
+
+--
+-- Name: order_extra_time fk_order_reference_id; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.order_extra_time
+    ADD CONSTRAINT fk_order_reference_id FOREIGN KEY (order_reference_id) REFERENCES whygym.orders(reference_id);
 
 
 --
