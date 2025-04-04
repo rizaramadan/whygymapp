@@ -1222,12 +1222,14 @@ WITH data AS (
     select distinct og.main_reference_id
     from whygym.order_groups og
         inner join whygym.orders o on og.main_reference_id = o.reference_id
-    where o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status')
+    where o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status' OR (o.order_status = 'complete' AND o.updated_at::date = current_date))
+
 )
 SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
     from data og
     inner join whygym.orders o on og.main_reference_id = o.reference_id
-    inner join whygym.members m on o.member_id = m.id`;
+    inner join whygym.members m on o.member_id = m.id
+    order by o.created_at desc`;
 
 export interface getWaitingPaymentOrdersRow {
     id: number;
