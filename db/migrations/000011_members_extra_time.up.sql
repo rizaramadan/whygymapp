@@ -20,6 +20,6 @@ ALTER TABLE whygym.order_extra_time ADD CONSTRAINT fk_order_reference_id FOREIGN
 -- add index to the order_reference_id column
 CREATE INDEX if not exists idx_order_reference_id ON whygym.order_extra_time (order_reference_id);
 
-
+CREATE UNIQUE INDEX members_unique_pending_email ON whygym.members (email) WHERE members.membership_status = 'pending';
 
 

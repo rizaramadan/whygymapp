@@ -79,19 +79,21 @@ export class MembersController {
   @Render('members/membership-apply')
   async getApply(@Request() req: { user: User }) {
     const member = await this.membersService.getMemberIdByEmail(req.user.email);
+    console.log(member?.membershipStatus);
+    console.log(member?.membershipStatus === 'pending');
 
     if (member?.membershipStatus === 'pending') {
+      console.log('return url');
       return {
-        url: `/members/edit-membership-apply`,
-        statusCode: 302,
+        url: '/members/edit-membership-apply',
+      };
+    } else {
+      return {
+        getCurrentDate: new Date().toISOString().split('T')[0],
+        user: req.user,
+        member: member,
       };
     }
-
-    return {
-      getCurrentDate: new Date().toISOString().split('T')[0],
-      user: req.user,
-      member: member,
-    };
   }
 
   @Post('membership-apply')
