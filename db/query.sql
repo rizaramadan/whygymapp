@@ -335,25 +335,43 @@ RETURNING id, additional_info, reference_id;
 
 -- name: turnOnExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false, "extend30": true, "extend60": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend30}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend30": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
--- name: turnOnExtend90 :one
+-- name: turnOnExtend60 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false, "extend30": false, "extend60": true}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
--- name: turnOffExtend90 :one
+-- name: turnOffExtend60 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend90}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend60": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOnExtend15 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": true, "extend30": false, "extend60": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffExtend15 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 

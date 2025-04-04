@@ -227,9 +227,9 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    emailPic : any;
-    duration : any;
-    gender : any;
+    emailPic: any;
+    duration: any;
+    gender: any;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -1295,7 +1295,7 @@ export async function turnOnCashback100(client: Client, args: turnOnCashback100A
 
 export const turnOffCashback100Query = `-- name: turnOffCashback100 :one
 UPDATE whygym.orders
-SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false}'::jsonb,
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false}'::jsonb, 
     updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
@@ -1465,7 +1465,8 @@ export async function turnOffCashback50(client: Client, args: turnOffCashback50A
 
 export const turnOnExtend30Query = `-- name: turnOnExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend90}', 'false'), '{extend30}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false, "extend30": true, "extend60": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1498,7 +1499,8 @@ export async function turnOnExtend30(client: Client, args: turnOnExtend30Args): 
 
 export const turnOffExtend30Query = `-- name: turnOffExtend30 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend30}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend30": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1529,25 +1531,26 @@ export async function turnOffExtend30(client: Client, args: turnOffExtend30Args)
     };
 }
 
-export const turnOnExtend90Query = `-- name: turnOnExtend90 :one
+export const turnOnExtend60Query = `-- name: turnOnExtend60 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{extend30}', 'false'), '{extend90}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false, "extend30": false, "extend60": true}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
-export interface turnOnExtend90Args {
+export interface turnOnExtend60Args {
     referenceId: string;
 }
 
-export interface turnOnExtend90Row {
+export interface turnOnExtend60Row {
     id: number;
     additionalInfo: any | null;
     referenceId: string;
 }
 
-export async function turnOnExtend90(client: Client, args: turnOnExtend90Args): Promise<turnOnExtend90Row | null> {
+export async function turnOnExtend60(client: Client, args: turnOnExtend60Args): Promise<turnOnExtend60Row | null> {
     const result = await client.query({
-        text: turnOnExtend90Query,
+        text: turnOnExtend60Query,
         values: [args.referenceId],
         rowMode: "array"
     });
@@ -1562,25 +1565,94 @@ export async function turnOnExtend90(client: Client, args: turnOnExtend90Args): 
     };
 }
 
-export const turnOffExtend90Query = `-- name: turnOffExtend90 :one
+export const turnOffExtend60Query = `-- name: turnOffExtend60 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{extend90}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend60": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
-export interface turnOffExtend90Args {
+export interface turnOffExtend60Args {
     referenceId: string;
 }
 
-export interface turnOffExtend90Row {
+export interface turnOffExtend60Row {
     id: number;
     additionalInfo: any | null;
     referenceId: string;
 }
 
-export async function turnOffExtend90(client: Client, args: turnOffExtend90Args): Promise<turnOffExtend90Row | null> {
+export async function turnOffExtend60(client: Client, args: turnOffExtend60Args): Promise<turnOffExtend60Row | null> {
     const result = await client.query({
-        text: turnOffExtend90Query,
+        text: turnOffExtend60Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOnExtend15Query = `-- name: turnOnExtend15 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": true, "extend30": false, "extend60": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnExtend15Args {
+    referenceId: string;
+}
+
+export interface turnOnExtend15Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnExtend15(client: Client, args: turnOnExtend15Args): Promise<turnOnExtend15Row | null> {
+    const result = await client.query({
+        text: turnOnExtend15Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffExtend15Query = `-- name: turnOffExtend15 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"extend15": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffExtend15Args {
+    referenceId: string;
+}
+
+export interface turnOffExtend15Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffExtend15(client: Client, args: turnOffExtend15Args): Promise<turnOffExtend15Row | null> {
+    const result = await client.query({
+        text: turnOffExtend15Query,
         values: [args.referenceId],
         rowMode: "array"
     });

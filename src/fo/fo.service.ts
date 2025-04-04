@@ -6,13 +6,15 @@ import {
   turnOffCashback100,
   turnOffCashback200,
   turnOffCashback50,
+  turnOffExtend15,
   turnOffExtend30,
-  turnOffExtend90,
+  turnOffExtend60,
   turnOnCashback100,
   turnOnCashback200,
   turnOnCashback50,
+  turnOnExtend15,
   turnOnExtend30,
-  turnOnExtend90,
+  turnOnExtend60,
 } from 'db/src/query_sql';
 
 @Injectable()
@@ -23,6 +25,14 @@ export class FoService {
     return await getWaitingPaymentOrders(this.pool);
   }
 
+  async extend15(referenceId: string, toggle: boolean) {
+    if (toggle) {
+      return await turnOnExtend15(this.pool, { referenceId });
+    } else {
+      return await turnOffExtend15(this.pool, { referenceId });
+    }
+  }
+
   async extend30(referenceId: string, toggle: boolean) {
     if (toggle) {
       return await turnOnExtend30(this.pool, { referenceId });
@@ -31,11 +41,11 @@ export class FoService {
     }
   }
 
-  async extend90(referenceId: string, toggle: boolean) {
+  async extend60(referenceId: string, toggle: boolean) {
     if (toggle) {
-      return await turnOnExtend90(this.pool, { referenceId });
+      return await turnOnExtend60(this.pool, { referenceId });
     } else {
-      return await turnOffExtend90(this.pool, { referenceId });
+      return await turnOffExtend60(this.pool, { referenceId });
     }
   }
 

@@ -68,6 +68,29 @@
     {{/unless}}
 </div>
 <div class="flex space-x-1">
+
+    {{#if additionalInfo.extend15}}
+        <button 
+            class="px-2 py-1 text-xs font-medium text-white hover:text-green-900 bg-green-600 rounded-r hover:bg-green-100 transition-colors"
+            hx-post="/fo/orders/{{referenceId}}/extend15/false"
+            hx-confirm="Are you sure you want to cancel extend membership for 15 days?"
+            hx-target="#buttons-{{referenceId}}"
+            hx-swap="innerHTML" 
+        >
+            &check; +15 Days
+        </button>
+    {{else}}
+        <button 
+            class="px-2 py-1 text-xs font-medium text-green-900 hover:text-white bg-green-100 rounded-l hover:bg-green-600 transition-colors"
+            hx-post="/fo/orders/{{referenceId}}/extend15/true"
+            hx-confirm="Are you sure you want to turn on extend membership for 15 days?"
+            hx-target="#buttons-{{referenceId}}"
+            hx-swap="innerHTML"
+        >
+            +15 Days
+        </button>
+    {{/if}}
+
     {{#if additionalInfo.extend30}}
         <button 
             class="px-2 py-1 text-xs font-medium text-white hover:text-green-900 bg-green-600 rounded-r hover:bg-green-100 transition-colors"
@@ -89,26 +112,26 @@
             +30 Days
         </button>
     {{/unless}}
-    {{#if additionalInfo.extend90}}
+    {{#if additionalInfo.extend60}}
         <button 
             class="px-2 py-1 text-xs font-medium text-white hover:text-green-900 bg-green-600 rounded-r hover:bg-green-700 transition-colors"
-            hx-post="/fo/orders/{{referenceId}}/extend90/false"
-            hx-confirm="Are you sure you want to cancel extend membership for 90 days?"
+            hx-post="/fo/orders/{{referenceId}}/extend60/false"
+            hx-confirm="Are you sure you want to cancel extend membership for 60 days?"
             hx-target="#buttons-{{referenceId}}"
             hx-swap="innerHTML"
         >
-            &check; +90 Days
+            &check; +60 Days
         </button>
     {{/if}}
-    {{#unless additionalInfo.extend90}}
+    {{#unless additionalInfo.extend60}}
         <button 
             class="px-2 py-1 text-xs font-medium text-green-900 hover:text-white bg-green-100 rounded-l hover:bg-green-600 transition-colors"
-            hx-post="/fo/orders/{{referenceId}}/extend90/true"
-            hx-confirm="Are you sure you want to turn on extend membership for 90 days?"
+            hx-post="/fo/orders/{{referenceId}}/extend60/true"
+            hx-confirm="Are you sure you want to turn on extend membership for 60 days?"
             hx-target="#buttons-{{referenceId}}"
             hx-swap="innerHTML"
         >
-            +90 Days
+            +60 Days
         </button>
     {{/unless}}
 </div>

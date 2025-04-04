@@ -16,6 +16,18 @@ export class FoController {
     };
   }
 
+  @Post('orders/:referenceId/extend15/:toggle')
+  @Roles('front-officer')
+  @Render('fo/waiting-payment-method-order-button')
+  async extend15On(
+    @Param('referenceId') referenceId: string,
+    @Param('toggle') toggle: boolean,
+  ) {
+    const response = await this.foService.extend15(referenceId, toggle);
+    console.log(response);
+    return response;
+  }
+
   @Post('orders/:referenceId/extend30/:toggle')
   @Roles('front-officer')
   @Render('fo/waiting-payment-method-order-button')
@@ -28,14 +40,14 @@ export class FoController {
     return response;
   }
 
-  @Post('orders/:referenceId/extend90/:toggle')
+  @Post('orders/:referenceId/extend60/:toggle')
   @Roles('front-officer')
   @Render('fo/waiting-payment-method-order-button')
-  async extend90On(
+  async extend60On(
     @Param('referenceId') referenceId: string,
     @Param('toggle') toggle: boolean,
   ) {
-    const response = await this.foService.extend90(referenceId, toggle);
+    const response = await this.foService.extend60(referenceId, toggle);
     console.log(response);
     return response;
   }

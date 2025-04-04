@@ -160,16 +160,24 @@
                     <span class="text-green-600">{{formatCurrency totalWithFee}}</span>
                 </div>
 
+                {{#if order.additionalInfo.extend15}}
+                    <div class="summary-row">
+                        <span class="text-sm text-gray-600">Bonus Membership</span>
+                        <span class="text-sm text-green-600">+ 15 Days</span>
+                    </div>
+                {{/if}}
+
                 {{#if order.additionalInfo.extend30}}
                     <div class="summary-row">
                         <span class="text-sm text-gray-600">Bonus Membership</span>
                         <span class="text-sm text-green-600">+ 30 Days</span>
                     </div>
                 {{/if}}
-                {{#if order.additionalInfo.extend90}}
+                
+                {{#if order.additionalInfo.extend60}}
                     <div class="summary-row">
                         <span class="text-sm text-gray-600">Bonus Membership</span>
-                        <span class="text-sm text-green-600">+ 90 Days</span>
+                        <span class="text-sm text-green-600">+ 60 Days</span>
                     </div>
                 {{/if}}
 
