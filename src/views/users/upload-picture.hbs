@@ -46,7 +46,25 @@
                                            accept="image/*" 
                                            capture="user"
                                            class="sr-only" 
-                                           @change="handleFileSelect($event)">
+                                           @change="handleFileSelect($event)"
+                                           x-ref="cameraInput">
+                                    <input type="file" 
+                                           accept="image/*" 
+                                           class="sr-only" 
+                                           @change="handleFileSelect($event)"
+                                           x-ref="galleryInput">
+                                    <div class="flex gap-2">
+                                        <button type="button" 
+                                                @click="$refs.cameraInput.click()"
+                                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                            Open Camera
+                                        </button>
+                                        <button type="button" 
+                                                @click="$refs.galleryInput.click()"
+                                                class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                            Choose from Gallery
+                                        </button>
+                                    </div>
                                 </label>
                                 <p>or drag and drop your image here</p>
                             </div>

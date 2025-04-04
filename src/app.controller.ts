@@ -22,12 +22,9 @@ export class AppController {
     private readonly membersService: MembersService,
   ) {}
 
-  @Get()
-  @Render('index')
+  @Get("/")
   getHello() {
-    return {
-      message: this.appService.getHello(),
-    };
+    return '<script>window.location.href="/auth/login"</script>';
   }
 
   @Get('/user-dashboard')
