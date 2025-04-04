@@ -293,25 +293,43 @@ SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_
 
 -- name: turnOnCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": true, "cashback200": false, "cashback50": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false}'::jsonb, 
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOnCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false, "cashback200": true, "cashback50": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 
 -- name: turnOffCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback200": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOnCashback50 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false, "cashback200": false, "cashback50": true}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id;
+
+-- name: turnOffCashback50 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback50": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id;
 

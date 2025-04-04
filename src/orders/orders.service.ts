@@ -246,11 +246,16 @@ export class OrdersService {
     const tax = membershipFee * taxRate;
     let total = membershipFee + tax;
 
+    const priceDivisor = parseInt(process.env.PRICE_DIVISOR ?? '1');
+
+    if ((order as OrderWithAdditionalInfo)?.additionalInfo?.cashback50) {
+      total -= 50000 / priceDivisor;
+    }
     if ((order as OrderWithAdditionalInfo)?.additionalInfo?.cashback100) {
-      total -= 100000;
+      total -= 100000 / priceDivisor;
     }
     if ((order as OrderWithAdditionalInfo)?.additionalInfo?.cashback200) {
-      total -= 200000;
+      total -= 200000 / priceDivisor;
     }
 
     const totalWithFee = total + paymentGatewayFee + this.darisiniFee;

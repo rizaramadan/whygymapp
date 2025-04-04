@@ -227,9 +227,9 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    emailPic: string | null;
-    duration: string;
-    gender: string;
+    emailPic : any;
+    duration : any;
+    gender : any;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -1261,7 +1261,8 @@ export async function getWaitingPaymentOrders(client: Client): Promise<getWaitin
 
 export const turnOnCashback100Query = `-- name: turnOnCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback200}', 'false'), '{cashback100}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": true, "cashback200": false, "cashback50": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1294,7 +1295,8 @@ export async function turnOnCashback100(client: Client, args: turnOnCashback100A
 
 export const turnOffCashback100Query = `-- name: turnOffCashback100 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback100}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1327,7 +1329,8 @@ export async function turnOffCashback100(client: Client, args: turnOffCashback10
 
 export const turnOnCashback200Query = `-- name: turnOnCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(jsonb_set(additional_info, '{cashback100}', 'false'), '{cashback200}', 'true'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false, "cashback200": true, "cashback50": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1360,7 +1363,8 @@ export async function turnOnCashback200(client: Client, args: turnOnCashback200A
 
 export const turnOffCashback200Query = `-- name: turnOffCashback200 :one
 UPDATE whygym.orders
-SET additional_info = jsonb_set(additional_info, '{cashback200}', 'false'), updated_at = current_timestamp
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback200": false}'::jsonb,
+    updated_at = current_timestamp
 WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
@@ -1377,6 +1381,74 @@ export interface turnOffCashback200Row {
 export async function turnOffCashback200(client: Client, args: turnOffCashback200Args): Promise<turnOffCashback200Row | null> {
     const result = await client.query({
         text: turnOffCashback200Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOnCashback50Query = `-- name: turnOnCashback50 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback100": false, "cashback200": false, "cashback50": true}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOnCashback50Args {
+    referenceId: string;
+}
+
+export interface turnOnCashback50Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOnCashback50(client: Client, args: turnOnCashback50Args): Promise<turnOnCashback50Row | null> {
+    const result = await client.query({
+        text: turnOnCashback50Query,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const turnOffCashback50Query = `-- name: turnOffCashback50 :one
+UPDATE whygym.orders
+SET additional_info = COALESCE(additional_info, '{}'::jsonb) || '{"cashback50": false}'::jsonb,
+    updated_at = current_timestamp
+WHERE reference_id = $1
+RETURNING id, additional_info, reference_id`;
+
+export interface turnOffCashback50Args {
+    referenceId: string;
+}
+
+export interface turnOffCashback50Row {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function turnOffCashback50(client: Client, args: turnOffCashback50Args): Promise<turnOffCashback50Row | null> {
+    const result = await client.query({
+        text: turnOffCashback50Query,
         values: [args.referenceId],
         rowMode: "array"
     });

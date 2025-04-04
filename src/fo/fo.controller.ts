@@ -63,4 +63,16 @@ export class FoController {
     console.log(response);
     return response;
   }
+
+  @Post('orders/:referenceId/cashback50/:toggle')
+  @Roles('front-officer')
+  @Render('fo/waiting-payment-method-order-button')
+  async cashback50On(
+    @Param('referenceId') referenceId: string,
+    @Param('toggle') toggle: boolean,
+  ) {
+    const response = await this.foService.cashback50(referenceId, toggle);
+    console.log(response);
+    return response;
+  }
 }

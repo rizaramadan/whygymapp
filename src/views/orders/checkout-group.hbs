@@ -190,6 +190,12 @@
                     <span class="text-gray-600">Tax (10%)</span>
                     <span>{{formatCurrency tax}}</span>
                 </div>
+                {{#if order.additionalInfo.cashback50}}
+                    <div class="summary-row">
+                        <span class="text-gray-600">Cashback 50K</span>
+                        <span class="text-green-600">- Rp. 50.000</span>
+                    </div>
+                {{/if}}
                 {{#if order.additionalInfo.cashback100}}
                     <div class="summary-row">
                         <span class="text-gray-600">Cashback 100K</span>

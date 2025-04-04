@@ -5,10 +5,12 @@ import {
   getWaitingPaymentOrdersRow,
   turnOffCashback100,
   turnOffCashback200,
+  turnOffCashback50,
   turnOffExtend30,
   turnOffExtend90,
   turnOnCashback100,
   turnOnCashback200,
+  turnOnCashback50,
   turnOnExtend30,
   turnOnExtend90,
 } from 'db/src/query_sql';
@@ -50,6 +52,14 @@ export class FoService {
       return await turnOnCashback200(this.pool, { referenceId });
     } else {
       return await turnOffCashback200(this.pool, { referenceId });
+    }
+  }
+
+  async cashback50(referenceId: string, toggle: boolean) {
+    if (toggle) {
+      return await turnOnCashback50(this.pool, { referenceId });
+    } else {
+      return await turnOffCashback50(this.pool, { referenceId });
     }
   }
 }
