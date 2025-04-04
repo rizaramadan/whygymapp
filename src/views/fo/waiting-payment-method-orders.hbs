@@ -48,14 +48,18 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Status</p>
-                                <p class="text-sm font-medium text-yellow-600">{{this.orderStatus}}</p>
-                                {{#if this.additionalInfo.invoice_response.data.paymentUrl}}
-                                <div class="flex items-center gap-2">
-                                    <a href="{{this.additionalInfo.invoice_response.data.paymentUrl}}" target="_blank" rel="noopener noreferrer" 
-                                       class="px-2 py-1 text-xs font-medium text-white bg-yellow-500 rounded hover:bg-yellow-600 transition-colors">
-                                        Open Payment Page
-                                    </a>
-                                </div>
+                                {{#if (eq this.orderStatus 'complete')}}
+                                    <p class="text-sm font-medium text-green-600">{{this.orderStatus}}</p>
+                                {{else}}
+                                    <p class="text-sm font-medium text-yellow-600">{{this.orderStatus}}</p>                                
+                                    {{#if this.additionalInfo.invoice_response.data.paymentUrl}}
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{this.additionalInfo.invoice_response.data.paymentUrl}}" target="_blank" rel="noopener noreferrer" 
+                                        class="px-2 py-1 text-xs font-medium text-white bg-yellow-500 rounded hover:bg-yellow-600 transition-colors">
+                                            Open Payment Page
+                                        </a>
+                                    </div>
+                                    {{/if}}
                                 {{/if}}
                             </div>
                             <div class="flex flex-col space-y-2" id="buttons-{{this.referenceId}}">
