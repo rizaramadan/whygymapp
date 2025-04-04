@@ -1218,13 +1218,16 @@ export async function getOrderByReferenceId(client: Client, args: getOrderByRefe
 }
 
 export const getWaitingPaymentOrdersQuery = `-- name: getWaitingPaymentOrders :many
+WITH data AS (
+    select distinct og.main_reference_id
+    from whygym.order_groups og
+        inner join whygym.orders o on og.main_reference_id = o.reference_id
+    where o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status')
+)
 SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
-       FROM whygym.orders o
-       INNER JOIN whygym.members m ON m.id = o.member_id
-       INNER JOIN whygym.order_groups og ON og.main_reference_id = o.reference_id
-       WHERE o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status')
-       ORDER BY m.created_at desc
-       LIMIT 500`;
+    from data og
+    inner join whygym.orders o on og.main_reference_id = o.reference_id
+    inner join whygym.members m on o.member_id = m.id`;
 
 export interface getWaitingPaymentOrdersRow {
     id: number;
