@@ -1,10 +1,14 @@
-import { Controller, Get, Render, Post, Param } from '@nestjs/common';
+import { Controller, Get, Render, Post, Param, Query } from '@nestjs/common';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { FoService } from './fo.service';
-
+import Sqids from 'sqids';
+import { MembersService } from 'src/members/members.service';
 @Controller('fo')
 export class FoController {
-  constructor(private readonly foService: FoService) {}
+  constructor(
+    private readonly foService: FoService,
+    private readonly membersService: MembersService,
+  ) {}
 
   @Get('waiting-payment-method-orders')
   @Roles('front-officer')
@@ -13,6 +17,61 @@ export class FoController {
     const orders = await this.foService.getWaitingPaymentOrders();
     return {
       orders,
+    };
+  }
+
+  //endpoint for /fo?i=<squids_id>
+  @Get('')
+  @Roles('front-officer')
+  @Render('members/visit')
+  async memberCheckin(@Query('i') id: string) {
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const memberId = sqids.decode(id);
+    const memberFromDb = await this.membersService.getMemberById(memberId[0]);
+
+    if (!memberFromDb) {
+      return {
+        status: null,
+        message: 'Member not found',
+      };
+    }
+
+    const member = {
+      email: memberFromDb.email || '' ,
+      picUrl: memberFromDb.additionalData.picUrl || '',
+    };
+
+    //call member service to create visit
+    const visit = await this.membersService.createVisit(
+      member.email,
+      member.picUrl,
+    );
+
+    // Mock weekly visits data
+    const weeklyVisits = await this.membersService.getWeeklyVisitsByEmail(
+      member.email,
+    );
+
+    const monthlyVisits = await this.membersService.getMonthlyVisitsByEmail(
+      member.email,
+    );
+
+    if (!visit) {
+      return {
+        status: null,
+        message: 'Failed to create visit',
+      };
+    }
+    return {
+      status: 'success',
+      email: visit.email,
+      picUrl: visit.picUrl,
+      checkInTime: visit.checkInTime,
+      visitCode: visit.visitCode,
+      weeklyVisits: weeklyVisits,
+      monthlyVisits: monthlyVisits,
     };
   }
 

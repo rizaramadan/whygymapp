@@ -33,6 +33,12 @@ import {
   linkGroupOrder,
   getMemberActiveDate,
   getMemberActiveDateRow,
+  addOrUpdateMemberPicUrl,
+  addOrUpdateMemberPicUrlRow,
+  addOrUpdateMemberPicUrlArgs,
+  getMemberById,
+  GetMemberByIdRow,
+  GetMemberByIdArgs,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
@@ -212,5 +218,16 @@ export class MembersService {
     email: string,
   ): Promise<getMemberActiveDateRow | null> {
     return await getMemberActiveDate(this.pool, { email });
+  }
+
+  async addOrUpdateMemberPicUrl(
+    email: string,
+    picUrl: string,
+  ): Promise<addOrUpdateMemberPicUrlRow | null> {
+    return await addOrUpdateMemberPicUrl(this.pool, { email, picUrl });
+  }
+
+  async getMemberById(id: number): Promise<GetMemberByIdRow | null> {
+    return await getMemberById(this.pool, { id });
   }
 }

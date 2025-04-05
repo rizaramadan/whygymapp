@@ -52,8 +52,13 @@ VALUES ($1, $2, $3)
 RETURNING id, member_id, email, pic_url, check_in_time, visit_code;
 
 -- name: GetMemberIdByEmail :one
-SELECT id,email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
 WHERE email = $1
+LIMIT 1;
+
+-- name: GetMemberById :one
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+WHERE id = $1
 LIMIT 1;
 
 -- name: UpdateMemberAdditionalData :one
@@ -514,3 +519,10 @@ select
 from whygym.members where email = $1 and membership_status = 'active' limit 1)
 select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date
 from data limit 1;
+
+-- name: addOrUpdateMemberPicUrl :one
+update whygym.members 
+set updated_at = now(),
+    additional_data = jsonb_set(additional_data::jsonb, '{picUrl}'::text[], $2::jsonb)
+where email = $1
+returning id, email;

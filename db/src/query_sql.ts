@@ -174,7 +174,7 @@ export async function createVisit(client: Client, args: CreateVisitArgs): Promis
 }
 
 export const getMemberIdByEmailQuery = `-- name: GetMemberIdByEmail :one
-SELECT id,email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
 WHERE email = $1
 LIMIT 1`;
 
@@ -213,6 +213,46 @@ export async function getMemberIdByEmail(client: Client, args: GetMemberIdByEmai
     };
 }
 
+export const getMemberByIdQuery = `-- name: GetMemberById :one
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+WHERE id = $1
+LIMIT 1`;
+
+export interface GetMemberByIdArgs {
+    id: number;
+}
+
+export interface GetMemberByIdRow {
+    id: number;
+    email: string | null;
+    membershipStatus: string;
+    nickname: string;
+    dateOfBirth: Date | null;
+    phoneNumber: string | null;
+    additionalData: any | null;
+}
+
+export async function getMemberById(client: Client, args: GetMemberByIdArgs): Promise<GetMemberByIdRow | null> {
+    const result = await client.query({
+        text: getMemberByIdQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1],
+        membershipStatus: row[2],
+        nickname: row[3],
+        dateOfBirth: row[4],
+        phoneNumber: row[5],
+        additionalData: row[6]
+    };
+}
+
 export const updateMemberAdditionalDataQuery = `-- name: UpdateMemberAdditionalData :one
 UPDATE whygym.members SET updated_at = current_timestamp, additional_data = jsonb_set(
      jsonb_set(
@@ -227,9 +267,9 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    emailPic: any;
-    duration: any;
-    gender: any;
+    emailPic: string;
+    duration: string;
+    gender: string;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -2152,6 +2192,39 @@ export async function getMemberActiveDate(client: Client, args: getMemberActiveD
         startDate: row[0],
         duration: row[1],
         endDate: row[2]
+    };
+}
+
+export const addOrUpdateMemberPicUrlQuery = `-- name: addOrUpdateMemberPicUrl :one
+update whygym.members 
+set updated_at = now(),
+    additional_data = jsonb_set(additional_data::jsonb, '{picUrl}'::text[], $2::jsonb)
+where email = $1
+returning id, email`;
+
+export interface addOrUpdateMemberPicUrlArgs {
+    email: string | null;
+    picUrl: string;
+}
+
+export interface addOrUpdateMemberPicUrlRow {
+    id: number;
+    email: string | null;
+}
+
+export async function addOrUpdateMemberPicUrl(client: Client, args: addOrUpdateMemberPicUrlArgs): Promise<addOrUpdateMemberPicUrlRow | null> {
+    const result = await client.query({
+        text: addOrUpdateMemberPicUrlQuery,
+        values: [args.email, args.picUrl],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1]
     };
 }
 

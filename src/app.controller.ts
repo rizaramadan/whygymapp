@@ -8,18 +8,21 @@ import {
   Sse,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { User } from './users/users.service';
+import { User, UsersService } from './users/users.service';
 import { Roles } from './roles/decorators/roles.decorator';
 import { MembersService } from './members/members.service';
 import { Response } from 'express';
 import { interval, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import Sqids from 'sqids';
+import { ErrorApp } from './common/result';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly membersService: MembersService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Get("/")
@@ -44,13 +47,30 @@ export class AppController {
 
   @Get('/member-dashboard')
   @Render('member-dashboard')
-  async memberDashboard(@Request() req: { user: User }) { 
+  async memberDashboard(@Request() req: { user: User }) {
     const memberActiveDate = await this.membersService.getMemberActiveDate(
       req.user.email,
     );
+
+    const memberId = await this.membersService.getMemberIdByEmail(
+      req.user.email,
+    );
+
+    console.log(memberId?.id.toString() || '');
+
+    await this.membersService.addOrUpdateMemberPicUrl(
+      req.user.email,
+      `"${req.user.picUrl}"`,
+    );
+
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const id = sqids.encode([memberId?.id || 0, 9, 9]);
     return {
       user: req.user,
       memberActiveDate,
+      id,
     };
   }
 

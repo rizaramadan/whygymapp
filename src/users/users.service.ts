@@ -21,6 +21,8 @@ import {
   GetUserPictureRow,
   getUserPicture,
   createAndGetUser,
+  addOrUpdateUserPicture,
+  AddOrUpdateUserPictureRow
 } from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
 import { ErrorApp } from 'src/common/result';
@@ -306,5 +308,15 @@ export class UsersService {
         ),
       };
     }
+  }
+
+  async AddOrUpdateUserPictureDb(
+    userId: string,
+    picUrl: string,
+  ): Promise<AddOrUpdateUserPictureRow | null> {
+    return await addOrUpdateUserPicture(this.pool, {
+      userId: userId,
+      value: picUrl,
+    });
   }
 }
