@@ -23,7 +23,10 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     // Only redirect for HTML requests (browser requests)
     const acceptHeader = request.headers.accept || '';
     if (acceptHeader.includes('text/html')) {
-      return response.redirect('/auth/login');
+      //return response.redirect('/auth/login');
+      const returnUrl = encodeURIComponent(request.url);
+      console.log(returnUrl);
+      return response.redirect(`/auth/login?returnUrl=${returnUrl}`);
     }
 
     // For API requests, return the standard 401 response

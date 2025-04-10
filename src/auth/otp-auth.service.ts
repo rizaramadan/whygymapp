@@ -31,12 +31,14 @@ export class OtpAuthService {
     error: ErrorApp,
     email: string,
     action?: string,
+    returnUrl?: string,
   ): Promise<{
     success: boolean;
     message: string;
     deviceId?: string;
     preAuthSessionId?: string;
     error?: ErrorApp;
+    returnUrl?: string;
   }> {
     //skip if error exist from previous step
     if (error.hasError()) {
@@ -48,7 +50,7 @@ export class OtpAuthService {
       email,
     );
     // return constructed response
-    return this.constructCreateOtpResponse(errorOtp, response, action);
+    return this.constructCreateOtpResponse(errorOtp, response, action, returnUrl);
   }
 
   // call api create send otp, first created to be called by  createOtp
@@ -103,6 +105,7 @@ export class OtpAuthService {
     error: ErrorApp,
     response: OtpCreateResponse | null,
     action?: string,
+    returnUrl?: string,
   ): {
     success: boolean;
     message: string;
@@ -110,6 +113,7 @@ export class OtpAuthService {
     preAuthSessionId?: string;
     action?: string;
     error?: ErrorApp;
+    returnUrl?: string;
   } {
     //skip if error exist from previous step
     if (error.hasError()) {
@@ -123,6 +127,7 @@ export class OtpAuthService {
         deviceId: response.data?.deviceId || '',
         preAuthSessionId: response.data?.preAuthSessionId || '',
         action: action,
+        returnUrl: returnUrl,
       };
     } else {
       // return response if failed

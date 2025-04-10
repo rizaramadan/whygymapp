@@ -28,6 +28,9 @@
         {{#if action}}
             <input type="hidden" name="action" id="action" value="{{action}}">
         {{/if}}
+        {{#if returnUrl}}
+            <input type="hidden" name="returnUrl" id="returnUrl" value="{{returnUrl}}">
+        {{/if}}
 
         <button class="w-full py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
                 type="submit">
