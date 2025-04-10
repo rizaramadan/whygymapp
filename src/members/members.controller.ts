@@ -20,6 +20,7 @@ import {
   MembershipApplicationDto,
 } from './dto/membership-application.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import Sqids from 'sqids';
 
 @Controller('members')
 export class MembersController {
@@ -34,6 +35,13 @@ export class MembersController {
       req.user.picUrl,
     );
 
+    if (!visit) {
+      return {
+        status: null,
+        message: 'Failed to create visit',
+      };
+    }
+
     // Mock weekly visits data
     const weeklyVisits = await this.membersService.getWeeklyVisitsByEmail(
       req.user.email,
@@ -43,12 +51,15 @@ export class MembersController {
       req.user.email,
     );
 
-    if (!visit) {
-      return {
-        status: null,
-        message: 'Failed to create visit',
-      };
-    }
+    const memberId = await this.membersService.getMemberIdByEmail(
+      req.user.email,
+    );
+
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const id = sqids.encode([memberId?.id || 0, 9, 9]);
+
     return {
       status: 'success',
       email: visit.email,
@@ -57,6 +68,7 @@ export class MembersController {
       visitCode: visit.visitCode,
       weeklyVisits: weeklyVisits,
       monthlyVisits: monthlyVisits,
+      id: id,
     };
   }
 
