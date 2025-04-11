@@ -14,6 +14,16 @@ export function registerHelpers() {
     });
   });
 
+  hbs.registerHelper('extractDate', function (date: string) {
+    if (!date) return '';
+    const dateObj = new Date(date);
+    return dateObj.toLocaleString('id-ID', {
+      year: '2-digit',
+      month: 'short',
+      day: 'numeric',
+    });
+  });
+
   hbs.registerHelper('json', function (context) {
     return JSON.stringify(context);
   });

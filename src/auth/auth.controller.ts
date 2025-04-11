@@ -39,7 +39,11 @@ export class AuthController {
   @Public()
   @Get('login')
   @Render('auth/login')
-  async getLoginPage(@Request() req, @Query('action') action?: string) {
+  async getLoginPage(
+    @Request() req,
+    @Query('action') action?: string,
+    @Query('returnUrl') returnUrl?: string,
+  ) {
     if (action === 'member-visit') {
       //try call http /me and log the result
       try {
@@ -56,7 +60,7 @@ export class AuthController {
         console.log(error);
       }
     }
-    return { action };
+    return { action, returnUrl };
   }
 
   @Public()
@@ -73,11 +77,13 @@ export class AuthController {
   createOtp(
     @Body() createOtpDto: CreateOtpDto,
     @Query('action') action?: string,
+    @Query('returnUrl') returnUrl?: string,
   ) {
     return this.otpAuthService.createOtp(
       ErrorApp.success,
       createOtpDto.email,
       action,
+      returnUrl,
     );
   }
 
@@ -102,7 +108,11 @@ export class AuthController {
       if (verifyOtpDto.action === 'member-visit') {
         return `<script>window.location.href="/members/visit"</script>`;
       } else {
-        return `<script>window.location.href="/${role}-dashboard"</script>`;
+        if (verifyOtpDto.returnUrl) {
+          return `<script>window.location.href="${verifyOtpDto.returnUrl}"</script>`;
+        } else {
+          return `<script>window.location.href="/${role}-dashboard"</script>`;
+        }
       }
     }
   }

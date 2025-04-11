@@ -210,7 +210,6 @@ export class MembersService {
 
   async getActiveMemberBreakdown(): Promise<getActiveMemberBreakdownRow[]> {
     const data = await getActiveMemberBreakdown(this.pool);
-    console.log(data);
     return data;
   }
 

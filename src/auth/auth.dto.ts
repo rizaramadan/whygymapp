@@ -12,4 +12,5 @@ export class VerifyOtpDto {
   @IsNotEmpty()
   userInputCode: string;
   action?: string;
+  returnUrl?: string;
 }

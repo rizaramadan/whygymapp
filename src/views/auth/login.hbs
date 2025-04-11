@@ -62,7 +62,7 @@
                     </div>  
                 {{/if}}
                 <div id="loginForm" class="space-y-4">
-                    <form hx-post="/auth/otp/create?action={{action}}"
+                    <form hx-post="/auth/otp/create?action={{action}}&returnUrl={{returnUrl}}"
                           hx-target="#loginForm"
                           hx-swap="outerHTML"
                           hx-indicator="#spinner"
@@ -73,6 +73,7 @@
                                class="w-full rounded-lg border border-gray-300 px-4 py-2" 
                                required
                                placeholder="your@email.com">
+                               
                         
                         <button class="w-full py-2 px-4 rounded-lg text-white bg-green-600 font-medium"
                                 type="submit">

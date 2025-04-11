@@ -505,11 +505,28 @@ WHERE part_id = $1
 RETURNING id, main_reference_id, part_id, part_reference_id;
 
 -- name: getActiveMemberBreakdown :many
-select email, additional_data->> 'gender' as gender,
-       additional_data->> 'promoType' as promo_type,
-       additional_data->> 'groupType' as group_type,
-       additional_data->> 'duration' as duration
-from whygym.members where membership_status = 'active' order by id;
+with groups as (
+  select main_reference_id, count(*) as count from whygym.order_groups group by main_reference_id having count(*) > 1
+),
+group_counts AS (
+  select og.part_reference_id, coalesce(g.count, 1) as count from whygym.order_groups og left join groups g on og.main_reference_id = g.main_reference_id
+)
+select m.email,
+       m.additional_data->> 'gender' as gender,
+       coalesce(m.additional_data->> 'promoType', 'new_member') as promo_type,
+       CASE
+           WHEN g.count is null THEN coalesce(m.additional_data->> 'groupType', 'single')
+           WHEN g.count::int = 2 THEN 'duo'
+           WHEN g.count::int > 3 THEN 'group'
+           ELSE 'single'
+       END as  group_type,
+       m.additional_data->> 'duration' as duration,
+       g.count,
+       m.start_date
+from whygym.members m
+    left join whygym.orders o on m.id = o.member_id
+    left join group_counts g on o.reference_id = g.part_reference_id
+where m.membership_status = 'active' order by m.id desc;
 
 -- name: getMemberActiveDate :one
 WITH data as (

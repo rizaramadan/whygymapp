@@ -267,7 +267,7 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    emailPic: string;
+    emailPic: string | null;
     duration: string;
     gender: string;
 }
@@ -2128,18 +2128,37 @@ export async function removeFromGroup(client: Client, args: removeFromGroupArgs)
 }
 
 export const getActiveMemberBreakdownQuery = `-- name: getActiveMemberBreakdown :many
-select email, additional_data->> 'gender' as gender,
-       additional_data->> 'promoType' as promo_type,
-       additional_data->> 'groupType' as group_type,
-       additional_data->> 'duration' as duration
-from whygym.members where membership_status = 'active' order by id`;
+with groups as (
+  select main_reference_id, count(*) as count from whygym.order_groups group by main_reference_id having count(*) > 1
+),
+group_counts AS (
+  select og.part_reference_id, coalesce(g.count, 1) as count from whygym.order_groups og left join groups g on og.main_reference_id = g.main_reference_id
+)
+select m.email,
+       m.additional_data->> 'gender' as gender,
+       coalesce(m.additional_data->> 'promoType', 'new_member') as promo_type,
+       CASE
+           WHEN g.count is null THEN coalesce(m.additional_data->> 'groupType', 'single')
+           WHEN g.count::int = 2 THEN 'duo'
+           WHEN g.count::int > 3 THEN 'group'
+           ELSE 'single'
+       END as  group_type,
+       m.additional_data->> 'duration' as duration,
+       g.count,
+       m.start_date
+from whygym.members m
+    left join whygym.orders o on m.id = o.member_id
+    left join group_counts g on o.reference_id = g.part_reference_id
+where m.membership_status = 'active' order by m.id desc`;
 
 export interface getActiveMemberBreakdownRow {
     email: string | null;
     gender: string | null;
     promoType: string | null;
-    groupType: string | null;
+    groupType: string;
     duration: string | null;
+    count: string | null;
+    startDate: Date | null;
 }
 
 export async function getActiveMemberBreakdown(client: Client): Promise<getActiveMemberBreakdownRow[]> {
@@ -2154,7 +2173,9 @@ export async function getActiveMemberBreakdown(client: Client): Promise<getActiv
             gender: row[1],
             promoType: row[2],
             groupType: row[3],
-            duration: row[4]
+            duration: row[4],
+            count: row[5],
+            startDate: row[6]
         };
     });
 }
@@ -2204,7 +2225,7 @@ returning id, email`;
 
 export interface addOrUpdateMemberPicUrlArgs {
     email: string | null;
-    picUrl: string;
+    picUrl: string | null;
 }
 
 export interface addOrUpdateMemberPicUrlRow {
