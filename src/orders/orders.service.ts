@@ -57,6 +57,14 @@ interface OrderWithInvoiceId {
   };
 }
 
+interface CoachingOrderData {
+  member_id: number;
+  coach_type: 'personal' | 'group';
+  number_of_sessions: number;
+  price: number;
+  group_members?: number[];
+}
+
 @Injectable()
 export class OrdersService {
   private readonly darisiniFee = 0;
@@ -503,5 +511,144 @@ export class OrdersService {
       throw new Error('Payment URL not found');
     }
     return result?.paymenturl || '';
+  }
+
+  // Get coaching order by reference id
+  async getCoachingOrderByReferenceId(
+    referenceId: string,
+  ): Promise<CoachingOrderData | null> {
+    const order = await this.getOrderByReferenceId(referenceId);
+    if (!order) {
+      return null;
+    }
+
+    return {
+      member_id: order.member_id,
+      coach_type: order.additionalInfo?.coach_type || 'personal',
+      number_of_sessions: order.additionalInfo?.number_of_sessions || 0,
+      price: parseFloat(order.price.toString()),
+      group_members: order.additionalInfo?.group_members,
+    };
+  }
+
+  // Get coaching checkout data
+  async getCoachingCheckoutData(
+    referenceId: string,
+    user: User,
+  ): Promise<CheckoutResponse> {
+    const order = await this.getOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    let invoice: CreateInvoiceResponse | null = null;
+    if (
+      (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data?.id
+    ) {
+      const createInvoiceResponse: CreateInvoiceResponse =
+        await this.getInvoiceStatus(
+          (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+            ?.id,
+          referenceId,
+        );
+      if (createInvoiceResponse.data.status === 'PAID') {
+        invoice = createInvoiceResponse;
+      }
+    }
+
+    const { membershipFee, paymentGatewayFee, tax, total } =
+      this.calculatePaymentDetails(order, 0);
+    const paymentMethods = await this.getPaymentMethods(total);
+
+    return {
+      user,
+      referenceId,
+      order,
+      paymentMethods,
+      membershipFee,
+      paymentGatewayFee,
+      tax,
+      total,
+      invoice,
+    };
+  }
+
+  // Process coaching payment
+  async processCoachingPayment(
+    user: User,
+    referenceId: string,
+    paymentMethod: string,
+    paymentGatewayFee: number,
+  ) {
+    const order = await this.getCoachingOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    const paymentDetails = this.calculatePaymentDetails(
+      { price: order.price } as any,
+      paymentGatewayFee,
+    );
+
+    const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+
+    const request = new CreateInvoiceRequest(
+      referenceId,
+      url,
+      user.email,
+      {
+        coach_type: order.coach_type,
+        number_of_sessions: order.number_of_sessions,
+        group_members: order.group_members,
+      },
+      paymentDetails.total,
+      user.fullName,
+      user.phoneNumber || '',
+      paymentMethod,
+    );
+
+    const invoice = await this.postCreateInvoice(request);
+    await this.setOrderInvoiceRequestResponse(referenceId, invoice, request);
+
+    const retval = {
+      user,
+      referenceId,
+      memberId: order.member_id,
+      ...paymentDetails,
+      order,
+      paymentMethod,
+    };
+
+    return retval;
+  }
+
+  // Set invoice status response and activate coaching
+  async setInvoiceStatusResponseAndActivateCoaching(referenceId: string) {
+    const order = await this.getCoachingOrderByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    const createInvoiceResponse: CreateInvoiceResponse =
+      await this.getInvoiceStatus(
+        (order as any)?.additionalInfo?.invoice_response?.data?.id,
+        referenceId,
+      );
+
+    if (createInvoiceResponse.data.status === 'PAID') {
+      // Here you would typically call the PrivateCoachingService to create the sessions
+      // For example:
+      // await this.privateCoachingService.createCoachingSession(
+      //   order.member_id,
+      //   order.coach_type,
+      //   order.number_of_sessions,
+      //   { group_members: order.group_members }
+      // );
+
+      await this.setOrderInvoiceResponse(referenceId, createInvoiceResponse);
+      return true;
+    }
+
+    return false;
   }
 }
