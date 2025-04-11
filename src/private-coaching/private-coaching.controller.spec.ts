@@ -9,7 +9,9 @@ describe('PrivateCoachingController', () => {
       controllers: [PrivateCoachingController],
     }).compile();
 
-    controller = module.get<PrivateCoachingController>(PrivateCoachingController);
+    controller = module.get<PrivateCoachingController>(
+      PrivateCoachingController,
+    );
   });
 
   it('should be defined', () => {

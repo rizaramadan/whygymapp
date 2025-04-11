@@ -25,7 +25,7 @@ export class AppController {
     private readonly usersService: UsersService,
   ) {}
 
-  @Get("/")
+  @Get('/')
   getHello() {
     return '<script>window.location.href="/auth/login"</script>';
   }

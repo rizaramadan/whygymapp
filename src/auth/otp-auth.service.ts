@@ -50,7 +50,12 @@ export class OtpAuthService {
       email,
     );
     // return constructed response
-    return this.constructCreateOtpResponse(errorOtp, response, action, returnUrl);
+    return this.constructCreateOtpResponse(
+      errorOtp,
+      response,
+      action,
+      returnUrl,
+    );
   }
 
   // call api create send otp, first created to be called by  createOtp

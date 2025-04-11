@@ -22,7 +22,7 @@ import {
   getUserPicture,
   createAndGetUser,
   addOrUpdateUserPicture,
-  AddOrUpdateUserPictureRow
+  AddOrUpdateUserPictureRow,
 } from '../../db/src/query_sql'; // Import the functions from the query_sql file
 import { Pool } from 'pg';
 import { ErrorApp } from 'src/common/result';

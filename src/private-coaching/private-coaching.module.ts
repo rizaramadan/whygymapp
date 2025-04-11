@@ -4,6 +4,6 @@ import { PrivateCoachingService } from './private-coaching.service';
 
 @Module({
   controllers: [PrivateCoachingController],
-  providers: [PrivateCoachingService]
+  providers: [PrivateCoachingService],
 })
 export class PrivateCoachingModule {}

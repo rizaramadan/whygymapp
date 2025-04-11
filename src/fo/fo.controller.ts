@@ -39,7 +39,7 @@ export class FoController {
     }
 
     const member = {
-      email: memberFromDb.email || '' ,
+      email: memberFromDb.email || '',
       picUrl: memberFromDb.additionalData.picUrl || '',
     };
 

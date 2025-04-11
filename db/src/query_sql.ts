@@ -1,7 +1,7 @@
-import { QueryArrayConfig, QueryArrayResult } from "pg";
+import { QueryArrayConfig, QueryArrayResult } from 'pg';
 
 interface Client {
-    query: (config: QueryArrayConfig) => Promise<QueryArrayResult>;
+  query: (config: QueryArrayConfig) => Promise<QueryArrayResult>;
 }
 
 export const getAllUsersRolesQuery = `-- name: GetAllUsersRoles :many
@@ -33,28 +33,30 @@ FROM
     INNER JOIN whygym.roles r ON ur.role_id = r.id`;
 
 export interface GetAllUsersRolesRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    role: string;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  role: string;
 }
 
-export async function getAllUsersRoles(client: Client): Promise<GetAllUsersRolesRow[]> {
-    const result = await client.query({
-        text: getAllUsersRolesQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            username: row[1],
-            password: row[2],
-            email: row[3],
-            role: row[4]
-        };
-    });
+export async function getAllUsersRoles(
+  client: Client,
+): Promise<GetAllUsersRolesRow[]> {
+  const result = await client.query({
+    text: getAllUsersRolesQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      username: row[1],
+      password: row[2],
+      email: row[3],
+      role: row[4],
+    };
+  });
 }
 
 export const getUserByEmailQuery = `-- name: GetUserByEmail :one
@@ -72,32 +74,35 @@ GROUP BY u.id, u.username
 LIMIT 1`;
 
 export interface GetUserByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetUserByEmailRow {
-    id: number;
-    username: string;
-    password: string;
-    roles: string;
+  id: number;
+  username: string;
+  password: string;
+  roles: string;
 }
 
-export async function getUserByEmail(client: Client, args: GetUserByEmailArgs): Promise<GetUserByEmailRow | null> {
-    const result = await client.query({
-        text: getUserByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        roles: row[3]
-    };
+export async function getUserByEmail(
+  client: Client,
+  args: GetUserByEmailArgs,
+): Promise<GetUserByEmailRow | null> {
+  const result = await client.query({
+    text: getUserByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    roles: row[3],
+  };
 }
 
 export const getTodayVisitsQuery = `-- name: GetTodayVisits :many
@@ -107,30 +112,32 @@ WHERE check_in_date = CURRENT_DATE
 ORDER BY check_in_time DESC`;
 
 export interface GetTodayVisitsRow {
-    id: string;
-    memberId: number;
-    email: string | null;
-    picUrl: string;
-    checkInTime: Date;
-    visitCode: number;
+  id: string;
+  memberId: number;
+  email: string | null;
+  picUrl: string;
+  checkInTime: Date;
+  visitCode: number;
 }
 
-export async function getTodayVisits(client: Client): Promise<GetTodayVisitsRow[]> {
-    const result = await client.query({
-        text: getTodayVisitsQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            memberId: row[1],
-            email: row[2],
-            picUrl: row[3],
-            checkInTime: row[4],
-            visitCode: row[5]
-        };
-    });
+export async function getTodayVisits(
+  client: Client,
+): Promise<GetTodayVisitsRow[]> {
+  const result = await client.query({
+    text: getTodayVisitsQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      memberId: row[1],
+      email: row[2],
+      picUrl: row[3],
+      checkInTime: row[4],
+      visitCode: row[5],
+    };
+  });
 }
 
 export const createVisitQuery = `-- name: CreateVisit :one
@@ -139,38 +146,41 @@ VALUES ($1, $2, $3)
 RETURNING id, member_id, email, pic_url, check_in_time, visit_code`;
 
 export interface CreateVisitArgs {
-    memberId: number;
-    email: string | null;
-    picUrl: string;
+  memberId: number;
+  email: string | null;
+  picUrl: string;
 }
 
 export interface CreateVisitRow {
-    id: string;
-    memberId: number;
-    email: string | null;
-    picUrl: string;
-    checkInTime: Date;
-    visitCode: number;
+  id: string;
+  memberId: number;
+  email: string | null;
+  picUrl: string;
+  checkInTime: Date;
+  visitCode: number;
 }
 
-export async function createVisit(client: Client, args: CreateVisitArgs): Promise<CreateVisitRow | null> {
-    const result = await client.query({
-        text: createVisitQuery,
-        values: [args.memberId, args.email, args.picUrl],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        memberId: row[1],
-        email: row[2],
-        picUrl: row[3],
-        checkInTime: row[4],
-        visitCode: row[5]
-    };
+export async function createVisit(
+  client: Client,
+  args: CreateVisitArgs,
+): Promise<CreateVisitRow | null> {
+  const result = await client.query({
+    text: createVisitQuery,
+    values: [args.memberId, args.email, args.picUrl],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    memberId: row[1],
+    email: row[2],
+    picUrl: row[3],
+    checkInTime: row[4],
+    visitCode: row[5],
+  };
 }
 
 export const getMemberIdByEmailQuery = `-- name: GetMemberIdByEmail :one
@@ -179,38 +189,41 @@ WHERE email = $1
 LIMIT 1`;
 
 export interface GetMemberIdByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetMemberIdByEmailRow {
-    id: number;
-    email: string | null;
-    membershipStatus: string;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    additionalData: any | null;
+  id: number;
+  email: string | null;
+  membershipStatus: string;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  additionalData: any | null;
 }
 
-export async function getMemberIdByEmail(client: Client, args: GetMemberIdByEmailArgs): Promise<GetMemberIdByEmailRow | null> {
-    const result = await client.query({
-        text: getMemberIdByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        membershipStatus: row[2],
-        nickname: row[3],
-        dateOfBirth: row[4],
-        phoneNumber: row[5],
-        additionalData: row[6]
-    };
+export async function getMemberIdByEmail(
+  client: Client,
+  args: GetMemberIdByEmailArgs,
+): Promise<GetMemberIdByEmailRow | null> {
+  const result = await client.query({
+    text: getMemberIdByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    membershipStatus: row[2],
+    nickname: row[3],
+    dateOfBirth: row[4],
+    phoneNumber: row[5],
+    additionalData: row[6],
+  };
 }
 
 export const getMemberByIdQuery = `-- name: GetMemberById :one
@@ -219,38 +232,41 @@ WHERE id = $1
 LIMIT 1`;
 
 export interface GetMemberByIdArgs {
-    id: number;
+  id: number;
 }
 
 export interface GetMemberByIdRow {
-    id: number;
-    email: string | null;
-    membershipStatus: string;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    additionalData: any | null;
+  id: number;
+  email: string | null;
+  membershipStatus: string;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  additionalData: any | null;
 }
 
-export async function getMemberById(client: Client, args: GetMemberByIdArgs): Promise<GetMemberByIdRow | null> {
-    const result = await client.query({
-        text: getMemberByIdQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        membershipStatus: row[2],
-        nickname: row[3],
-        dateOfBirth: row[4],
-        phoneNumber: row[5],
-        additionalData: row[6]
-    };
+export async function getMemberById(
+  client: Client,
+  args: GetMemberByIdArgs,
+): Promise<GetMemberByIdRow | null> {
+  const result = await client.query({
+    text: getMemberByIdQuery,
+    values: [args.id],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    membershipStatus: row[2],
+    nickname: row[3],
+    dateOfBirth: row[4],
+    phoneNumber: row[5],
+    additionalData: row[6],
+  };
 }
 
 export const updateMemberAdditionalDataQuery = `-- name: UpdateMemberAdditionalData :one
@@ -265,32 +281,35 @@ UPDATE whygym.members SET updated_at = current_timestamp, additional_data = json
 WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, email`;
 
 export interface UpdateMemberAdditionalDataArgs {
-    id: number;
-    email: string | null;
-    emailPic: string | null;
-    duration: string;
-    gender: string;
+  id: number;
+  email: string | null;
+  emailPic: string | null;
+  duration: string;
+  gender: string;
 }
 
 export interface UpdateMemberAdditionalDataRow {
-    id: number;
-    email: string | null;
+  id: number;
+  email: string | null;
 }
 
-export async function updateMemberAdditionalData(client: Client, args: UpdateMemberAdditionalDataArgs): Promise<UpdateMemberAdditionalDataRow | null> {
-    const result = await client.query({
-        text: updateMemberAdditionalDataQuery,
-        values: [args.id, args.email, args.emailPic, args.duration, args.gender],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1]
-    };
+export async function updateMemberAdditionalData(
+  client: Client,
+  args: UpdateMemberAdditionalDataArgs,
+): Promise<UpdateMemberAdditionalDataRow | null> {
+  const result = await client.query({
+    text: updateMemberAdditionalDataQuery,
+    values: [args.id, args.email, args.emailPic, args.duration, args.gender],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+  };
 }
 
 export const getVisitsAfterIdQuery = `-- name: GetVisitsAfterId :many
@@ -300,34 +319,37 @@ WHERE id > $1
 ORDER BY check_in_time DESC`;
 
 export interface GetVisitsAfterIdArgs {
-    id: string;
+  id: string;
 }
 
 export interface GetVisitsAfterIdRow {
-    id: string;
-    memberId: number;
-    email: string | null;
-    picUrl: string;
-    checkInTime: Date;
-    visitCode: number;
+  id: string;
+  memberId: number;
+  email: string | null;
+  picUrl: string;
+  checkInTime: Date;
+  visitCode: number;
 }
 
-export async function getVisitsAfterId(client: Client, args: GetVisitsAfterIdArgs): Promise<GetVisitsAfterIdRow[]> {
-    const result = await client.query({
-        text: getVisitsAfterIdQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            memberId: row[1],
-            email: row[2],
-            picUrl: row[3],
-            checkInTime: row[4],
-            visitCode: row[5]
-        };
-    });
+export async function getVisitsAfterId(
+  client: Client,
+  args: GetVisitsAfterIdArgs,
+): Promise<GetVisitsAfterIdRow[]> {
+  const result = await client.query({
+    text: getVisitsAfterIdQuery,
+    values: [args.id],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      memberId: row[1],
+      email: row[2],
+      picUrl: row[3],
+      checkInTime: row[4],
+      visitCode: row[5],
+    };
+  });
 }
 
 export const getLastVisitIdQuery = `-- name: GetLastVisitId :one
@@ -336,22 +358,24 @@ ORDER BY id DESC
 LIMIT 1`;
 
 export interface GetLastVisitIdRow {
-    id: string;
+  id: string;
 }
 
-export async function getLastVisitId(client: Client): Promise<GetLastVisitIdRow | null> {
-    const result = await client.query({
-        text: getLastVisitIdQuery,
-        values: [],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0]
-    };
+export async function getLastVisitId(
+  client: Client,
+): Promise<GetLastVisitIdRow | null> {
+  const result = await client.query({
+    text: getLastVisitIdQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+  };
 }
 
 export const createUserRequestQuery = `-- name: CreateUserRequest :one
@@ -360,40 +384,43 @@ VALUES ($1, $2, $3)
 RETURNING id, username, password, email, status, created_at, updated_at`;
 
 export interface CreateUserRequestArgs {
-    username: string;
-    password: string;
-    email: string | null;
+  username: string;
+  password: string;
+  email: string | null;
 }
 
 export interface CreateUserRequestRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    status: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  status: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function createUserRequest(client: Client, args: CreateUserRequestArgs): Promise<CreateUserRequestRow | null> {
-    const result = await client.query({
-        text: createUserRequestQuery,
-        values: [args.username, args.password, args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        email: row[3],
-        status: row[4],
-        createdAt: row[5],
-        updatedAt: row[6]
-    };
+export async function createUserRequest(
+  client: Client,
+  args: CreateUserRequestArgs,
+): Promise<CreateUserRequestRow | null> {
+  const result = await client.query({
+    text: createUserRequestQuery,
+    values: [args.username, args.password, args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    email: row[3],
+    status: row[4],
+    createdAt: row[5],
+    updatedAt: row[6],
+  };
 }
 
 export const approveUserRequestQuery = `-- name: ApproveUserRequest :one
@@ -403,39 +430,42 @@ WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at`;
 
 export interface ApproveUserRequestArgs {
-    approvedBy: number | null;
-    id: number;
+  approvedBy: number | null;
+  id: number;
 }
 
 export interface ApproveUserRequestRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    status: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  status: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function approveUserRequest(client: Client, args: ApproveUserRequestArgs): Promise<ApproveUserRequestRow | null> {
-    const result = await client.query({
-        text: approveUserRequestQuery,
-        values: [args.approvedBy, args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        email: row[3],
-        status: row[4],
-        createdAt: row[5],
-        updatedAt: row[6]
-    };
+export async function approveUserRequest(
+  client: Client,
+  args: ApproveUserRequestArgs,
+): Promise<ApproveUserRequestRow | null> {
+  const result = await client.query({
+    text: approveUserRequestQuery,
+    values: [args.approvedBy, args.id],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    email: row[3],
+    status: row[4],
+    createdAt: row[5],
+    updatedAt: row[6],
+  };
 }
 
 export const rejectUserRequestQuery = `-- name: RejectUserRequest :one
@@ -445,39 +475,42 @@ WHERE id = $2
 RETURNING id, username, password, email, status, created_at, updated_at`;
 
 export interface RejectUserRequestArgs {
-    approvedBy: number | null;
-    id: number;
+  approvedBy: number | null;
+  id: number;
 }
 
 export interface RejectUserRequestRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    status: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  status: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function rejectUserRequest(client: Client, args: RejectUserRequestArgs): Promise<RejectUserRequestRow | null> {
-    const result = await client.query({
-        text: rejectUserRequestQuery,
-        values: [args.approvedBy, args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        email: row[3],
-        status: row[4],
-        createdAt: row[5],
-        updatedAt: row[6]
-    };
+export async function rejectUserRequest(
+  client: Client,
+  args: RejectUserRequestArgs,
+): Promise<RejectUserRequestRow | null> {
+  const result = await client.query({
+    text: rejectUserRequestQuery,
+    values: [args.approvedBy, args.id],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    email: row[3],
+    status: row[4],
+    createdAt: row[5],
+    updatedAt: row[6],
+  };
 }
 
 export const getPendingUserRequestsQuery = `-- name: GetPendingUserRequests :many
@@ -486,32 +519,34 @@ FROM whygym.create_user_requests
 WHERE status = 'pending'`;
 
 export interface GetPendingUserRequestsRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    status: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  status: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function getPendingUserRequests(client: Client): Promise<GetPendingUserRequestsRow[]> {
-    const result = await client.query({
-        text: getPendingUserRequestsQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            username: row[1],
-            password: row[2],
-            email: row[3],
-            status: row[4],
-            createdAt: row[5],
-            updatedAt: row[6]
-        };
-    });
+export async function getPendingUserRequests(
+  client: Client,
+): Promise<GetPendingUserRequestsRow[]> {
+  const result = await client.query({
+    text: getPendingUserRequestsQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      username: row[1],
+      password: row[2],
+      email: row[3],
+      status: row[4],
+      createdAt: row[5],
+      updatedAt: row[6],
+    };
+  });
 }
 
 export const getUserRequestsQuery = `-- name: GetUserRequests :many
@@ -520,34 +555,36 @@ FROM whygym.create_user_requests
 ORDER BY created_at DESC`;
 
 export interface GetUserRequestsRow {
-    id: number;
-    username: string;
-    password: string;
-    email: string | null;
-    status: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-    approvedBy: number | null;
+  id: number;
+  username: string;
+  password: string;
+  email: string | null;
+  status: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  approvedBy: number | null;
 }
 
-export async function getUserRequests(client: Client): Promise<GetUserRequestsRow[]> {
-    const result = await client.query({
-        text: getUserRequestsQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            username: row[1],
-            password: row[2],
-            email: row[3],
-            status: row[4],
-            createdAt: row[5],
-            updatedAt: row[6],
-            approvedBy: row[7]
-        };
-    });
+export async function getUserRequests(
+  client: Client,
+): Promise<GetUserRequestsRow[]> {
+  const result = await client.query({
+    text: getUserRequestsQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      username: row[1],
+      password: row[2],
+      email: row[3],
+      status: row[4],
+      createdAt: row[5],
+      updatedAt: row[6],
+      approvedBy: row[7],
+    };
+  });
 }
 
 export const approveAndApplyUserQuery = `-- name: ApproveAndApplyUser :one
@@ -564,29 +601,32 @@ FROM approve_create_user
 RETURNING username, password`;
 
 export interface ApproveAndApplyUserArgs {
-    approvedBy: number | null;
-    id: number;
+  approvedBy: number | null;
+  id: number;
 }
 
 export interface ApproveAndApplyUserRow {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
-export async function approveAndApplyUser(client: Client, args: ApproveAndApplyUserArgs): Promise<ApproveAndApplyUserRow | null> {
-    const result = await client.query({
-        text: approveAndApplyUserQuery,
-        values: [args.approvedBy, args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        username: row[0],
-        password: row[1]
-    };
+export async function approveAndApplyUser(
+  client: Client,
+  args: ApproveAndApplyUserArgs,
+): Promise<ApproveAndApplyUserRow | null> {
+  const result = await client.query({
+    text: approveAndApplyUserQuery,
+    values: [args.approvedBy, args.id],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    username: row[0],
+    password: row[1],
+  };
 }
 
 export const checkUserCredentialsQuery = `-- name: CheckUserCredentials :one
@@ -594,27 +634,30 @@ SELECT count(*) FROM whygym.users
 WHERE username = $1 AND password = crypt($2, password) LIMIT 1`;
 
 export interface CheckUserCredentialsArgs {
-    username: string;
-    crypt: string;
+  username: string;
+  crypt: string;
 }
 
 export interface CheckUserCredentialsRow {
-    count: string;
+  count: string;
 }
 
-export async function checkUserCredentials(client: Client, args: CheckUserCredentialsArgs): Promise<CheckUserCredentialsRow | null> {
-    const result = await client.query({
-        text: checkUserCredentialsQuery,
-        values: [args.username, args.crypt],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        count: row[0]
-    };
+export async function checkUserCredentials(
+  client: Client,
+  args: CheckUserCredentialsArgs,
+): Promise<CheckUserCredentialsRow | null> {
+  const result = await client.query({
+    text: checkUserCredentialsQuery,
+    values: [args.username, args.crypt],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    count: row[0],
+  };
 }
 
 export const getUserByUsernameQuery = `-- name: GetUserByUsername :one
@@ -632,32 +675,35 @@ GROUP BY u.id, u.username
 LIMIT 1`;
 
 export interface GetUserByUsernameArgs {
-    username: string;
+  username: string;
 }
 
 export interface GetUserByUsernameRow {
-    id: number;
-    username: string;
-    password: string;
-    roles: string;
+  id: number;
+  username: string;
+  password: string;
+  roles: string;
 }
 
-export async function getUserByUsername(client: Client, args: GetUserByUsernameArgs): Promise<GetUserByUsernameRow | null> {
-    const result = await client.query({
-        text: getUserByUsernameQuery,
-        values: [args.username],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        roles: row[3]
-    };
+export async function getUserByUsername(
+  client: Client,
+  args: GetUserByUsernameArgs,
+): Promise<GetUserByUsernameRow | null> {
+  const result = await client.query({
+    text: getUserByUsernameQuery,
+    values: [args.username],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    roles: row[3],
+  };
 }
 
 export const createAndGetUserQuery = `-- name: CreateAndGetUser :one
@@ -678,34 +724,37 @@ GROUP BY inserted_user.id, inserted_user.username, inserted_user.password
 LIMIT 1`;
 
 export interface CreateAndGetUserArgs {
-    email: string | null;
-    username: string;
-    md5: Buffer;
+  email: string | null;
+  username: string;
+  md5: Buffer;
 }
 
 export interface CreateAndGetUserRow {
-    id: number;
-    username: string;
-    password: string;
-    roles: string;
+  id: number;
+  username: string;
+  password: string;
+  roles: string;
 }
 
-export async function createAndGetUser(client: Client, args: CreateAndGetUserArgs): Promise<CreateAndGetUserRow | null> {
-    const result = await client.query({
-        text: createAndGetUserQuery,
-        values: [args.email, args.username, args.md5],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        username: row[1],
-        password: row[2],
-        roles: row[3]
-    };
+export async function createAndGetUser(
+  client: Client,
+  args: CreateAndGetUserArgs,
+): Promise<CreateAndGetUserRow | null> {
+  const result = await client.query({
+    text: createAndGetUserQuery,
+    values: [args.email, args.username, args.md5],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    username: row[1],
+    password: row[2],
+    roles: row[3],
+  };
 }
 
 export const addOrUpdateUserPictureQuery = `-- name: AddOrUpdateUserPicture :one
@@ -716,33 +765,36 @@ SET value = $2, updated_at = NOW()
 RETURNING id, user_id, key, value`;
 
 export interface AddOrUpdateUserPictureArgs {
-    userId: string;
-    value: string;
+  userId: string;
+  value: string;
 }
 
 export interface AddOrUpdateUserPictureRow {
-    id: string;
-    userId: string;
-    key: string;
-    value: string;
+  id: string;
+  userId: string;
+  key: string;
+  value: string;
 }
 
-export async function addOrUpdateUserPicture(client: Client, args: AddOrUpdateUserPictureArgs): Promise<AddOrUpdateUserPictureRow | null> {
-    const result = await client.query({
-        text: addOrUpdateUserPictureQuery,
-        values: [args.userId, args.value],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        userId: row[1],
-        key: row[2],
-        value: row[3]
-    };
+export async function addOrUpdateUserPicture(
+  client: Client,
+  args: AddOrUpdateUserPictureArgs,
+): Promise<AddOrUpdateUserPictureRow | null> {
+  const result = await client.query({
+    text: addOrUpdateUserPictureQuery,
+    values: [args.userId, args.value],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    userId: row[1],
+    key: row[2],
+    value: row[3],
+  };
 }
 
 export const getUserPictureQuery = `-- name: GetUserPicture :one
@@ -751,26 +803,29 @@ WHERE user_id = $1 AND key = 'picture'
 LIMIT 1`;
 
 export interface GetUserPictureArgs {
-    userId: string;
+  userId: string;
 }
 
 export interface GetUserPictureRow {
-    value: string;
+  value: string;
 }
 
-export async function getUserPicture(client: Client, args: GetUserPictureArgs): Promise<GetUserPictureRow | null> {
-    const result = await client.query({
-        text: getUserPictureQuery,
-        values: [args.userId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        value: row[0]
-    };
+export async function getUserPicture(
+  client: Client,
+  args: GetUserPictureArgs,
+): Promise<GetUserPictureRow | null> {
+  const result = await client.query({
+    text: getUserPictureQuery,
+    values: [args.userId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    value: row[0],
+  };
 }
 
 export const createMemberByEmailQuery = `-- name: CreateMemberByEmail :one
@@ -779,50 +834,61 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at`;
 
 export interface CreateMemberByEmailArgs {
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    notes: string | null;
-    additionalData: any | null;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  notes: string | null;
+  additionalData: any | null;
 }
 
 export interface CreateMemberByEmailRow {
-    id: number;
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    notes: string | null;
-    additionalData: any | null;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  notes: string | null;
+  additionalData: any | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function createMemberByEmail(client: Client, args: CreateMemberByEmailArgs): Promise<CreateMemberByEmailRow | null> {
-    const result = await client.query({
-        text: createMemberByEmailQuery,
-        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.membershipStatus, args.notes, args.additionalData],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        nickname: row[2],
-        dateOfBirth: row[3],
-        phoneNumber: row[4],
-        membershipStatus: row[5],
-        notes: row[6],
-        additionalData: row[7],
-        createdAt: row[8],
-        updatedAt: row[9]
-    };
+export async function createMemberByEmail(
+  client: Client,
+  args: CreateMemberByEmailArgs,
+): Promise<CreateMemberByEmailRow | null> {
+  const result = await client.query({
+    text: createMemberByEmailQuery,
+    values: [
+      args.email,
+      args.nickname,
+      args.dateOfBirth,
+      args.phoneNumber,
+      args.membershipStatus,
+      args.notes,
+      args.additionalData,
+    ],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    nickname: row[2],
+    dateOfBirth: row[3],
+    phoneNumber: row[4],
+    membershipStatus: row[5],
+    notes: row[6],
+    additionalData: row[7],
+    createdAt: row[8],
+    updatedAt: row[9],
+  };
 }
 
 export const createMemberByUsernameQuery = `-- name: CreateMemberByUsername :one
@@ -831,49 +897,59 @@ VALUES ($1, $2, $3, $4, $5, 'username in email field', $6)
 RETURNING id, email, nickname, date_of_birth, phone_number, membership_status, notes, additional_data, created_at, updated_at`;
 
 export interface CreateMemberByUsernameArgs {
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    additionalData: any | null;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  additionalData: any | null;
 }
 
 export interface CreateMemberByUsernameRow {
-    id: number;
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    notes: string | null;
-    additionalData: any | null;
-    createdAt: Date | null;
-    updatedAt: Date | null;
+  id: number;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  notes: string | null;
+  additionalData: any | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 }
 
-export async function createMemberByUsername(client: Client, args: CreateMemberByUsernameArgs): Promise<CreateMemberByUsernameRow | null> {
-    const result = await client.query({
-        text: createMemberByUsernameQuery,
-        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.membershipStatus, args.additionalData],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        nickname: row[2],
-        dateOfBirth: row[3],
-        phoneNumber: row[4],
-        membershipStatus: row[5],
-        notes: row[6],
-        additionalData: row[7],
-        createdAt: row[8],
-        updatedAt: row[9]
-    };
+export async function createMemberByUsername(
+  client: Client,
+  args: CreateMemberByUsernameArgs,
+): Promise<CreateMemberByUsernameRow | null> {
+  const result = await client.query({
+    text: createMemberByUsernameQuery,
+    values: [
+      args.email,
+      args.nickname,
+      args.dateOfBirth,
+      args.phoneNumber,
+      args.membershipStatus,
+      args.additionalData,
+    ],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    nickname: row[2],
+    dateOfBirth: row[3],
+    phoneNumber: row[4],
+    membershipStatus: row[5],
+    notes: row[6],
+    additionalData: row[7],
+    createdAt: row[8],
+    updatedAt: row[9],
+  };
 }
 
 export const getPendingMembershipByEmailQuery = `-- name: GetPendingMembershipByEmail :one
@@ -881,42 +957,45 @@ SELECT id, email, nickname, date_of_birth, phone_number, membership_status, crea
 WHERE membership_status = 'pending' AND (email = $1 OR additional_data->>'emailPic' = $1) LIMIT 1`;
 
 export interface GetPendingMembershipByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetPendingMembershipByEmailRow {
-    id: number;
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    createdAt: Date | null;
-    notes: string | null;
-    additionalData: any | null;
+  id: number;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  createdAt: Date | null;
+  notes: string | null;
+  additionalData: any | null;
 }
 
-export async function getPendingMembershipByEmail(client: Client, args: GetPendingMembershipByEmailArgs): Promise<GetPendingMembershipByEmailRow | null> {
-    const result = await client.query({
-        text: getPendingMembershipByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        nickname: row[2],
-        dateOfBirth: row[3],
-        phoneNumber: row[4],
-        membershipStatus: row[5],
-        createdAt: row[6],
-        notes: row[7],
-        additionalData: row[8]
-    };
+export async function getPendingMembershipByEmail(
+  client: Client,
+  args: GetPendingMembershipByEmailArgs,
+): Promise<GetPendingMembershipByEmailRow | null> {
+  const result = await client.query({
+    text: getPendingMembershipByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    nickname: row[2],
+    dateOfBirth: row[3],
+    phoneNumber: row[4],
+    membershipStatus: row[5],
+    createdAt: row[6],
+    notes: row[7],
+    additionalData: row[8],
+  };
 }
 
 export const getActiveMembershipByEmailQuery = `-- name: GetActiveMembershipByEmail :one
@@ -924,42 +1003,45 @@ SELECT id, email, nickname, date_of_birth, phone_number, membership_status, crea
 WHERE membership_status = 'active' AND email = $1  LIMIT 1`;
 
 export interface GetActiveMembershipByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetActiveMembershipByEmailRow {
-    id: number;
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    membershipStatus: string;
-    createdAt: Date | null;
-    notes: string | null;
-    additionalData: any | null;
+  id: number;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  membershipStatus: string;
+  createdAt: Date | null;
+  notes: string | null;
+  additionalData: any | null;
 }
 
-export async function getActiveMembershipByEmail(client: Client, args: GetActiveMembershipByEmailArgs): Promise<GetActiveMembershipByEmailRow | null> {
-    const result = await client.query({
-        text: getActiveMembershipByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1],
-        nickname: row[2],
-        dateOfBirth: row[3],
-        phoneNumber: row[4],
-        membershipStatus: row[5],
-        createdAt: row[6],
-        notes: row[7],
-        additionalData: row[8]
-    };
+export async function getActiveMembershipByEmail(
+  client: Client,
+  args: GetActiveMembershipByEmailArgs,
+): Promise<GetActiveMembershipByEmailRow | null> {
+  const result = await client.query({
+    text: getActiveMembershipByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+    nickname: row[2],
+    dateOfBirth: row[3],
+    phoneNumber: row[4],
+    membershipStatus: row[5],
+    createdAt: row[6],
+    notes: row[7],
+    additionalData: row[8],
+  };
 }
 
 export const deletePendingMembershipQuery = `-- name: DeletePendingMembership :one
@@ -967,27 +1049,30 @@ DELETE FROM whygym.members
 WHERE id = $1 AND membership_status = 'pending' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id`;
 
 export interface DeletePendingMembershipArgs {
-    id: number;
-    email: string | null;
+  id: number;
+  email: string | null;
 }
 
 export interface DeletePendingMembershipRow {
-    id: number;
+  id: number;
 }
 
-export async function deletePendingMembership(client: Client, args: DeletePendingMembershipArgs): Promise<DeletePendingMembershipRow | null> {
-    const result = await client.query({
-        text: deletePendingMembershipQuery,
-        values: [args.id, args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0]
-    };
+export async function deletePendingMembership(
+  client: Client,
+  args: DeletePendingMembershipArgs,
+): Promise<DeletePendingMembershipRow | null> {
+  const result = await client.query({
+    text: deletePendingMembershipQuery,
+    values: [args.id, args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+  };
 }
 
 export const getWeeklyVisitsByEmailQuery = `-- name: GetWeeklyVisitsByEmail :many
@@ -1010,26 +1095,29 @@ FROM week_series ws
     ORDER BY ws.week_of_year ASC`;
 
 export interface GetWeeklyVisitsByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetWeeklyVisitsByEmailRow {
-    weekNumber: string | null;
-    weekCount: string;
+  weekNumber: string | null;
+  weekCount: string;
 }
 
-export async function getWeeklyVisitsByEmail(client: Client, args: GetWeeklyVisitsByEmailArgs): Promise<GetWeeklyVisitsByEmailRow[]> {
-    const result = await client.query({
-        text: getWeeklyVisitsByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            weekNumber: row[0],
-            weekCount: row[1]
-        };
-    });
+export async function getWeeklyVisitsByEmail(
+  client: Client,
+  args: GetWeeklyVisitsByEmailArgs,
+): Promise<GetWeeklyVisitsByEmailRow[]> {
+  const result = await client.query({
+    text: getWeeklyVisitsByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      weekNumber: row[0],
+      weekCount: row[1],
+    };
+  });
 }
 
 export const getMonthlyVisitsByEmailQuery = `-- name: GetMonthlyVisitsByEmail :many
@@ -1053,26 +1141,29 @@ FROM month_series ms
     ORDER BY ms.month_of_year ASC`;
 
 export interface GetMonthlyVisitsByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetMonthlyVisitsByEmailRow {
-    monthNumber: string | null;
-    monthCount: string;
+  monthNumber: string | null;
+  monthCount: string;
 }
 
-export async function getMonthlyVisitsByEmail(client: Client, args: GetMonthlyVisitsByEmailArgs): Promise<GetMonthlyVisitsByEmailRow[]> {
-    const result = await client.query({
-        text: getMonthlyVisitsByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            monthNumber: row[0],
-            monthCount: row[1]
-        };
-    });
+export async function getMonthlyVisitsByEmail(
+  client: Client,
+  args: GetMonthlyVisitsByEmailArgs,
+): Promise<GetMonthlyVisitsByEmailRow[]> {
+  const result = await client.query({
+    text: getMonthlyVisitsByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      monthNumber: row[0],
+      monthCount: row[1],
+    };
+  });
 }
 
 export const createMemberOrderQuery = `-- name: CreateMemberOrder :one
@@ -1092,38 +1183,49 @@ FROM inserted_orders
 returning id, main_reference_id, part_id, notes::numeric`;
 
 export interface CreateMemberOrderArgs {
-    email: string | null;
-    nickname: string;
-    dateOfBirth: Date | null;
-    phoneNumber: string | null;
-    notes: string | null;
-    additionalData: any | null;
-    price: string;
+  email: string | null;
+  nickname: string;
+  dateOfBirth: Date | null;
+  phoneNumber: string | null;
+  notes: string | null;
+  additionalData: any | null;
+  price: string;
 }
 
 export interface CreateMemberOrderRow {
-    id: number;
-    mainReferenceId: string;
-    partId: number;
-    notes: string;
+  id: number;
+  mainReferenceId: string;
+  partId: number;
+  notes: string;
 }
 
-export async function createMemberOrder(client: Client, args: CreateMemberOrderArgs): Promise<CreateMemberOrderRow | null> {
-    const result = await client.query({
-        text: createMemberOrderQuery,
-        values: [args.email, args.nickname, args.dateOfBirth, args.phoneNumber, args.notes, args.additionalData, args.price],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        mainReferenceId: row[1],
-        partId: row[2],
-        notes: row[3]
-    };
+export async function createMemberOrder(
+  client: Client,
+  args: CreateMemberOrderArgs,
+): Promise<CreateMemberOrderRow | null> {
+  const result = await client.query({
+    text: createMemberOrderQuery,
+    values: [
+      args.email,
+      args.nickname,
+      args.dateOfBirth,
+      args.phoneNumber,
+      args.notes,
+      args.additionalData,
+      args.price,
+    ],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    mainReferenceId: row[1],
+    partId: row[2],
+    notes: row[3],
+  };
 }
 
 export const linkGroupOrderQuery = `-- name: linkGroupOrder :one
@@ -1147,28 +1249,31 @@ from main_member where main_member.ori_id = og.part_id
 returning og.part_id, og.main_reference_id`;
 
 export interface linkGroupOrderArgs {
-    id: number;
+  id: number;
 }
 
 export interface linkGroupOrderRow {
-    partId: number;
-    mainReferenceId: string;
+  partId: number;
+  mainReferenceId: string;
 }
 
-export async function linkGroupOrder(client: Client, args: linkGroupOrderArgs): Promise<linkGroupOrderRow | null> {
-    const result = await client.query({
-        text: linkGroupOrderQuery,
-        values: [args.id],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        partId: row[0],
-        mainReferenceId: row[1]
-    };
+export async function linkGroupOrder(
+  client: Client,
+  args: linkGroupOrderArgs,
+): Promise<linkGroupOrderRow | null> {
+  const result = await client.query({
+    text: linkGroupOrderQuery,
+    values: [args.id],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    partId: row[0],
+    mainReferenceId: row[1],
+  };
 }
 
 export const getOrderReferenceIdByEmailQuery = `-- name: GetOrderReferenceIdByEmail :one
@@ -1180,34 +1285,37 @@ WHERE m.membership_status = 'pending'
 LIMIT 1`;
 
 export interface GetOrderReferenceIdByEmailArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface GetOrderReferenceIdByEmailRow {
-    referenceId: string;
-    additionalData: any | null;
-    nickname: string;
-    createdAt: Date | null;
-    memberid: number;
+  referenceId: string;
+  additionalData: any | null;
+  nickname: string;
+  createdAt: Date | null;
+  memberid: number;
 }
 
-export async function getOrderReferenceIdByEmail(client: Client, args: GetOrderReferenceIdByEmailArgs): Promise<GetOrderReferenceIdByEmailRow | null> {
-    const result = await client.query({
-        text: getOrderReferenceIdByEmailQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        referenceId: row[0],
-        additionalData: row[1],
-        nickname: row[2],
-        createdAt: row[3],
-        memberid: row[4]
-    };
+export async function getOrderReferenceIdByEmail(
+  client: Client,
+  args: GetOrderReferenceIdByEmailArgs,
+): Promise<GetOrderReferenceIdByEmailRow | null> {
+  const result = await client.query({
+    text: getOrderReferenceIdByEmailQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    referenceId: row[0],
+    additionalData: row[1],
+    nickname: row[2],
+    createdAt: row[3],
+    memberid: row[4],
+  };
 }
 
 export const getOrderByReferenceIdQuery = `-- name: getOrderByReferenceId :one
@@ -1217,44 +1325,47 @@ WHERE reference_id = $1
 LIMIT 1`;
 
 export interface getOrderByReferenceIdArgs {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface getOrderByReferenceIdRow {
-    id: number;
-    memberId: number | null;
-    price: string;
-    referenceId: string;
-    orderStatus: string;
-    url: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-    notes: string | null;
-    additionalInfo: any | null;
+  id: number;
+  memberId: number | null;
+  price: string;
+  referenceId: string;
+  orderStatus: string;
+  url: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  notes: string | null;
+  additionalInfo: any | null;
 }
 
-export async function getOrderByReferenceId(client: Client, args: getOrderByReferenceIdArgs): Promise<getOrderByReferenceIdRow | null> {
-    const result = await client.query({
-        text: getOrderByReferenceIdQuery,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        memberId: row[1],
-        price: row[2],
-        referenceId: row[3],
-        orderStatus: row[4],
-        url: row[5],
-        createdAt: row[6],
-        updatedAt: row[7],
-        notes: row[8],
-        additionalInfo: row[9]
-    };
+export async function getOrderByReferenceId(
+  client: Client,
+  args: getOrderByReferenceIdArgs,
+): Promise<getOrderByReferenceIdRow | null> {
+  const result = await client.query({
+    text: getOrderByReferenceIdQuery,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    memberId: row[1],
+    price: row[2],
+    referenceId: row[3],
+    orderStatus: row[4],
+    url: row[5],
+    createdAt: row[6],
+    updatedAt: row[7],
+    notes: row[8],
+    additionalInfo: row[9],
+  };
 }
 
 export const getWaitingPaymentOrdersQuery = `-- name: getWaitingPaymentOrders :many
@@ -1272,36 +1383,38 @@ SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_
     order by o.created_at desc`;
 
 export interface getWaitingPaymentOrdersRow {
-    id: number;
-    price: string;
-    referenceId: string;
-    memberId: number | null;
-    orderStatus: string;
-    additionalInfo: any | null;
-    email: string | null;
-    nickname: string;
-    additionalData: any | null;
+  id: number;
+  price: string;
+  referenceId: string;
+  memberId: number | null;
+  orderStatus: string;
+  additionalInfo: any | null;
+  email: string | null;
+  nickname: string;
+  additionalData: any | null;
 }
 
-export async function getWaitingPaymentOrders(client: Client): Promise<getWaitingPaymentOrdersRow[]> {
-    const result = await client.query({
-        text: getWaitingPaymentOrdersQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            price: row[1],
-            referenceId: row[2],
-            memberId: row[3],
-            orderStatus: row[4],
-            additionalInfo: row[5],
-            email: row[6],
-            nickname: row[7],
-            additionalData: row[8]
-        };
-    });
+export async function getWaitingPaymentOrders(
+  client: Client,
+): Promise<getWaitingPaymentOrdersRow[]> {
+  const result = await client.query({
+    text: getWaitingPaymentOrdersQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      price: row[1],
+      referenceId: row[2],
+      memberId: row[3],
+      orderStatus: row[4],
+      additionalInfo: row[5],
+      email: row[6],
+      nickname: row[7],
+      additionalData: row[8],
+    };
+  });
 }
 
 export const turnOnCashback100Query = `-- name: turnOnCashback100 :one
@@ -1312,30 +1425,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnCashback100Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnCashback100Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnCashback100(client: Client, args: turnOnCashback100Args): Promise<turnOnCashback100Row | null> {
-    const result = await client.query({
-        text: turnOnCashback100Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnCashback100(
+  client: Client,
+  args: turnOnCashback100Args,
+): Promise<turnOnCashback100Row | null> {
+  const result = await client.query({
+    text: turnOnCashback100Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffCashback100Query = `-- name: turnOffCashback100 :one
@@ -1346,30 +1462,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffCashback100Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffCashback100Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffCashback100(client: Client, args: turnOffCashback100Args): Promise<turnOffCashback100Row | null> {
-    const result = await client.query({
-        text: turnOffCashback100Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffCashback100(
+  client: Client,
+  args: turnOffCashback100Args,
+): Promise<turnOffCashback100Row | null> {
+  const result = await client.query({
+    text: turnOffCashback100Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOnCashback200Query = `-- name: turnOnCashback200 :one
@@ -1380,30 +1499,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnCashback200Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnCashback200Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnCashback200(client: Client, args: turnOnCashback200Args): Promise<turnOnCashback200Row | null> {
-    const result = await client.query({
-        text: turnOnCashback200Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnCashback200(
+  client: Client,
+  args: turnOnCashback200Args,
+): Promise<turnOnCashback200Row | null> {
+  const result = await client.query({
+    text: turnOnCashback200Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffCashback200Query = `-- name: turnOffCashback200 :one
@@ -1414,30 +1536,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffCashback200Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffCashback200Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffCashback200(client: Client, args: turnOffCashback200Args): Promise<turnOffCashback200Row | null> {
-    const result = await client.query({
-        text: turnOffCashback200Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffCashback200(
+  client: Client,
+  args: turnOffCashback200Args,
+): Promise<turnOffCashback200Row | null> {
+  const result = await client.query({
+    text: turnOffCashback200Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOnCashback50Query = `-- name: turnOnCashback50 :one
@@ -1448,30 +1573,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnCashback50Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnCashback50Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnCashback50(client: Client, args: turnOnCashback50Args): Promise<turnOnCashback50Row | null> {
-    const result = await client.query({
-        text: turnOnCashback50Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnCashback50(
+  client: Client,
+  args: turnOnCashback50Args,
+): Promise<turnOnCashback50Row | null> {
+  const result = await client.query({
+    text: turnOnCashback50Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffCashback50Query = `-- name: turnOffCashback50 :one
@@ -1482,30 +1610,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffCashback50Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffCashback50Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffCashback50(client: Client, args: turnOffCashback50Args): Promise<turnOffCashback50Row | null> {
-    const result = await client.query({
-        text: turnOffCashback50Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffCashback50(
+  client: Client,
+  args: turnOffCashback50Args,
+): Promise<turnOffCashback50Row | null> {
+  const result = await client.query({
+    text: turnOffCashback50Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOnExtend30Query = `-- name: turnOnExtend30 :one
@@ -1516,30 +1647,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnExtend30Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnExtend30Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnExtend30(client: Client, args: turnOnExtend30Args): Promise<turnOnExtend30Row | null> {
-    const result = await client.query({
-        text: turnOnExtend30Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnExtend30(
+  client: Client,
+  args: turnOnExtend30Args,
+): Promise<turnOnExtend30Row | null> {
+  const result = await client.query({
+    text: turnOnExtend30Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffExtend30Query = `-- name: turnOffExtend30 :one
@@ -1550,30 +1684,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffExtend30Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffExtend30Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffExtend30(client: Client, args: turnOffExtend30Args): Promise<turnOffExtend30Row | null> {
-    const result = await client.query({
-        text: turnOffExtend30Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffExtend30(
+  client: Client,
+  args: turnOffExtend30Args,
+): Promise<turnOffExtend30Row | null> {
+  const result = await client.query({
+    text: turnOffExtend30Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOnExtend60Query = `-- name: turnOnExtend60 :one
@@ -1584,30 +1721,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnExtend60Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnExtend60Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnExtend60(client: Client, args: turnOnExtend60Args): Promise<turnOnExtend60Row | null> {
-    const result = await client.query({
-        text: turnOnExtend60Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnExtend60(
+  client: Client,
+  args: turnOnExtend60Args,
+): Promise<turnOnExtend60Row | null> {
+  const result = await client.query({
+    text: turnOnExtend60Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffExtend60Query = `-- name: turnOffExtend60 :one
@@ -1618,30 +1758,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffExtend60Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffExtend60Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffExtend60(client: Client, args: turnOffExtend60Args): Promise<turnOffExtend60Row | null> {
-    const result = await client.query({
-        text: turnOffExtend60Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffExtend60(
+  client: Client,
+  args: turnOffExtend60Args,
+): Promise<turnOffExtend60Row | null> {
+  const result = await client.query({
+    text: turnOffExtend60Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOnExtend15Query = `-- name: turnOnExtend15 :one
@@ -1652,30 +1795,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOnExtend15Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOnExtend15Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOnExtend15(client: Client, args: turnOnExtend15Args): Promise<turnOnExtend15Row | null> {
-    const result = await client.query({
-        text: turnOnExtend15Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOnExtend15(
+  client: Client,
+  args: turnOnExtend15Args,
+): Promise<turnOnExtend15Row | null> {
+  const result = await client.query({
+    text: turnOnExtend15Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const turnOffExtend15Query = `-- name: turnOffExtend15 :one
@@ -1686,30 +1832,33 @@ WHERE reference_id = $1
 RETURNING id, additional_info, reference_id`;
 
 export interface turnOffExtend15Args {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface turnOffExtend15Row {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function turnOffExtend15(client: Client, args: turnOffExtend15Args): Promise<turnOffExtend15Row | null> {
-    const result = await client.query({
-        text: turnOffExtend15Query,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function turnOffExtend15(
+  client: Client,
+  args: turnOffExtend15Args,
+): Promise<turnOffExtend15Row | null> {
+  const result = await client.query({
+    text: turnOffExtend15Query,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const insertOrderStatusLogQuery = `-- name: insertOrderStatusLog :one
@@ -1718,37 +1867,45 @@ VALUES ($1, $2, $3, $4)
 RETURNING id, reference_id, order_status, notes, additional_info`;
 
 export interface insertOrderStatusLogArgs {
-    referenceId: string;
-    orderStatus: string;
-    notes: string | null;
-    additionalInfo: any | null;
+  referenceId: string;
+  orderStatus: string;
+  notes: string | null;
+  additionalInfo: any | null;
 }
 
 export interface insertOrderStatusLogRow {
-    id: number;
-    referenceId: string;
-    orderStatus: string;
-    notes: string | null;
-    additionalInfo: any | null;
+  id: number;
+  referenceId: string;
+  orderStatus: string;
+  notes: string | null;
+  additionalInfo: any | null;
 }
 
-export async function insertOrderStatusLog(client: Client, args: insertOrderStatusLogArgs): Promise<insertOrderStatusLogRow | null> {
-    const result = await client.query({
-        text: insertOrderStatusLogQuery,
-        values: [args.referenceId, args.orderStatus, args.notes, args.additionalInfo],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        referenceId: row[1],
-        orderStatus: row[2],
-        notes: row[3],
-        additionalInfo: row[4]
-    };
+export async function insertOrderStatusLog(
+  client: Client,
+  args: insertOrderStatusLogArgs,
+): Promise<insertOrderStatusLogRow | null> {
+  const result = await client.query({
+    text: insertOrderStatusLogQuery,
+    values: [
+      args.referenceId,
+      args.orderStatus,
+      args.notes,
+      args.additionalInfo,
+    ],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    referenceId: row[1],
+    orderStatus: row[2],
+    notes: row[3],
+    additionalInfo: row[4],
+  };
 }
 
 export const getOrderAndMemberByReferenceIdQuery = `-- name: getOrderAndMemberByReferenceId :one
@@ -1759,52 +1916,55 @@ WHERE o.reference_id = $1
 LIMIT 1`;
 
 export interface getOrderAndMemberByReferenceIdArgs {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface getOrderAndMemberByReferenceIdRow {
-    id: number;
-    memberId: number | null;
-    price: string;
-    referenceId: string;
-    orderStatus: string;
-    url: string;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-    notes: string | null;
-    additionalInfo: any | null;
-    email: string | null;
-    nickname: string;
-    additionalData: any | null;
-    phoneNumber: string | null;
+  id: number;
+  memberId: number | null;
+  price: string;
+  referenceId: string;
+  orderStatus: string;
+  url: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  notes: string | null;
+  additionalInfo: any | null;
+  email: string | null;
+  nickname: string;
+  additionalData: any | null;
+  phoneNumber: string | null;
 }
 
-export async function getOrderAndMemberByReferenceId(client: Client, args: getOrderAndMemberByReferenceIdArgs): Promise<getOrderAndMemberByReferenceIdRow | null> {
-    const result = await client.query({
-        text: getOrderAndMemberByReferenceIdQuery,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        memberId: row[1],
-        price: row[2],
-        referenceId: row[3],
-        orderStatus: row[4],
-        url: row[5],
-        createdAt: row[6],
-        updatedAt: row[7],
-        notes: row[8],
-        additionalInfo: row[9],
-        email: row[10],
-        nickname: row[11],
-        additionalData: row[12],
-        phoneNumber: row[13]
-    };
+export async function getOrderAndMemberByReferenceId(
+  client: Client,
+  args: getOrderAndMemberByReferenceIdArgs,
+): Promise<getOrderAndMemberByReferenceIdRow | null> {
+  const result = await client.query({
+    text: getOrderAndMemberByReferenceIdQuery,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    memberId: row[1],
+    price: row[2],
+    referenceId: row[3],
+    orderStatus: row[4],
+    url: row[5],
+    createdAt: row[6],
+    updatedAt: row[7],
+    notes: row[8],
+    additionalInfo: row[9],
+    email: row[10],
+    nickname: row[11],
+    additionalData: row[12],
+    phoneNumber: row[13],
+  };
 }
 
 export const setOrderInvoiceResponseQuery = `-- name: setOrderInvoiceResponse :one
@@ -1825,31 +1985,34 @@ WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
 
 export interface setOrderInvoiceResponseArgs {
-    content: string;
-    refId: string;
+  content: string;
+  refId: string;
 }
 
 export interface setOrderInvoiceResponseRow {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function setOrderInvoiceResponse(client: Client, args: setOrderInvoiceResponseArgs): Promise<setOrderInvoiceResponseRow | null> {
-    const result = await client.query({
-        text: setOrderInvoiceResponseQuery,
-        values: [args.content, args.refId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function setOrderInvoiceResponse(
+  client: Client,
+  args: setOrderInvoiceResponseArgs,
+): Promise<setOrderInvoiceResponseRow | null> {
+  const result = await client.query({
+    text: setOrderInvoiceResponseQuery,
+    values: [args.content, args.refId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const setOrderInvoiceRequestResponseQuery = `-- name: setOrderInvoiceRequestResponse :one
@@ -1874,32 +2037,35 @@ WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
 
 export interface setOrderInvoiceRequestResponseArgs {
-    content: string;
-    refId: string;
-    request: string;
+  content: string;
+  refId: string;
+  request: string;
 }
 
 export interface setOrderInvoiceRequestResponseRow {
-    id: number;
-    additionalInfo: any | null;
-    referenceId: string;
+  id: number;
+  additionalInfo: any | null;
+  referenceId: string;
 }
 
-export async function setOrderInvoiceRequestResponse(client: Client, args: setOrderInvoiceRequestResponseArgs): Promise<setOrderInvoiceRequestResponseRow | null> {
-    const result = await client.query({
-        text: setOrderInvoiceRequestResponseQuery,
-        values: [args.content, args.refId, args.request],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        additionalInfo: row[1],
-        referenceId: row[2]
-    };
+export async function setOrderInvoiceRequestResponse(
+  client: Client,
+  args: setOrderInvoiceRequestResponseArgs,
+): Promise<setOrderInvoiceRequestResponseRow | null> {
+  const result = await client.query({
+    text: setOrderInvoiceRequestResponseQuery,
+    values: [args.content, args.refId, args.request],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    additionalInfo: row[1],
+    referenceId: row[2],
+  };
 }
 
 export const getUserRolesQuery = `-- name: getUserRoles :many
@@ -1908,24 +2074,27 @@ SELECT name as roles FROM whygym.user_roles ur
     WHERE ur.user_id = $1`;
 
 export interface getUserRolesArgs {
-    userId: number;
+  userId: number;
 }
 
 export interface getUserRolesRow {
-    roles: string;
+  roles: string;
 }
 
-export async function getUserRoles(client: Client, args: getUserRolesArgs): Promise<getUserRolesRow[]> {
-    const result = await client.query({
-        text: getUserRolesQuery,
-        values: [args.userId],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            roles: row[0]
-        };
-    });
+export async function getUserRoles(
+  client: Client,
+  args: getUserRolesArgs,
+): Promise<getUserRolesRow[]> {
+  const result = await client.query({
+    text: getUserRolesQuery,
+    values: [args.userId],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      roles: row[0],
+    };
+  });
 }
 
 export const setInvoiceStatusResponseAndActivateMembershipQuery = `-- name: setInvoiceStatusResponseAndActivateMembership :one
@@ -1954,27 +2123,30 @@ UPDATE whygym.members m SET updated_at = current_timestamp, membership_status = 
     RETURNING m.id`;
 
 export interface setInvoiceStatusResponseAndActivateMembershipArgs {
-    mainReferenceId: string;
-    invoiceStatusResponse: any;
+  mainReferenceId: string;
+  invoiceStatusResponse: any;
 }
 
 export interface setInvoiceStatusResponseAndActivateMembershipRow {
-    id: number;
+  id: number;
 }
 
-export async function setInvoiceStatusResponseAndActivateMembership(client: Client, args: setInvoiceStatusResponseAndActivateMembershipArgs): Promise<setInvoiceStatusResponseAndActivateMembershipRow | null> {
-    const result = await client.query({
-        text: setInvoiceStatusResponseAndActivateMembershipQuery,
-        values: [args.mainReferenceId, args.invoiceStatusResponse],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0]
-    };
+export async function setInvoiceStatusResponseAndActivateMembership(
+  client: Client,
+  args: setInvoiceStatusResponseAndActivateMembershipArgs,
+): Promise<setInvoiceStatusResponseAndActivateMembershipRow | null> {
+  const result = await client.query({
+    text: setInvoiceStatusResponseAndActivateMembershipQuery,
+    values: [args.mainReferenceId, args.invoiceStatusResponse],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+  };
 }
 
 export const getPaymentUrlByReferenceIdQuery = `-- name: getPaymentUrlByReferenceId :one
@@ -1984,26 +2156,29 @@ FROM whygym.orders WHERE reference_id = $1
 LIMIT 1`;
 
 export interface getPaymentUrlByReferenceIdArgs {
-    referenceId: string;
+  referenceId: string;
 }
 
 export interface getPaymentUrlByReferenceIdRow {
-    paymenturl: string | null;
+  paymenturl: string | null;
 }
 
-export async function getPaymentUrlByReferenceId(client: Client, args: getPaymentUrlByReferenceIdArgs): Promise<getPaymentUrlByReferenceIdRow | null> {
-    const result = await client.query({
-        text: getPaymentUrlByReferenceIdQuery,
-        values: [args.referenceId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        paymenturl: row[0]
-    };
+export async function getPaymentUrlByReferenceId(
+  client: Client,
+  args: getPaymentUrlByReferenceIdArgs,
+): Promise<getPaymentUrlByReferenceIdRow | null> {
+  const result = await client.query({
+    text: getPaymentUrlByReferenceIdQuery,
+    values: [args.referenceId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    paymenturl: row[0],
+  };
 }
 
 export const getPotentialGroupDataQuery = `-- name: getPotentialGroupData :many
@@ -2026,34 +2201,37 @@ FROM whygym.members m
 WHERE m.membership_status = 'pending' ORDER BY m.nickname LIMIT 10`;
 
 export interface getPotentialGroupDataArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface getPotentialGroupDataRow {
-    id: number;
-    email: string | null;
-    nickname: string;
-    gender: string | null;
-    duration: string | null;
-    checked: boolean;
+  id: number;
+  email: string | null;
+  nickname: string;
+  gender: string | null;
+  duration: string | null;
+  checked: boolean;
 }
 
-export async function getPotentialGroupData(client: Client, args: getPotentialGroupDataArgs): Promise<getPotentialGroupDataRow[]> {
-    const result = await client.query({
-        text: getPotentialGroupDataQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            id: row[0],
-            email: row[1],
-            nickname: row[2],
-            gender: row[3],
-            duration: row[4],
-            checked: row[5]
-        };
-    });
+export async function getPotentialGroupData(
+  client: Client,
+  args: getPotentialGroupDataArgs,
+): Promise<getPotentialGroupDataRow[]> {
+  const result = await client.query({
+    text: getPotentialGroupDataQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      id: row[0],
+      email: row[1],
+      nickname: row[2],
+      gender: row[3],
+      duration: row[4],
+      checked: row[5],
+    };
+  });
 }
 
 export const joinToGroupQuery = `-- name: joinToGroup :one
@@ -2063,33 +2241,36 @@ WHERE part_id = $2
 RETURNING id, main_reference_id, part_id, part_reference_id`;
 
 export interface joinToGroupArgs {
-    mainReferenceId: string;
-    partId: number;
+  mainReferenceId: string;
+  partId: number;
 }
 
 export interface joinToGroupRow {
-    id: number;
-    mainReferenceId: string;
-    partId: number;
-    partReferenceId: string;
+  id: number;
+  mainReferenceId: string;
+  partId: number;
+  partReferenceId: string;
 }
 
-export async function joinToGroup(client: Client, args: joinToGroupArgs): Promise<joinToGroupRow | null> {
-    const result = await client.query({
-        text: joinToGroupQuery,
-        values: [args.mainReferenceId, args.partId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        mainReferenceId: row[1],
-        partId: row[2],
-        partReferenceId: row[3]
-    };
+export async function joinToGroup(
+  client: Client,
+  args: joinToGroupArgs,
+): Promise<joinToGroupRow | null> {
+  const result = await client.query({
+    text: joinToGroupQuery,
+    values: [args.mainReferenceId, args.partId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    mainReferenceId: row[1],
+    partId: row[2],
+    partReferenceId: row[3],
+  };
 }
 
 export const removeFromGroupQuery = `-- name: removeFromGroup :one
@@ -2099,32 +2280,35 @@ WHERE part_id = $1
 RETURNING id, main_reference_id, part_id, part_reference_id`;
 
 export interface removeFromGroupArgs {
-    partId: number;
+  partId: number;
 }
 
 export interface removeFromGroupRow {
-    id: number;
-    mainReferenceId: string;
-    partId: number;
-    partReferenceId: string;
+  id: number;
+  mainReferenceId: string;
+  partId: number;
+  partReferenceId: string;
 }
 
-export async function removeFromGroup(client: Client, args: removeFromGroupArgs): Promise<removeFromGroupRow | null> {
-    const result = await client.query({
-        text: removeFromGroupQuery,
-        values: [args.partId],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        mainReferenceId: row[1],
-        partId: row[2],
-        partReferenceId: row[3]
-    };
+export async function removeFromGroup(
+  client: Client,
+  args: removeFromGroupArgs,
+): Promise<removeFromGroupRow | null> {
+  const result = await client.query({
+    text: removeFromGroupQuery,
+    values: [args.partId],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    mainReferenceId: row[1],
+    partId: row[2],
+    partReferenceId: row[3],
+  };
 }
 
 export const getActiveMemberBreakdownQuery = `-- name: getActiveMemberBreakdown :many
@@ -2152,32 +2336,34 @@ from whygym.members m
 where m.membership_status = 'active' order by m.id desc`;
 
 export interface getActiveMemberBreakdownRow {
-    email: string | null;
-    gender: string | null;
-    promoType: string | null;
-    groupType: string;
-    duration: string | null;
-    count: string | null;
-    startDate: Date | null;
+  email: string | null;
+  gender: string | null;
+  promoType: string | null;
+  groupType: string;
+  duration: string | null;
+  count: string | null;
+  startDate: Date | null;
 }
 
-export async function getActiveMemberBreakdown(client: Client): Promise<getActiveMemberBreakdownRow[]> {
-    const result = await client.query({
-        text: getActiveMemberBreakdownQuery,
-        values: [],
-        rowMode: "array"
-    });
-    return result.rows.map(row => {
-        return {
-            email: row[0],
-            gender: row[1],
-            promoType: row[2],
-            groupType: row[3],
-            duration: row[4],
-            count: row[5],
-            startDate: row[6]
-        };
-    });
+export async function getActiveMemberBreakdown(
+  client: Client,
+): Promise<getActiveMemberBreakdownRow[]> {
+  const result = await client.query({
+    text: getActiveMemberBreakdownQuery,
+    values: [],
+    rowMode: 'array',
+  });
+  return result.rows.map((row) => {
+    return {
+      email: row[0],
+      gender: row[1],
+      promoType: row[2],
+      groupType: row[3],
+      duration: row[4],
+      count: row[5],
+      startDate: row[6],
+    };
+  });
 }
 
 export const getMemberActiveDateQuery = `-- name: getMemberActiveDate :one
@@ -2190,30 +2376,33 @@ select data.start_date, data.duration,  (data.start_date + data.duration::interv
 from data limit 1`;
 
 export interface getMemberActiveDateArgs {
-    email: string | null;
+  email: string | null;
 }
 
 export interface getMemberActiveDateRow {
-    startDate: Date;
-    duration: string | null;
-    endDate: Date;
+  startDate: Date;
+  duration: string | null;
+  endDate: Date;
 }
 
-export async function getMemberActiveDate(client: Client, args: getMemberActiveDateArgs): Promise<getMemberActiveDateRow | null> {
-    const result = await client.query({
-        text: getMemberActiveDateQuery,
-        values: [args.email],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        startDate: row[0],
-        duration: row[1],
-        endDate: row[2]
-    };
+export async function getMemberActiveDate(
+  client: Client,
+  args: getMemberActiveDateArgs,
+): Promise<getMemberActiveDateRow | null> {
+  const result = await client.query({
+    text: getMemberActiveDateQuery,
+    values: [args.email],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    startDate: row[0],
+    duration: row[1],
+    endDate: row[2],
+  };
 }
 
 export const addOrUpdateMemberPicUrlQuery = `-- name: addOrUpdateMemberPicUrl :one
@@ -2224,28 +2413,30 @@ where email = $1
 returning id, email`;
 
 export interface addOrUpdateMemberPicUrlArgs {
-    email: string | null;
-    picUrl: string | null;
+  email: string | null;
+  picUrl: string | null;
 }
 
 export interface addOrUpdateMemberPicUrlRow {
-    id: number;
-    email: string | null;
+  id: number;
+  email: string | null;
 }
 
-export async function addOrUpdateMemberPicUrl(client: Client, args: addOrUpdateMemberPicUrlArgs): Promise<addOrUpdateMemberPicUrlRow | null> {
-    const result = await client.query({
-        text: addOrUpdateMemberPicUrlQuery,
-        values: [args.email, args.picUrl],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1]
-    };
+export async function addOrUpdateMemberPicUrl(
+  client: Client,
+  args: addOrUpdateMemberPicUrlArgs,
+): Promise<addOrUpdateMemberPicUrlRow | null> {
+  const result = await client.query({
+    text: addOrUpdateMemberPicUrlQuery,
+    values: [args.email, args.picUrl],
+    rowMode: 'array',
+  });
+  if (result.rows.length !== 1) {
+    return null;
+  }
+  const row = result.rows[0];
+  return {
+    id: row[0],
+    email: row[1],
+  };
 }
-

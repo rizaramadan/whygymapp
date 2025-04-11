@@ -67,7 +67,7 @@ export class OrdersService {
     private readonly memberPricingService: MemberPricingService,
   ) {}
 
-  // Get order by reference id. save for other than membership application
+  // Get order by reference id. Safe for other than membership application
   async getOrderByReferenceId(
     referenceId: string,
   ): Promise<getOrderByReferenceIdRow | null> {
@@ -76,7 +76,7 @@ export class OrdersService {
     return result;
   }
 
-  // Set order invoice response. Save for other than membership application
+  // Set order invoice response. Safe for other than membership application
   async setOrderInvoiceResponse(
     referenceId: string,
     invoice: CreateInvoiceResponse,
@@ -89,7 +89,7 @@ export class OrdersService {
     return result;
   }
 
-  // Set order invoice request response. Save for other than membership application
+  // Set order invoice request response. Safe for other than membership application
   async setOrderInvoiceRequestResponse(
     referenceId: string,
     invoice: CreateInvoiceResponse,
@@ -114,7 +114,7 @@ export class OrdersService {
     return result;
   }
 
-  // Get payment methods. Save for other than membership application
+  // Get payment methods. Safe for other than membership application
   async getPaymentMethods(amount: number): Promise<PaymentMethodsResponse> {
     const response = await firstValueFrom(
       this.httpService.post<PaymentMethodsResponse>(
@@ -132,6 +132,7 @@ export class OrdersService {
     return response.data;
   }
 
+  // Get checkout data. Tighly coupled with membership calculation fee
   async getCheckoutData(
     referenceId: string,
     user: User,
@@ -156,6 +157,8 @@ export class OrdersService {
       }
     }
 
+    //above is agnostic, below is tightly coupled with membership calculation fee
+
     const { membershipFee, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);
     const paymentMethods = await this.getPaymentMethods(total);
@@ -173,6 +176,7 @@ export class OrdersService {
     };
   }
 
+  // Get checkout group data. Tighly coupled with membership calculation fee
   async getCheckoutGroupData(
     referenceId: string,
     user: User,
@@ -197,6 +201,8 @@ export class OrdersService {
         invoice = createInvoiceResponse;
       }
     }
+
+    //above is agnostic, below is tightly coupled with membership calculation fee
     //translate potentialGroupData to MemberData
     const memberData: MemberData[] = potentialGroupData
       .filter((member) => member.checked)
@@ -227,6 +233,7 @@ export class OrdersService {
     };
   }
 
+  // Join to group. Safe for other than membership application
   async joinToGroup(mainReferenceId: string, partId: string) {
     const args: joinToGroupArgs = {
       mainReferenceId,
@@ -236,6 +243,7 @@ export class OrdersService {
     return result;
   }
 
+  // Remove from group. Safe for other than membership application
   async removeFromGroup(partId: string) {
     const args: removeFromGroupArgs = {
       partId: parseInt(partId),
@@ -244,6 +252,7 @@ export class OrdersService {
     return result;
   }
 
+  // Calculate payment details. Safe for other than membership application
   calculatePaymentDetails(order: any, paymentGatewayFee: number) {
     const membershipFee = parseFloat(
       (order as OrderWithAdditionalInfo)?.price.toString() || '0',
@@ -275,6 +284,7 @@ export class OrdersService {
     };
   }
 
+  // process payment. Tighly coupled with membership calculation fee
   async processPayment(
     user: User,
     referenceId: string,
@@ -282,7 +292,7 @@ export class OrdersService {
     paymentGatewayFee: number,
   ) {
     const order: getOrderAndMemberByReferenceIdRow | null =
-      await this.getOrderAndMemberByReferenceId(referenceId);
+      await this.getOrderAndMemberByReferenceId(referenceId); //here this tightly coupled part, part 1 of 2
     if (!order) {
       throw new Error('Order not found');
     }
@@ -292,6 +302,8 @@ export class OrdersService {
     );
 
     const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+
+    // here is tightly coupled part 2 of 2
     const request = new CreateInvoiceRequest(
       referenceId,
       url,
@@ -318,6 +330,7 @@ export class OrdersService {
     return retval;
   }
 
+  // process group payment. Tighly coupled with membership calculation fee
   async processPaymentGroup(
     user: User,
     referenceId: string,
@@ -326,11 +339,12 @@ export class OrdersService {
     potentialGroupData: getPotentialGroupDataRow[],
   ) {
     const order: getOrderAndMemberByReferenceIdRow | null =
-      await this.getOrderAndMemberByReferenceId(referenceId);
+      await this.getOrderAndMemberByReferenceId(referenceId); //here this tightly coupled part, 1 of 3
     if (!order) {
       throw new Error('Order not found');
     }
 
+    // start of tightly coupled part 2 of 3
     const memberData: MemberData[] = potentialGroupData
       .filter((member) => member.checked)
       .map((member) => ({
@@ -342,6 +356,7 @@ export class OrdersService {
       this.memberPricingService.calculateTotalPrice(memberData);
 
     order.price = String(totalPrice);
+    // end of tightly coupled part 2 of 3
 
     const paymentDetails = this.calculatePaymentDetails(
       order,
@@ -349,6 +364,7 @@ export class OrdersService {
     );
 
     const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+    // here is tightly coupled part 3 of 3
     const request = new CreateInvoiceRequest(
       referenceId,
       url,
@@ -375,6 +391,7 @@ export class OrdersService {
     return retval;
   }
 
+  // post create invoice. Safe for other than membership application
   async postCreateInvoice(
     request: CreateInvoiceRequest,
   ): Promise<CreateInvoiceResponse> {
@@ -392,6 +409,7 @@ export class OrdersService {
     return response.data;
   }
 
+  // get invoice status. Safe for other than membership application
   async getInvoiceStatus(
     invoiceId: string,
     referenceId: string,
@@ -417,6 +435,7 @@ export class OrdersService {
     }
   }
 
+  // post payment process. Safe for other than membership application
   async postPaymentProcess(amount: number): Promise<PaymentMethodsResponse> {
     const response = await firstValueFrom(
       this.httpService.post<PaymentMethodsResponse>(
@@ -434,6 +453,7 @@ export class OrdersService {
     return response.data;
   }
 
+  // insert order status log. Safe for other than membership application
   async insertOrderStatusLog(referenceId: string, orderStatus: string) {
     const args: insertOrderStatusLogArgs = {
       referenceId,
@@ -445,11 +465,13 @@ export class OrdersService {
     return result;
   }
 
+  // set invoice status response and activate membership. Tighly coupled with membership calculation fee
   async setInvoiceStatusResponseAndActivateMembership(referenceId: string) {
-    const order = await this.getOrderAndMemberByReferenceId(referenceId);
+    const order = await this.getOrderAndMemberByReferenceId(referenceId); //here this tightly coupled part, 1 of 2
     if (!order) {
       throw new Error('Order not found');
     }
+    // here is tightly coupled part 2 of 2
     const createInvoiceResponse: CreateInvoiceResponse =
       await this.getInvoiceStatus(
         (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
@@ -462,6 +484,8 @@ export class OrdersService {
         mainReferenceId: referenceId,
         invoiceStatusResponse: createInvoiceResponse,
       };
+
+      // here is tightly coupled part 3 of 3. the ultimate tightly coupled part
       const result = await setInvoiceStatusResponseAndActivateMembership(
         this.pool,
         args,
@@ -470,6 +494,7 @@ export class OrdersService {
     }
   }
 
+  // get payment url by reference id. Safe for other than membership application
   async getPaymentUrlByReferenceId(referenceId: string) {
     const args: getPaymentUrlByReferenceIdArgs = { referenceId };
     const result: getPaymentUrlByReferenceIdRow | null =
