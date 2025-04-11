@@ -247,7 +247,8 @@ CREATE TABLE whygym.orders (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     notes text,
-    additional_info jsonb
+    additional_info jsonb,
+    private_coaching_id integer
 );
 
 
@@ -311,6 +312,50 @@ ALTER SEQUENCE whygym.orders_status_log_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE whygym.orders_status_log_id_seq OWNED BY whygym.orders_status_log.id;
+
+
+--
+-- Name: private_coaching; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.private_coaching (
+    id integer NOT NULL,
+    member_id integer NOT NULL,
+    coach_type character varying(20) NOT NULL,
+    number_of_sessions integer NOT NULL,
+    status character varying(20) NOT NULL,
+    email character varying(100) NOT NULL,
+    notes text,
+    additional_data json,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    started_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    ended_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.private_coaching OWNER TO postgres;
+
+--
+-- Name: private_coaching_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.private_coaching_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE whygym.private_coaching_id_seq OWNER TO postgres;
+
+--
+-- Name: private_coaching_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.private_coaching_id_seq OWNED BY whygym.private_coaching.id;
 
 
 --
@@ -517,6 +562,13 @@ ALTER TABLE ONLY whygym.orders_status_log ALTER COLUMN id SET DEFAULT nextval('w
 
 
 --
+-- Name: private_coaching id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.private_coaching ALTER COLUMN id SET DEFAULT nextval('whygym.private_coaching_id_seq'::regclass);
+
+
+--
 -- Name: roles id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -606,6 +658,14 @@ ALTER TABLE ONLY whygym.orders
 
 ALTER TABLE ONLY whygym.orders_status_log
     ADD CONSTRAINT orders_status_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: private_coaching private_coaching_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.private_coaching
+    ADD CONSTRAINT private_coaching_pkey PRIMARY KEY (id);
 
 
 --
@@ -742,6 +802,13 @@ CREATE INDEX idx_orders_status_log_reference_id ON whygym.orders_status_log USIN
 
 
 --
+-- Name: idx_private_coaching_member_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_private_coaching_member_id ON whygym.private_coaching USING btree (member_id);
+
+
+--
 -- Name: idx_user_roles_role_id; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
@@ -848,6 +915,22 @@ ALTER TABLE ONLY whygym.order_extra_time
 
 ALTER TABLE ONLY whygym.orders
     ADD CONSTRAINT orders_member_id_fkey FOREIGN KEY (member_id) REFERENCES whygym.members(id) ON DELETE CASCADE;
+
+
+--
+-- Name: orders orders_private_coaching_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.orders
+    ADD CONSTRAINT orders_private_coaching_id_fkey FOREIGN KEY (private_coaching_id) REFERENCES whygym.private_coaching(id) ON DELETE CASCADE;
+
+
+--
+-- Name: private_coaching private_coaching_member_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.private_coaching
+    ADD CONSTRAINT private_coaching_member_id_fkey FOREIGN KEY (member_id) REFERENCES whygym.members(id) ON DELETE CASCADE;
 
 
 --

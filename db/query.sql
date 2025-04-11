@@ -265,6 +265,16 @@ WHERE m.membership_status = 'pending'
     AND m.email = $1
 LIMIT 1;
 
+
+-- name: GetPrivateCoachingOrderReferenceIdByEmail :one
+SELECT reference_id, pc.additional_data, o.created_at, pc.member_id
+FROM whygym.orders o
+    INNER JOIN whygym.private_coaching pc ON o.private_coaching_id = pc.id
+WHERE pc.status = 'pending'
+    AND pc.email = $1
+LIMIT 1;
+
+
 -- name: getOrderByReferenceId :one
 SELECT id, member_id, price, reference_id, order_status, url, created_at, updated_at, notes, additional_info
 FROM whygym.orders
@@ -284,6 +294,8 @@ SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_
     inner join whygym.orders o on og.main_reference_id = o.reference_id
     inner join whygym.members m on o.member_id = m.id
     order by o.created_at desc;
+
+
 
 -- name: turnOnCashback100 :one
 UPDATE whygym.orders
@@ -374,11 +386,19 @@ INSERT INTO whygym.orders_status_log (reference_id, order_status, notes, additio
 VALUES ($1, $2, $3, $4)
 RETURNING id, reference_id, order_status, notes, additional_info;
 
-
 -- name: getOrderAndMemberByReferenceId :one
-SELECT o.id, o.member_id, o.price, o.reference_id, o.order_status, o.url, o.created_at, o.updated_at, o.notes, o.additional_info, m.email, m.nickname, m.additional_data, m.phone_number
+SELECT o.id, o.member_id, o.price, o.reference_id, o.order_status, o.url, o.created_at, o.updated_at, o.notes, 
+       o.additional_info, m.email, m.nickname, m.additional_data, m.phone_number
 FROM whygym.orders o
     INNER JOIN whygym.members m ON o.member_id = m.id   
+WHERE o.reference_id = $1
+LIMIT 1;
+
+-- name: getOrderAndPrivateCoachingByReferenceId :one
+SELECT o.id, o.member_id, o.price, o.reference_id, o.order_status, o.url, o.created_at, o.updated_at, o.notes,
+       o.additional_info, pc.email, pc.additional_data
+FROM whygym.orders o
+    INNER JOIN whygym.private_coaching pc ON o.private_coaching_id = pc.id
 WHERE o.reference_id = $1
 LIMIT 1;
 
