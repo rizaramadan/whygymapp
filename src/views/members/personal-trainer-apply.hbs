@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Trainer Application - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .step {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .step.active {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+        
+        .step.completed {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+        
+        .step-connector {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto p-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center p-4 bg-white rounded-xl shadow-sm mb-6">
+            <h1 class="text-xl font-bold text-green-800">WhyGym</h1>
+            <a href="/member-dashboard" class="text-green-600 hover:text-green-700 text-sm font-medium">Back to Dashboard</a>
+        </div>
+
+        <!-- Application Form -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-2xl font-semibold text-gray-900">Personal Trainer Application</h2>
+                <p class="mt-2 text-gray-600">Please fill out all required information below.</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="p-6 border-b border-gray-100">
+                <div class="step-indicator">
+                    <div class="step-connector"></div>
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                </div>
+            </div>
+
+            <form id="personalTrainerForm" action="/members/personal-trainer-apply" method="POST" class="p-6">
+                <!-- Section 1: Training Details -->
+                <div class="form-section active space-y-6" data-section="1">
+                    <h3 class="text-xl font-semibold mb-6">Training Details</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Coach Type
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="coachType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Select coach type</option>
+                                <option value="head">Head Coach</option>
+                                <option value="normal">Normal Coach</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Number of Sessions
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="sessionCount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Select number of sessions</option>
+                                <option value="1">1 Session</option>
+                                <option value="4">4 Sessions</option>
+                                <option value="8">8 Sessions</option>
+                                <option value="12">12 Sessions</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Training Type
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="trainingType" id="trainingType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required onchange="handleTrainingTypeChange(this)">
+                                <option value="">Select training type</option>
+                                <option value="single">Single</option>
+                                <option value="duo">Duo</option>
+                            </select>
+                        </div>
+
+                        <div id="partnerEmailContainer" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700">
+                                Partner's Email
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" name="partnerEmail" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <div class="error-message"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Terms and Conditions -->
+                <div class="form-section space-y-6" data-section="2">
+                    <h3 class="text-xl font-semibold mb-6">Terms and Conditions</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="termsAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    I have read and agree to the terms and conditions
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="riskAgree" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    I understand and accept all risks associated with personal training
+                                    <span class="text-red-500">*</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button type="button" id="prevBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="display: none;">
+                        Previous
+                    </button>
+                    <button type="button" id="nextBtn" class="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Next
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" style="display: none;">
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('personalTrainerForm');
+            const sections = document.querySelectorAll('.form-section');
+            const steps = document.querySelectorAll('.step');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            let currentSection = 0;
+
+            // Function to show/hide sections
+            function showSection(index) {
+                sections.forEach((section, i) => {
+                    section.classList.toggle('active', i === index);
+                });
+
+                steps.forEach((step, i) => {
+                    step.classList.toggle('active', i === index);
+                    step.classList.toggle('completed', i < index);
+                });
+
+                // Update buttons
+                prevBtn.style.display = index === 0 ? 'none' : 'block';
+                nextBtn.style.display = index === sections.length - 1 ? 'none' : 'block';
+                submitBtn.style.display = index === sections.length - 1 ? 'block' : 'none';
+            }
+
+            // Handle next button click
+            nextBtn.addEventListener('click', function() {
+                if (validateSection(currentSection)) {
+                    currentSection++;
+                    showSection(currentSection);
+                }
+            });
+
+            // Handle previous button click
+            prevBtn.addEventListener('click', function() {
+                currentSection--;
+                showSection(currentSection);
+            });
+
+            // Form validation
+            function validateSection(sectionIndex) {
+                const currentSectionEl = sections[sectionIndex];
+                const inputs = currentSectionEl.querySelectorAll('input[required], select[required]');
+                let isValid = true;
+                let firstError = null;
+
+                inputs.forEach(input => {
+                    if (!input.value) {
+                        isValid = false;
+                        showError(input);
+                        if (!firstError) {
+                            firstError = input;
+                        }
+                    } else {
+                        clearError(input);
+                    }
+                });
+
+                // Special validation for partner email
+                if (sectionIndex === 0) {
+                    const trainingType = document.getElementById('trainingType').value;
+                    const partnerEmail = document.querySelector('input[name="partnerEmail"]');
+                    if (trainingType === 'duo' && !partnerEmail.value) {
+                        isValid = false;
+                        showError(partnerEmail);
+                        if (!firstError) {
+                            firstError = partnerEmail;
+                        }
+                    }
+                }
+
+                // If there are errors, scroll to the first one
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                return isValid;
+            }
+
+            // Show error message
+            function showError(input) {
+                input.classList.add('border-red-500');
+                const errorDiv = input.nextElementSibling;
+                if (errorDiv && errorDiv.classList.contains('error-message')) {
+                    errorDiv.textContent = 'This field is required';
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            // Clear error message
+            function clearError(input) {
+                input.classList.remove('border-red-500');
+                const errorDiv = input.nextElementSibling;
+                if (errorDiv && errorDiv.classList.contains('error-message')) {
+                    errorDiv.style.display = 'none';
+                }
+            }
+
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (validateSection(currentSection)) {
+                    this.submit();
+                }
+            });
+        });
+
+        // Handle training type change
+        function handleTrainingTypeChange(select) {
+            const partnerEmailContainer = document.getElementById('partnerEmailContainer');
+            const partnerEmailInput = document.querySelector('input[name="partnerEmail"]');
+            
+            if (select.value === 'duo') {
+                partnerEmailContainer.style.display = 'block';
+                partnerEmailInput.required = true;
+            } else {
+                partnerEmailContainer.style.display = 'none';
+                partnerEmailInput.required = false;
+                partnerEmailInput.value = '';
+            }
+        }
+    </script>
+</body>
+</html> 
