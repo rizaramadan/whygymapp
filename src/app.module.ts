@@ -12,6 +12,7 @@ import { HttpModule } from '@nestjs/axios';
 import { OrdersModule } from './orders/orders.module';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
+import { PrivateCoachingModule } from './private-coaching/private-coaching.module';
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -22,6 +23,7 @@ import { APP_FILTER } from '@nestjs/core';
     FoModule,
     HttpModule,
     OrdersModule,
+    PrivateCoachingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -67,6 +67,7 @@ export class OrdersService {
     private readonly memberPricingService: MemberPricingService,
   ) {}
 
+  // Get order by reference id. save for other than membership application
   async getOrderByReferenceId(
     referenceId: string,
   ): Promise<getOrderByReferenceIdRow | null> {
@@ -75,6 +76,7 @@ export class OrdersService {
     return result;
   }
 
+  // Set order invoice response. Save for other than membership application
   async setOrderInvoiceResponse(
     referenceId: string,
     invoice: CreateInvoiceResponse,
@@ -87,6 +89,7 @@ export class OrdersService {
     return result;
   }
 
+  // Set order invoice request response. Save for other than membership application
   async setOrderInvoiceRequestResponse(
     referenceId: string,
     invoice: CreateInvoiceResponse,
@@ -101,6 +104,8 @@ export class OrdersService {
     return result;
   }
 
+  // Get order and member by reference id. Tighly coupled with members table
+  //TODO: might need to create personal coaching counterpart for this
   async getOrderAndMemberByReferenceId(
     referenceId: string,
   ): Promise<getOrderAndMemberByReferenceIdRow | null> {
@@ -109,6 +114,7 @@ export class OrdersService {
     return result;
   }
 
+  // Get payment methods. Save for other than membership application
   async getPaymentMethods(amount: number): Promise<PaymentMethodsResponse> {
     const response = await firstValueFrom(
       this.httpService.post<PaymentMethodsResponse>(
@@ -368,7 +374,6 @@ export class OrdersService {
 
     return retval;
   }
-
 
   async postCreateInvoice(
     request: CreateInvoiceRequest,

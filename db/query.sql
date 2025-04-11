@@ -1,19 +1,3 @@
-/*
-query that returns all users with their 
-{
-      id: 1,
-      username: 'john',
-      password: 'changeme',
-      roles: [Role.Admin],
-    },
-    {
-      id: 2,
-      username: 'maria',
-      password: 'guess',
-      roles: [Role.User],
-    }
-*/
-
 -- name: GetAllUsersRoles :many
 SELECT
     u.id,
