@@ -230,34 +230,9 @@ export class MembersController {
 
   @Get('personal-trainer-apply')
   @Render('members/personal-trainer-apply')
-  async getPersonalTrainerApply(@Request() req: { user: User }) {
+  getPersonalTrainerApply(@Request() req: { user: User }) {
     return {
       user: req.user,
     };
-  }
-
-  @Post('personal-trainer-apply')
-  @Redirect()
-  async submitPersonalTrainerApplication(
-    @Request() req: { user: User },
-    @Body() applicationData: any,
-  ) {
-    try {
-      // TODO: Implement personal trainer application processing
-      // This should be similar to the membership application process
-      // but with different business logic for personal training
-
-      // For now, just redirect to payment page
-      return {
-        url: `/orders/checkout/${applicationData.referenceId}`,
-        statusCode: 302,
-      };
-    } catch (error) {
-      console.error('Error submitting personal trainer application:', error);
-      return {
-        url: '/members/personal-trainer-apply?error=unexpected_error',
-        statusCode: 302,
-      };
-    }
   }
 }

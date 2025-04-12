@@ -26,8 +26,6 @@ import {
   getPotentialGroupDataArgs,
   getPotentialGroupData,
   updateMemberAdditionalData,
-  UpdateMemberAdditionalDataArgs,
-  UpdateMemberAdditionalDataRow,
   getActiveMemberBreakdown,
   getActiveMemberBreakdownRow,
   linkGroupOrder,
@@ -35,10 +33,8 @@ import {
   getMemberActiveDateRow,
   addOrUpdateMemberPicUrl,
   addOrUpdateMemberPicUrlRow,
-  addOrUpdateMemberPicUrlArgs,
   getMemberById,
   GetMemberByIdRow,
-  GetMemberByIdArgs,
 } from 'db/src/query_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';

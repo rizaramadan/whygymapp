@@ -276,7 +276,8 @@ LIMIT 1;
 
 
 -- name: getOrderByReferenceId :one
-SELECT id, member_id, price, reference_id, order_status, url, created_at, updated_at, notes, additional_info
+SELECT id, member_id, price, reference_id, order_status, url, created_at, 
+       updated_at, notes, additional_info, private_coaching_id
 FROM whygym.orders
 WHERE reference_id = $1
 LIMIT 1;
@@ -495,6 +496,27 @@ FROM whygym.members m
         AND m.additional_data ->> 'duration'::text = email_pic.duration
     INNER JOIN whygym.order_groups og ON og.part_id = m.id
 WHERE m.membership_status = 'pending' ORDER BY m.nickname LIMIT 10;
+
+-- name: getPotentialPrivateCoachingGroupData :many    
+WITH email_pic AS (
+SELECT reference_id, m.additional_data, o.created_at, m.id AS memberId,
+       m.additional_data ->> 'emailPic'::text as email_pic,
+       m.additional_data ->> 'duration'::text as duration
+FROM whygym.orders o
+    INNER JOIN whygym.private_coaching m ON o.member_id = m.id
+WHERE m.status = 'pending'
+    AND m.email = $1
+    AND m.additional_data ->> 'emailPic'::text = $1
+LIMIT 1)
+SELECT m.id, m.email, m.additional_data->> 'gender' AS gender, m.coach_type,
+    CASE WHEN og.main_reference_id = email_pic.reference_id THEN true ELSE false END AS checked
+FROM whygym.private_coaching m
+    INNER JOIN email_pic ON m.additional_data ->> 'emailPic'::text = email_pic.email_pic
+        AND m.additional_data ->> 'duration'::text = email_pic.duration
+    INNER JOIN whygym.order_groups og ON og.part_id = m.id
+WHERE m.status = 'pending' ORDER BY m.email LIMIT 10;
+
+
 
 -- name: joinToGroup :one
 UPDATE whygym.order_groups SET updated_at = current_timestamp,

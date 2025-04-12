@@ -251,9 +251,9 @@ WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, ema
 export interface UpdateMemberAdditionalDataArgs {
     id: number;
     email: string | null;
-    : any;
-    : any;
-    : any;
+    emailPic: string | null;
+    duration: any;
+    gender: any;
 }
 
 export interface UpdateMemberAdditionalDataRow {
@@ -264,7 +264,7 @@ export interface UpdateMemberAdditionalDataRow {
 export async function updateMemberAdditionalData(client: Client, args: UpdateMemberAdditionalDataArgs): Promise<UpdateMemberAdditionalDataRow | null> {
     const result = await client.query({
         text: updateMemberAdditionalDataQuery,
-        values: [args.id, args.email, args., args., args.],
+        values: [args.id, args.email, args.emailPic, args.duration, args.gender],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -1232,7 +1232,8 @@ export async function getPrivateCoachingOrderReferenceIdByEmail(client: Client, 
 }
 
 export const getOrderByReferenceIdQuery = `-- name: getOrderByReferenceId :one
-SELECT id, member_id, price, reference_id, order_status, url, created_at, updated_at, notes, additional_info
+SELECT id, member_id, price, reference_id, order_status, url, created_at, 
+       updated_at, notes, additional_info, private_coaching_id
 FROM whygym.orders
 WHERE reference_id = $1
 LIMIT 1`;
@@ -1252,6 +1253,7 @@ export interface getOrderByReferenceIdRow {
     updatedAt: Date | null;
     notes: string | null;
     additionalInfo: any | null;
+    privateCoachingId: number | null;
 }
 
 export async function getOrderByReferenceId(client: Client, args: getOrderByReferenceIdArgs): Promise<getOrderByReferenceIdRow | null> {
@@ -1274,7 +1276,8 @@ export async function getOrderByReferenceId(client: Client, args: getOrderByRefe
         createdAt: row[6],
         updatedAt: row[7],
         notes: row[8],
-        additionalInfo: row[9]
+        additionalInfo: row[9],
+        privateCoachingId: row[10]
     };
 }
 
@@ -1900,8 +1903,8 @@ WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
 
 export interface setOrderInvoiceResponseArgs {
-    : string;
-    : string;
+    content: string;
+    refId: string;
 }
 
 export interface setOrderInvoiceResponseRow {
@@ -1913,7 +1916,7 @@ export interface setOrderInvoiceResponseRow {
 export async function setOrderInvoiceResponse(client: Client, args: setOrderInvoiceResponseArgs): Promise<setOrderInvoiceResponseRow | null> {
     const result = await client.query({
         text: setOrderInvoiceResponseQuery,
-        values: [args., args.],
+        values: [args.content, args.refId],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -1949,9 +1952,9 @@ WHERE reference_id = data.ref_id
 RETURNING id, additional_info, reference_id`;
 
 export interface setOrderInvoiceRequestResponseArgs {
-    : string;
-    : string;
-    : string;
+    content: string;
+    refId: string;
+    request: string;
 }
 
 export interface setOrderInvoiceRequestResponseRow {
@@ -1963,7 +1966,7 @@ export interface setOrderInvoiceRequestResponseRow {
 export async function setOrderInvoiceRequestResponse(client: Client, args: setOrderInvoiceRequestResponseArgs): Promise<setOrderInvoiceRequestResponseRow | null> {
     const result = await client.query({
         text: setOrderInvoiceRequestResponseQuery,
-        values: [args., args., args.],
+        values: [args.content, args.refId, args.request],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -2030,7 +2033,7 @@ UPDATE whygym.members m SET updated_at = current_timestamp, membership_status = 
 
 export interface setInvoiceStatusResponseAndActivateMembershipArgs {
     mainReferenceId: string;
-    : any;
+    invoiceStatusResponse: any;
 }
 
 export interface setInvoiceStatusResponseAndActivateMembershipRow {
@@ -2040,7 +2043,7 @@ export interface setInvoiceStatusResponseAndActivateMembershipRow {
 export async function setInvoiceStatusResponseAndActivateMembership(client: Client, args: setInvoiceStatusResponseAndActivateMembershipArgs): Promise<setInvoiceStatusResponseAndActivateMembershipRow | null> {
     const result = await client.query({
         text: setInvoiceStatusResponseAndActivateMembershipQuery,
-        values: [args.mainReferenceId, args.],
+        values: [args.mainReferenceId, args.invoiceStatusResponse],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {
@@ -2300,7 +2303,7 @@ returning id, email`;
 
 export interface addOrUpdateMemberPicUrlArgs {
     email: string | null;
-    : any;
+    picUrl: any;
 }
 
 export interface addOrUpdateMemberPicUrlRow {
@@ -2311,7 +2314,7 @@ export interface addOrUpdateMemberPicUrlRow {
 export async function addOrUpdateMemberPicUrl(client: Client, args: addOrUpdateMemberPicUrlArgs): Promise<addOrUpdateMemberPicUrlRow | null> {
     const result = await client.query({
         text: addOrUpdateMemberPicUrlQuery,
-        values: [args.email, args.],
+        values: [args.email, args.picUrl],
         rowMode: "array"
     });
     if (result.rows.length !== 1) {

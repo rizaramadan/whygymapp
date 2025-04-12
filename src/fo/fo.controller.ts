@@ -3,6 +3,11 @@ import { Roles } from 'src/roles/decorators/roles.decorator';
 import { FoService } from './fo.service';
 import Sqids from 'sqids';
 import { MembersService } from 'src/members/members.service';
+
+interface AdditionalData {
+  picUrl: string | undefined;
+}
+
 @Controller('fo')
 export class FoController {
   constructor(
@@ -40,7 +45,7 @@ export class FoController {
 
     const member = {
       email: memberFromDb.email || '',
-      picUrl: memberFromDb.additionalData.picUrl || '',
+      picUrl: (memberFromDb.additionalData as AdditionalData).picUrl || '',
     };
 
     //call member service to create visit

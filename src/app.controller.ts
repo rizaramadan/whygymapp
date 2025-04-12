@@ -15,7 +15,6 @@ import { Response } from 'express';
 import { interval, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import Sqids from 'sqids';
-import { ErrorApp } from './common/result';
 
 @Controller()
 export class AppController {
@@ -123,7 +122,7 @@ export class AppController {
   @Sse('sse')
   sse(): Observable<MessageEvent> {
     return interval(1000).pipe(
-      map((_) => ({ data: { hello: 'world' } }) as MessageEvent),
+      map(() => ({ data: { hello: 'world' } }) as MessageEvent),
     );
   }
 }

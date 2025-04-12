@@ -2,171 +2,103 @@ import { Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
 import { Inject } from '@nestjs/common';
 
-export type CoachType = 'personal' | 'group';
-export type SessionStatus = 'pending' | 'scheduled' | 'completed' | 'cancelled';
-
-export interface CoachingSession {
-  id: number;
-  member_id: number;
-  coach_type: CoachType;
-  number_of_sessions: number;
-  remaining_sessions: number;
-  status: SessionStatus;
-  created_at: Date;
-  updated_at: Date;
-  additional_info?: Record<string, any>;
-}
-
-export interface GroupCoachingSession extends CoachingSession {
-  group_id: string;
-  group_members: number[];
-}
-
-export interface CoachingOrder {
-  reference_id: string;
-  member_id: number;
-  coach_type: CoachType;
-  number_of_sessions: number;
-  price: string;
-  status: string;
-  additional_info?: Record<string, any>;
+export interface CoachingMemberData {
+  gender: 'male' | 'female';
 }
 
 @Injectable()
 export class PrivateCoachingService {
-  constructor(
-    @Inject('DATABASE_POOL') private pool: Pool,
-  ) {}
+    private static readonly priceMap: {
+        [key in 'normal' | 'promo']: {
+          [key in 'single' | 'duo' | 'group']: {
+            [key in 'male' | 'female']: {
+              [key in '90' | '180' | '360']: number;
+            };
+          };
+        };
+      } = {
+        normal: {
+          single: {
+            male: {
+              '90': 590000,
+              '180': 1200000,
+              '360': 1950000,
+            },
+            female: {
+              '90': 1100000,
+              '180': 2150000,
+              '360': 4000000,
+            },
+          },
+          duo: {
+            male: {
+              '90': 540000,
+              '180': 1050000,
+              '360': 1750000,
+            },
+            female: {
+              '90': 1000000,
+              '180': 2000000,
+              '360': 3800000,
+            },
+          },
+          group: {
+            male: {
+              '90': 540000,
+              '180': 1050000,
+              '360': 1750000,
+            },
+            female: {
+              '90': 850000,
+              '180': 1700000,
+              '360': 3000000,
+            },
+          },
+        },
+        promo: {
+          single: {
+            male: {
+              '90': 590000,
+              '180': 1200000,
+              '360': 1950000,
+            },
+            female: {
+              '90': 1100000,
+              '180': 2150000,
+              '360': 4000000,
+            },
+          },
+          duo: {
+            male: {
+              '90': 540000,
+              '180': 1050000,
+              '360': 1750000,
+            },
+            female: {
+              '90': 1000000,
+              '180': 2000000,
+              '360': 3800000,
+            },
+          },
+          group: {
+            male: {
+              '90': 540000,
+              '180': 1050000,
+              '360': 1750000,
+            },
+            female: {
+              '90': 850000,
+              '180': 1700000,
+              '360': 3000000,
+            },
+          },
+        },
+      };
 
-  async createCoachingSession(
-    memberId: number,
-    coachType: CoachType,
-    numberOfSessions: number,
-    additionalInfo?: Record<string, any>,
-  ): Promise<CoachingSession> {
-    const query = `
-      INSERT INTO coaching_sessions (
-        member_id,
-        coach_type,
-        number_of_sessions,
-        remaining_sessions,
-        status,
-        additional_info
-      ) VALUES ($1, $2, $3, $3, 'pending', $4)
-      RETURNING *
-    `;
 
-    const result = await this.pool.query(query, [
-      memberId,
-      coachType,
-      numberOfSessions,
-      additionalInfo ? JSON.stringify(additionalInfo) : null,
-    ]);
+  constructor(@Inject('DATABASE_POOL') private pool: Pool) {}
 
-    return result.rows[0];
-  }
-
-  async createGroupCoachingSession(
-    memberId: number,
-    numberOfSessions: number,
-    groupMembers: number[],
-    additionalInfo?: Record<string, any>,
-  ): Promise<GroupCoachingSession> {
-    const query = `
-      INSERT INTO coaching_sessions (
-        member_id,
-        coach_type,
-        number_of_sessions,
-        remaining_sessions,
-        status,
-        group_id,
-        group_members,
-        additional_info
-      ) VALUES ($1, 'group', $2, $2, 'pending', $3, $4, $5)
-      RETURNING *
-    `;
-
-    const groupId = `group_${Date.now()}`;
-    const result = await this.pool.query(query, [
-      memberId,
-      numberOfSessions,
-      groupId,
-      groupMembers,
-      additionalInfo ? JSON.stringify(additionalInfo) : null,
-    ]);
-
-    return result.rows[0];
-  }
-
-  async getCoachingSessionById(id: number): Promise<CoachingSession | null> {
-    const query = `
-      SELECT * FROM coaching_sessions WHERE id = $1
-    `;
-
-    const result = await this.pool.query(query, [id]);
-    return result.rows[0] || null;
-  }
-
-  async getCoachingSessionsByMemberId(memberId: number): Promise<CoachingSession[]> {
-    const query = `
-      SELECT * FROM coaching_sessions WHERE member_id = $1
-    `;
-
-    const result = await this.pool.query(query, [memberId]);
-    return result.rows;
-  }
-
-  async updateSessionStatus(
-    sessionId: number,
-    status: SessionStatus,
-  ): Promise<CoachingSession> {
-    const query = `
-      UPDATE coaching_sessions
-      SET status = $1, updated_at = NOW()
-      WHERE id = $2
-      RETURNING *
-    `;
-
-    const result = await this.pool.query(query, [status, sessionId]);
-    return result.rows[0];
-  }
-
-  async decrementRemainingSessions(sessionId: number): Promise<CoachingSession> {
-    const query = `
-      UPDATE coaching_sessions
-      SET remaining_sessions = remaining_sessions - 1,
-          updated_at = NOW()
-      WHERE id = $1 AND remaining_sessions > 0
-      RETURNING *
-    `;
-
-    const result = await this.pool.query(query, [sessionId]);
-    return result.rows[0];
-  }
-
-  async getGroupCoachingSession(groupId: string): Promise<GroupCoachingSession | null> {
-    const query = `
-      SELECT * FROM coaching_sessions
-      WHERE group_id = $1 AND coach_type = 'group'
-    `;
-
-    const result = await this.pool.query(query, [groupId]);
-    return result.rows[0] || null;
-  }
-
-  async addMemberToGroupSession(
-    groupId: string,
-    memberId: number,
-  ): Promise<GroupCoachingSession> {
-    const query = `
-      UPDATE coaching_sessions
-      SET group_members = array_append(group_members, $1),
-          updated_at = NOW()
-      WHERE group_id = $2 AND coach_type = 'group'
-      RETURNING *
-    `;
-
-    const result = await this.pool.query(query, [memberId, groupId]);
-    return result.rows[0];
+  calculateTotalPrice(memberData: CoachingMemberData[]): number {
+    return memberData.length * 100;
   }
 }
