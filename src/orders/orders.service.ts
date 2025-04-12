@@ -25,9 +25,12 @@ import {
   removeFromGroup,
   setOrderInvoiceRequestResponseArgs,
   setOrderInvoiceRequestResponse,
+  GetPrivateCoachingOrderReferenceIdByEmailArgs,
+  getPrivateCoachingOrderReferenceIdByEmail,
+  GetPrivateCoachingOrderReferenceIdByEmailRow,
   getOrderAndPrivateCoachingByReferenceId,
-  getOrderAndPrivateCoachingByReferenceIdArgs,
   getOrderAndPrivateCoachingByReferenceIdRow,
+  getOrderAndPrivateCoachingByReferenceIdArgs,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -40,10 +43,6 @@ import {
   MemberData,
   MemberPricingService,
 } from '../members/member-pricing.service';
-import {
-  CoachingMemberData,
-  PrivateCoachingService,
-} from '../private-coaching/private-coaching.service';
 
 interface OrderWithAdditionalInfo {
   additionalInfo: {
@@ -64,6 +63,14 @@ interface OrderWithInvoiceId {
   };
 }
 
+interface CoachingOrderData {
+  memberId: number;
+  coachType: 'personal' | 'group';
+  numberOfSessions: number;
+  price: number;
+  groupMembers?: number[];
+}
+
 @Injectable()
 export class OrdersService {
   private readonly darisiniFee = 0;
@@ -72,7 +79,6 @@ export class OrdersService {
     @Inject('DATABASE_POOL') private pool: Pool,
     private readonly httpService: HttpService,
     private readonly memberPricingService: MemberPricingService,
-    private readonly privateCoachingService: PrivateCoachingService,
   ) {}
 
   // Get order by reference id. Safe for other than membership application
@@ -81,6 +87,18 @@ export class OrdersService {
   ): Promise<getOrderByReferenceIdRow | null> {
     const args: getOrderByReferenceIdArgs = { referenceId };
     const result = await getOrderByReferenceId(this.pool, args);
+    return result;
+  }
+
+  // get private coaching order by email.
+  async getPrivateCoachingOrderByEmail(
+    email: string,
+  ): Promise<GetPrivateCoachingOrderReferenceIdByEmailRow | null> {
+    const args: GetPrivateCoachingOrderReferenceIdByEmailArgs = { email };
+    const result = await getPrivateCoachingOrderReferenceIdByEmail(
+      this.pool,
+      args,
+    );
     return result;
   }
 
@@ -121,8 +139,8 @@ export class OrdersService {
     return result;
   }
 
-  // get private coaching order by reference id.
-  async getPrivateCoachingOrderByReferenceId(
+  // get private coaching order by reference id
+  async getOrderAndPrivateCoachingByReferenceId(
     referenceId: string,
   ): Promise<getOrderAndPrivateCoachingByReferenceIdRow | null> {
     const args: getOrderAndPrivateCoachingByReferenceIdArgs = { referenceId };
@@ -176,7 +194,7 @@ export class OrdersService {
       }
     }
 
-    const { membershipFee, paymentGatewayFee, tax, total } =
+    const { orderPrice, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);
     const paymentMethods = await this.getPaymentMethods(total);
 
@@ -185,7 +203,7 @@ export class OrdersService {
       referenceId,
       order,
       paymentMethods,
-      membershipFee,
+      membershipFee: orderPrice,
       paymentGatewayFee,
       tax,
       total,
@@ -233,7 +251,7 @@ export class OrdersService {
 
     order.price = String(totalPrice);
 
-    const { membershipFee, paymentGatewayFee, tax, total } =
+    const { orderPrice, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);
     const paymentMethods = await this.getPaymentMethods(total);
 
@@ -242,63 +260,7 @@ export class OrdersService {
       referenceId,
       order,
       paymentMethods,
-      membershipFee,
-      paymentGatewayFee,
-      tax,
-      total,
-      invoice,
-    };
-  }
-
-  async getPrivateCoachingCheckoutGroupData(
-    referenceId: string,
-    user: User,
-    potentialGroupData: getPotentialGroupDataRow[],
-  ): Promise<CheckoutResponse> {
-    const order = await this.getOrderByReferenceId(referenceId);
-    if (!order) {
-      throw new Error('Order not found');
-    }
-
-    let invoice: CreateInvoiceResponse | null = null;
-    if (
-      (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data?.id
-    ) {
-      const createInvoiceResponse: CreateInvoiceResponse =
-        await this.getInvoiceStatus(
-          (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
-            ?.id,
-          referenceId,
-        );
-      if (createInvoiceResponse.data.status === 'PAID') {
-        invoice = createInvoiceResponse;
-      }
-    }
-
-    const memberData: CoachingMemberData[] = potentialGroupData
-      .filter((member) => member.checked)
-      .map((member) => ({
-        gender: (member.gender ?? 'female') as 'male' | 'female',
-      }));
-
-    //above is agnostic, below is tightly coupled with membership calculation fee
-    //translate potentialGroupData to MemberData
-
-    const totalPrice =
-      this.privateCoachingService.calculateTotalPrice(memberData);
-
-    order.price = String(totalPrice);
-
-    const { membershipFee, paymentGatewayFee, tax, total } =
-      this.calculatePaymentDetails(order, 0);
-    const paymentMethods = await this.getPaymentMethods(total);
-
-    return {
-      user,
-      referenceId,
-      order,
-      paymentMethods,
-      membershipFee,
+      membershipFee: orderPrice,
       paymentGatewayFee,
       tax,
       total,
@@ -327,12 +289,12 @@ export class OrdersService {
 
   // Calculate payment details. Safe for other than membership application
   calculatePaymentDetails(order: any, paymentGatewayFee: number) {
-    const membershipFee = parseFloat(
+    const orderPrice = parseFloat(
       (order as OrderWithAdditionalInfo)?.price.toString() || '0',
     );
     const taxRate = 0.1;
-    const tax = membershipFee * taxRate;
-    let total = membershipFee + tax;
+    const tax = orderPrice * taxRate;
+    let total = orderPrice + tax;
 
     const priceDivisor = parseInt(process.env.PRICE_DIVISOR ?? '1');
 
@@ -349,7 +311,7 @@ export class OrdersService {
     const totalWithFee = total + paymentGatewayFee + this.darisiniFee;
 
     return {
-      membershipFee,
+      orderPrice,
       paymentGatewayFee,
       tax,
       total,
@@ -603,7 +565,7 @@ export class OrdersService {
       }
     }
 
-    const { membershipFee, paymentGatewayFee, tax, total } =
+    const { orderPrice, paymentGatewayFee, tax, total } =
       this.calculatePaymentDetails(order, 0);
     const paymentMethods = await this.getPaymentMethods(total);
 
@@ -612,7 +574,7 @@ export class OrdersService {
       referenceId,
       order,
       paymentMethods,
-      membershipFee,
+      membershipFee: orderPrice,
       paymentGatewayFee,
       tax,
       total,

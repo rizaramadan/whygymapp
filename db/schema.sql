@@ -2,12 +2,13 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.1
--- Dumped by pg_dump version 14.1
+-- Dumped from database version 17.4 (Homebrew)
+-- Dumped by pg_dump version 17.4 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -100,7 +101,7 @@ CREATE SEQUENCE whygym.create_user_requests_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.create_user_requests_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.create_user_requests_id_seq OWNER TO postgres;
 
 --
 -- Name: create_user_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -143,7 +144,7 @@ CREATE SEQUENCE whygym.members_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.members_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.members_id_seq OWNER TO postgres;
 
 --
 -- Name: members_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -182,7 +183,7 @@ CREATE SEQUENCE whygym.order_extra_time_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.order_extra_time_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.order_extra_time_id_seq OWNER TO postgres;
 
 --
 -- Name: order_extra_time_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -201,9 +202,9 @@ CREATE TABLE whygym.order_groups (
     part_id integer NOT NULL,
     part_reference_id character varying(40) NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     notes text,
-    additional_info jsonb,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    additional_info jsonb
 );
 
 
@@ -222,7 +223,7 @@ CREATE SEQUENCE whygym.order_groups_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.order_groups_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.order_groups_id_seq OWNER TO postgres;
 
 --
 -- Name: order_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -266,7 +267,7 @@ CREATE SEQUENCE whygym.orders_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.orders_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.orders_id_seq OWNER TO postgres;
 
 --
 -- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -304,7 +305,7 @@ CREATE SEQUENCE whygym.orders_status_log_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.orders_status_log_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.orders_status_log_id_seq OWNER TO postgres;
 
 --
 -- Name: orders_status_log_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -348,7 +349,7 @@ CREATE SEQUENCE whygym.private_coaching_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.private_coaching_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.private_coaching_id_seq OWNER TO postgres;
 
 --
 -- Name: private_coaching_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -382,7 +383,7 @@ CREATE SEQUENCE whygym.roles_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.roles_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.roles_id_seq OWNER TO postgres;
 
 --
 -- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -447,7 +448,7 @@ CREATE SEQUENCE whygym.users_attributes_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.users_attributes_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.users_attributes_id_seq OWNER TO postgres;
 
 --
 -- Name: users_attributes_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -469,7 +470,7 @@ CREATE SEQUENCE whygym.users_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.users_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.users_id_seq OWNER TO postgres;
 
 --
 -- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -509,7 +510,7 @@ CREATE SEQUENCE whygym.visits_id_seq
     CACHE 1;
 
 
-ALTER TABLE whygym.visits_id_seq OWNER TO postgres;
+ALTER SEQUENCE whygym.visits_id_seq OWNER TO postgres;
 
 --
 -- Name: visits_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
@@ -741,7 +742,7 @@ CREATE INDEX idx_members_membership_status ON whygym.members USING btree (member
 -- Name: idx_members_pending_email; Type: INDEX; Schema: whygym; Owner: postgres
 --
 
-CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHERE ((membership_status)::text = 'pending'::text);
+CREATE INDEX idx_members_pending_email ON whygym.members USING btree (email) WHERE ((membership_status)::text = 'PENDING'::text);
 
 
 --
