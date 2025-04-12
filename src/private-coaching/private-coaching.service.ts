@@ -2,103 +2,94 @@ import { Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
 import { Inject } from '@nestjs/common';
 
+export type CoachType = 'head_coach' | 'coach';
+export type SessionType = 'single' | 'duo';
+export type SessionPackage = '1' | '4' | '8' | '12';
+export type SessionStatus = 'pending' | 'scheduled' | 'completed' | 'cancelled';
+
+export interface CoachingSession {
+  id: number;
+  member_id: number;
+  coach_type: CoachType;
+  session_type: SessionType;
+  session_package: SessionPackage;
+  remaining_sessions: number;
+  status: SessionStatus;
+  created_at: Date;
+  updated_at: Date;
+  additional_info?: Record<string, any>;
+}
+
+export interface GroupCoachingSession extends CoachingSession {
+  group_id: string;
+  group_members: number[];
+}
+
+export interface CoachingOrder {
+  reference_id: string;
+  member_id: number;
+  coach_type: CoachType;
+  session_type: SessionType;
+  session_package: SessionPackage;
+  price: string;
+  status: string;
+  additional_info?: Record<string, any>;
+}
+
 export interface CoachingMemberData {
   gender: 'male' | 'female';
 }
 
 @Injectable()
 export class PrivateCoachingService {
-    private static readonly priceMap: {
-        [key in 'normal' | 'promo']: {
-          [key in 'single' | 'duo' | 'group']: {
-            [key in 'male' | 'female']: {
-              [key in '90' | '180' | '360']: number;
-            };
-          };
-        };
-      } = {
-        normal: {
-          single: {
-            male: {
-              '90': 590000,
-              '180': 1200000,
-              '360': 1950000,
-            },
-            female: {
-              '90': 1100000,
-              '180': 2150000,
-              '360': 4000000,
-            },
-          },
-          duo: {
-            male: {
-              '90': 540000,
-              '180': 1050000,
-              '360': 1750000,
-            },
-            female: {
-              '90': 1000000,
-              '180': 2000000,
-              '360': 3800000,
-            },
-          },
-          group: {
-            male: {
-              '90': 540000,
-              '180': 1050000,
-              '360': 1750000,
-            },
-            female: {
-              '90': 850000,
-              '180': 1700000,
-              '360': 3000000,
-            },
-          },
-        },
-        promo: {
-          single: {
-            male: {
-              '90': 590000,
-              '180': 1200000,
-              '360': 1950000,
-            },
-            female: {
-              '90': 1100000,
-              '180': 2150000,
-              '360': 4000000,
-            },
-          },
-          duo: {
-            male: {
-              '90': 540000,
-              '180': 1050000,
-              '360': 1750000,
-            },
-            female: {
-              '90': 1000000,
-              '180': 2000000,
-              '360': 3800000,
-            },
-          },
-          group: {
-            male: {
-              '90': 540000,
-              '180': 1050000,
-              '360': 1750000,
-            },
-            female: {
-              '90': 850000,
-              '180': 1700000,
-              '360': 3000000,
-            },
-          },
-        },
+  private static readonly priceMap: {
+    [key in CoachType]: {
+      [key in SessionType]: {
+        [key in SessionPackage]: number;
       };
-
+    };
+  } = {
+    head_coach: {
+      single: {
+        '1': 498000,
+        '4': 1900000,
+        '8': 3600000,
+        '12': 5100000,
+      },
+      duo: {
+        '1': 850000,
+        '4': 3200000,
+        '8': 6000000,
+        '12': 8400000,
+      },
+    },
+    coach: {
+      single: {
+        '1': 398000,
+        '4': 1500000,
+        '8': 2800000,
+        '12': 3900000,
+      },
+      duo: {
+        '1': 650000,
+        '4': 2400000,
+        '8': 4400000,
+        '12': 6000000,
+      },
+    },
+  };
 
   constructor(@Inject('DATABASE_POOL') private pool: Pool) {}
 
-  calculateTotalPrice(memberData: CoachingMemberData[]): number {
-    return memberData.length * 100;
+  calculateTotalPrice(
+    coachType: CoachType,
+    sessionType: SessionType,
+    sessionPackage: SessionPackage,
+  ): number {
+    return PrivateCoachingService.priceMap[coachType][sessionType][
+      sessionPackage
+    ];
   }
+
+  // ... rest of the existing methods ...
 }

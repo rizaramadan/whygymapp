@@ -113,7 +113,6 @@ export class OrdersService {
   }
 
   // Get order and member by reference id. Tighly coupled with members table
-  //TODO: might need to create personal coaching counterpart for this
   async getOrderAndMemberByReferenceId(
     referenceId: string,
   ): Promise<getOrderAndMemberByReferenceIdRow | null> {
