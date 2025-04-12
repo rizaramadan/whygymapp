@@ -77,6 +77,35 @@ export class CreateInvoiceRequest {
       this.description = `Membership payment for ${email}`;
     }
   }
+
+  public static createPrivateCoachingFeeInvoiceRequest(
+    referenceId: string,
+    url: string,
+    email: string,
+    additionalData: any,
+    amount: number,
+    customerFullName: string,
+    customerPhone: string,
+    paymentChannelCode: string,
+    coachType: string,
+    numberOfSessions: number,
+  ) {
+    const request = new CreateInvoiceRequest(
+      referenceId,
+      url,
+      email,
+      additionalData,
+      amount,
+      customerFullName,
+      customerPhone,
+      paymentChannelCode,
+    );
+    request.failureRedirectUrl = `${url}/orders/payment-private-coaching-fee/${referenceId}/fail`;
+    request.successRedirectUrl = `${url}/orders/payment-private-coaching-fee/${referenceId}/success`;
+    request.title = 'Private Coaching Fee Payment';
+    request.description = `Private coaching fee payment for ${email} ${coachType} ${numberOfSessions} sessions`;
+    return request;
+  }
 }
 export interface CreateInvoiceResponse {
   status: boolean;

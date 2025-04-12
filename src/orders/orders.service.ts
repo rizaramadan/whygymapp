@@ -43,7 +43,7 @@ import {
   MemberData,
   MemberPricingService,
 } from '../members/member-pricing.service';
-
+import { MembersService } from '../members/members.service';
 interface OrderWithAdditionalInfo {
   additionalInfo: {
     cashback50: boolean;
@@ -51,6 +51,13 @@ interface OrderWithAdditionalInfo {
     cashback200: boolean;
   };
   price: number;
+}
+
+interface OrderPrivateCoachingFeeData {
+  additionalData: {
+    coachType: string;
+    numberOfSessions: number;
+  };
 }
 
 interface OrderWithInvoiceId {
@@ -79,6 +86,7 @@ export class OrdersService {
     @Inject('DATABASE_POOL') private pool: Pool,
     private readonly httpService: HttpService,
     private readonly memberPricingService: MemberPricingService,
+    private readonly membersService: MembersService,
   ) {}
 
   // Get order by reference id. Safe for other than membership application
@@ -426,6 +434,57 @@ export class OrdersService {
     return retval;
   }
 
+  // process payment. Tighly coupled with membership calculation fee
+  async processPaymentPrivateCoachingFee(
+    user: User,
+    referenceId: string,
+    paymentMethod: string,
+    paymentGatewayFee: number,
+  ) {
+    const order: getOrderAndPrivateCoachingByReferenceIdRow | null =
+      await this.getOrderAndPrivateCoachingByReferenceId(referenceId);
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    const paymentDetails = this.calculatePaymentDetails(
+      order,
+      paymentGatewayFee,
+    );
+
+    const memberData = await this.membersService.getMemberById(
+      order.memberId ?? 0,
+    );
+
+    const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+
+    const request = CreateInvoiceRequest.createPrivateCoachingFeeInvoiceRequest(
+      referenceId,
+      url,
+      user.email,
+      order.additionalData,
+      paymentDetails.total,
+      memberData?.nickname ?? '',
+      memberData?.phoneNumber ?? '',
+      paymentMethod,
+      (order as OrderPrivateCoachingFeeData).additionalData.coachType,
+      (order as OrderPrivateCoachingFeeData).additionalData.numberOfSessions,
+    );
+
+    const invoice = await this.postCreateInvoice(request);
+    await this.setOrderInvoiceRequestResponse(referenceId, invoice, request);
+
+    const retval = {
+      user,
+      referenceId: referenceId,
+      memberId: order?.memberId,
+      ...paymentDetails,
+      order,
+      paymentMethod,
+    };
+
+    return retval;
+  }
+
   // post create invoice. Safe for other than membership application
   async postCreateInvoice(
     request: CreateInvoiceRequest,
@@ -503,6 +562,38 @@ export class OrdersService {
   // set invoice status response and activate membership. Tighly coupled with membership calculation fee
   async setInvoiceStatusResponseAndActivateMembership(referenceId: string) {
     const order = await this.getOrderAndMemberByReferenceId(referenceId); //here this tightly coupled part, 1 of 2
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    // here is tightly coupled part 2 of 2
+    const createInvoiceResponse: CreateInvoiceResponse =
+      await this.getInvoiceStatus(
+        (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
+          ?.id,
+        referenceId,
+      );
+
+    if (createInvoiceResponse.data.status === 'PAID') {
+      const args: setInvoiceStatusResponseAndActivateMembershipArgs = {
+        mainReferenceId: referenceId,
+        invoiceStatusResponse: createInvoiceResponse,
+      };
+
+      // here is tightly coupled part 3 of 3. the ultimate tightly coupled part
+      const result = await setInvoiceStatusResponseAndActivateMembership(
+        this.pool,
+        args,
+      );
+      return result;
+    }
+  }
+
+  // set invoice status response and activate private coaching
+  async setInvoiceStatusResponseAndActivatePrivateCoaching(
+    referenceId: string,
+  ) {
+    const order =
+      await this.getOrderAndPrivateCoachingByReferenceId(referenceId);
     if (!order) {
       throw new Error('Order not found');
     }

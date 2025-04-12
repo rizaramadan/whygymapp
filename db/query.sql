@@ -255,6 +255,27 @@ FROM inserted_orders
 returning id, main_reference_id, part_id, notes::numeric;
 
 
+-- name: CreateDuoPrivateCoachingOrder :many
+WITH im AS (
+    INSERT INTO whygym.private_coaching (email, member_id, coach_type, number_of_sessions, status, additional_data)
+    VALUES ($1, $2, $3,  $4,'pending', $5),
+           ($6, $7, $3,  $4,'pending', $5)
+    RETURNING id, email, member_id, status, notes, additional_data, created_at, updated_at
+),
+inserted_orders AS (
+    INSERT INTO whygym.orders (member_id, price, order_status, private_coaching_id)
+    SELECT im.member_id, $8, 'waiting payment method', im.id FROM im LIMIT 2
+    RETURNING id, reference_id, member_id, price
+),
+pic_data AS (
+    SELECT id, reference_id, member_id, price from inserted_orders where member_id = $2 limit 1
+)
+INSERT INTO whygym.order_groups (main_reference_id, part_id, part_reference_id, notes)
+SELECT (select reference_id from pic_data), member_id, reference_id, cast(price as varchar)
+FROM inserted_orders
+returning id, main_reference_id, part_id, notes::numeric;
+
+
 -- name: linkGroupOrder :one
 with email_pic AS (
 select m.additional_data ->> 'emailPic' as email_pic, m.email, m.id as ori_id

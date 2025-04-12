@@ -150,8 +150,13 @@
             <div class="payment-summary">
                 <h2 class="text-xl font-semibold mb-4">Payment Summary</h2>
                 <div class="summary-row">
-                    <span class="text-gray-600">Membership Fee</span>
-                    <span>{{formatCurrency membershipFee}}</span>
+                    {{#if type}}
+                        <span class="text-gray-600">{{dashToSpaceCapitalize type}}</span>
+                        <span>{{formatCurrency membershipFee}}</span>
+                    {{else}}
+                        <span class="text-gray-600">Membership Fee</span>
+                        <span>{{formatCurrency membershipFee}}</span>
+                    {{/if}}
                 </div>
 
                 <div class="summary-row">
@@ -182,7 +187,12 @@
                 </div>
             </div>
         
-        <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
+        {{#if type}}
+            <form action="/orders/payment-{{type}}/{{referenceId}}" method="POST" id="paymentForm">
+        {{else}}
+            <form action="/orders/payment/{{referenceId}}" method="POST" id="paymentForm">
+        {{/if}}
+
             <!-- Payment Methods -->
             <div class="payment-methods">
                 <!-- QRIS -->

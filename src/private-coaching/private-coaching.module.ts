@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { PrivateCoachingController } from './private-coaching.controller';
 import { PrivateCoachingService } from './private-coaching.service';
-import { DatabaseModule } from 'src/database.module';
-import { HttpModule } from '@nestjs/axios';
-
+import { MembersModule } from '../members/members.module';
+import { DatabaseModule } from '../database.module';
+import { PrivateCoachingController } from './private-coaching.controller';
 @Module({
-  imports: [DatabaseModule, HttpModule],
+  imports: [MembersModule, DatabaseModule],
   controllers: [PrivateCoachingController],
   providers: [PrivateCoachingService],
   exports: [PrivateCoachingService],

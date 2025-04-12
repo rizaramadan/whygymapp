@@ -216,9 +216,9 @@ export class MembersController {
     return { breakdown };
   }
 
-  @Get('personal-trainer-apply')
-  @Render('members/personal-trainer-apply')
-  async getPersonalTrainerApply(@Request() req: { user: User }) {
+  @Get('private-coaching-apply')
+  @Render('members/private-coaching-apply')
+  async getPrivateCoachingApply(@Request() req: { user: User }) {
     return {
       user: req.user,
     };

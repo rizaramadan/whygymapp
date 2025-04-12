@@ -24,6 +24,11 @@ export function registerHelpers() {
     });
   });
 
+  hbs.registerHelper('dashToSpaceCapitalize', function (text: string) {
+    if (!text) return '';
+    return text.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  });
+
   hbs.registerHelper('json', function (context) {
     return JSON.stringify(context);
   });

@@ -1,17 +1,34 @@
-import { Controller, Post, Body, Redirect } from '@nestjs/common';
+import { Controller, Post, Body, Request } from '@nestjs/common';
+import { User } from 'src/users/users.service';
+import {
+  PrivateCoachingApplyDto,
+  PrivateCoachingService,
+} from './private-coaching.service';
 
 @Controller('private-coaching')
 export class PrivateCoachingController {
-  @Post('apply')
-  async apply(@Body() body: any) {
-    console.log(body);
-    return {
-      body,
-      message: 'Private coaching application submitted successfully',
-    };
-  }
+  constructor(
+    private readonly privateCoachingService: PrivateCoachingService,
+  ) {}
 
   @Post('apply')
+  async apply(
+    @Body() body: PrivateCoachingApplyDto,
+    @Request() req: { user: User },
+  ) {
+    console.log(body.trainingType);
+    const result = await this.privateCoachingService.apply(body, req.user);
+
+    if (!result) {
+      return {
+        error: 'submission_failed',
+      };
+    }
+
+    return `<script>window.location.href="/orders/checkout/${result.mainReferenceId}?type=private-coaching-fee"</script>`;
+  }
+
+  /*@Post('apply')
   @Redirect()
   async apply(
     @Request() req: { user: User },
@@ -43,5 +60,5 @@ export class PrivateCoachingController {
         statusCode: 302,
       };
     }
-  }
+  }*/
 }

@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
 import { Inject } from '@nestjs/common';
+import { User } from '../users/users.service';
+import {
+  createPrivateCoachingOrder,
+  CreatePrivateCoachingOrderRow,
+  createDuoPrivateCoachingOrder,
+  CreateDuoPrivateCoachingOrderRow,
+} from '../../db/src/query_sql';
+import { MembersService } from '../members/members.service';
 
 export type CoachType = 'head_coach' | 'coach';
 export type SessionType = 'single' | 'duo';
@@ -38,6 +46,15 @@ export interface CoachingOrder {
 
 export interface CoachingMemberData {
   gender: 'male' | 'female';
+}
+
+export interface PrivateCoachingApplyDto {
+  coachType: CoachType;
+  sessionCount: SessionPackage;
+  trainingType: SessionType;
+  partnerEmail: string;
+  termsAgree: string;
+  riskAgree: string;
 }
 
 @Injectable()
@@ -79,17 +96,83 @@ export class PrivateCoachingService {
     },
   };
 
-  constructor(@Inject('DATABASE_POOL') private pool: Pool) {}
+  constructor(
+    @Inject('DATABASE_POOL') private pool: Pool,
+    private readonly membersService: MembersService,
+  ) {}
 
   calculateTotalPrice(
     coachType: CoachType,
     sessionType: SessionType,
     sessionPackage: SessionPackage,
   ): number {
-    return PrivateCoachingService.priceMap[coachType][sessionType][
-      sessionPackage
-    ];
+    console.log(coachType, sessionType, sessionPackage);
+    return (
+      PrivateCoachingService.priceMap[coachType][sessionType][sessionPackage] /
+      parseInt(process.env.PRICE_DIVISOR ?? '1')
+    );
   }
 
-  // ... rest of the existing methods ...
+  async apply(
+    body: PrivateCoachingApplyDto,
+    user: User,
+  ): Promise<CreatePrivateCoachingOrderRow | null> {
+    const member = await this.membersService.getMemberIdByEmail(user.email);
+    if (!member || member.membershipStatus !== 'active') {
+      throw new Error('Member inactive or not found');
+    }
+
+    let partnerId: number | null = null;
+    if (body.partnerEmail) {
+      const partner = await this.membersService.getMemberIdByEmail(
+        body.partnerEmail,
+      );
+      if (!partner || partner.membershipStatus !== 'active') {
+        throw new Error('Partner inactive or not found');
+      }
+      partnerId = partner.id;
+    }
+
+    console.log(body);
+
+    if (body.trainingType === 'duo') {
+      const result = await createDuoPrivateCoachingOrder(this.pool, {
+        email: user.email,
+        memberId: member.id,
+        coachType: body.coachType,
+        numberOfSessions: parseInt(body.sessionCount),
+        additionalData: body,
+        partnerEmail: body.partnerEmail,
+        partnerMemberId: partnerId || 0,
+        price: this.calculateTotalPrice(
+          body.coachType,
+          body.trainingType,
+          body.sessionCount,
+        ).toString(),
+      });
+      if (result) {
+        return {
+          id: result[0].id,
+          mainReferenceId: result[0].mainReferenceId,
+          partId: result[0].partId,
+          notes: result[0].notes,
+        };
+      } else {
+        throw new Error('Failed to create duo private coaching order');
+      } 
+    } else {
+      return await createPrivateCoachingOrder(this.pool, {
+        email: user.email,
+        memberId: member.id,
+        coachType: body.coachType,
+        numberOfSessions: parseInt(body.sessionCount),
+        additionalData: body,
+        price: this.calculateTotalPrice(
+          body.coachType,
+          body.trainingType,
+          body.sessionCount,
+        ).toString(),
+      });
+    }
+  }
 }

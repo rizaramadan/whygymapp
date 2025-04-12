@@ -6,6 +6,7 @@ import {
   Render,
   Request,
   Body,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { MembersService } from '../members/members.service';
@@ -23,6 +24,7 @@ export class OrdersController {
   async checkout(
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
+    @Query('type') type: string,
   ) {
     const potentialGroupData = await this.membersService.getPotentialGroupData(
       req.user.email,
@@ -39,6 +41,7 @@ export class OrdersController {
       ...checkoutData,
       haveLength,
       potentialGroupData,
+      type,
     };
   }
 
@@ -91,6 +94,24 @@ export class OrdersController {
     return retval;
   }
 
+  @Post('payment-private-coaching-fee/:referenceId')
+  @Render('orders/payment')
+  async paymentPrivateCoaching(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+    @Body('selectedMethod') paymentMethod: string,
+    @Body('paymentGatewayFee') paymentGatewayFee: string,
+  ) {
+    const retval = await this.ordersService.processPaymentPrivateCoachingFee(
+      req.user,
+      referenceId,
+      paymentMethod,
+      parseFloat(paymentGatewayFee),
+    );
+    console.log(retval);
+    return { ...retval, type: 'private-coaching-fee' };
+  }
+
   @Post('payment-group/:referenceId')
   @Render('orders/payment-group')
   async paymentGroup(
@@ -135,6 +156,35 @@ export class OrdersController {
   async fail(@Param('referenceId') referenceId: string) {
     await this.ordersService.insertOrderStatusLog(referenceId, 'fail');
     return await this.ordersService.getOrderAndMemberByReferenceId(referenceId);
+  }
+
+  @Get('payment-private-coaching-fee/:referenceId/success')
+  @Render('orders/success')
+  async successPrivateCoachingFee(@Param('referenceId') referenceId: string) {
+    await this.ordersService.insertOrderStatusLog(referenceId, 'success');
+    const retval =
+      await this.ordersService.getOrderAndPrivateCoachingByReferenceId(
+        referenceId,
+      );
+    return retval;
+  }
+
+  @Get('payment-private-coaching-fee/:referenceId/complete')
+  @Render('orders/complete')
+  async completePrivateCoachingFee(@Param('referenceId') referenceId: string) {
+    //TODO: ini kudu diganti
+    return await this.ordersService.setInvoiceStatusResponseAndActivateMembership(
+      referenceId,
+    );
+  }
+
+  @Get('payment-private-coaching-fee/:referenceId/fail')
+  @Render('orders/fail')
+  async failPrivateCoachingFee(@Param('referenceId') referenceId: string) {
+    await this.ordersService.insertOrderStatusLog(referenceId, 'fail');
+    return await this.ordersService.getOrderAndPrivateCoachingByReferenceId(
+      referenceId,
+    );
   }
 
   //get payment url by reference id and ask client to redirect to payment url
