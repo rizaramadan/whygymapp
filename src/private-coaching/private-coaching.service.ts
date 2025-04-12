@@ -142,8 +142,8 @@ export class PrivateCoachingService {
         coachType: body.coachType,
         numberOfSessions: parseInt(body.sessionCount),
         additionalData: body,
-        partnerEmail: body.partnerEmail,
-        partnerMemberId: partnerId || 0,
+        emailPartner: body.partnerEmail,
+        memberIdPartner: partnerId || 0,
         price: this.calculateTotalPrice(
           body.coachType,
           body.trainingType,

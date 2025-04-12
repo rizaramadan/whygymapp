@@ -159,7 +159,7 @@ export class OrdersController {
   }
 
   @Get('payment-private-coaching-fee/:referenceId/success')
-  @Render('orders/success')
+  @Render('orders/success-private-coaching')
   async successPrivateCoachingFee(@Param('referenceId') referenceId: string) {
     await this.ordersService.insertOrderStatusLog(referenceId, 'success');
     const retval =
@@ -172,8 +172,7 @@ export class OrdersController {
   @Get('payment-private-coaching-fee/:referenceId/complete')
   @Render('orders/complete')
   async completePrivateCoachingFee(@Param('referenceId') referenceId: string) {
-    //TODO: ini kudu diganti
-    return await this.ordersService.setInvoiceStatusResponseAndActivateMembership(
+    return await this.ordersService.setInvoiceStatusResponseAndActivatePrivateCoaching(
       referenceId,
     );
   }

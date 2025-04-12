@@ -31,6 +31,8 @@ import {
   getOrderAndPrivateCoachingByReferenceId,
   getOrderAndPrivateCoachingByReferenceIdRow,
   getOrderAndPrivateCoachingByReferenceIdArgs,
+  setInvoiceStatusResponseAndActivatePrivateCoaching,
+  setInvoiceStatusResponseAndActivatePrivateCoachingArgs,
 } from '../../db/src/query_sql';
 import {
   CheckoutResponse,
@@ -597,7 +599,7 @@ export class OrdersService {
     if (!order) {
       throw new Error('Order not found');
     }
-    // here is tightly coupled part 2 of 2
+
     const createInvoiceResponse: CreateInvoiceResponse =
       await this.getInvoiceStatus(
         (order as OrderWithInvoiceId)?.additionalInfo?.invoice_response?.data
@@ -606,13 +608,13 @@ export class OrdersService {
       );
 
     if (createInvoiceResponse.data.status === 'PAID') {
-      const args: setInvoiceStatusResponseAndActivateMembershipArgs = {
-        mainReferenceId: referenceId,
+      const args: setInvoiceStatusResponseAndActivatePrivateCoachingArgs = {
+        referenceId: referenceId,
         invoiceStatusResponse: createInvoiceResponse,
       };
 
       // here is tightly coupled part 3 of 3. the ultimate tightly coupled part
-      const result = await setInvoiceStatusResponseAndActivateMembership(
+      const result = await setInvoiceStatusResponseAndActivatePrivateCoaching(
         this.pool,
         args,
       );
