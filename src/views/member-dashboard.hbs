@@ -139,14 +139,23 @@
     </div> 
 
     <script>
-    function downloadQRCode() {
-        const qrCodeImage = document.getElementById('qrCodeImage');
-        const link = document.createElement('a');
-        link.href = qrCodeImage.src;
-        link.download = 'whygym-qr-code.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    async function downloadQRCode() {
+        try {
+            const qrCodeImage = document.getElementById('qrCodeImage');
+            const response = await fetch(qrCodeImage.src);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'whygym-qr-code.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading QR code:', error);
+            alert('Failed to download QR code. Please try again.');
+        }
     }
     </script>
 </body>
