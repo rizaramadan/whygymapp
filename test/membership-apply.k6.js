@@ -56,7 +56,7 @@ export default function () {
     rulesAgree: 'on',
     
     // Front Officer
-    frontOfficer: 'Heru'
+    frontOfficer: 'Fuad'
   };
 
   const membershipRes = http.post(
