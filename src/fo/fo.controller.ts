@@ -1,4 +1,4 @@
-import { Controller, Get, Render, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Render, Post, Param, Query, Body } from '@nestjs/common';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { FoService } from './fo.service';
 import Sqids from 'sqids';
@@ -30,6 +30,71 @@ export class FoController {
   @Roles('front-officer')
   @Render('members/visit')
   async memberCheckin(@Query('i') id: string) {
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const memberId = sqids.decode(id);
+    const memberFromDb = await this.membersService.getMemberById(memberId[0]);
+
+    if (!memberFromDb) {
+      return {
+        status: null,
+        message: 'Member not found',
+      };
+    }
+
+    const member = {
+      email: memberFromDb.email || '',
+      picUrl: (memberFromDb.additionalData as AdditionalData).picUrl || '',
+    };
+
+    //call member service to create visit
+    const visit = await this.membersService.createVisit(
+      member.email,
+      member.picUrl,
+    );
+
+    // Mock weekly visits data
+    const weeklyVisits = await this.membersService.getWeeklyVisitsByEmail(
+      member.email,
+    );
+
+    const monthlyVisits = await this.membersService.getMonthlyVisitsByEmail(
+      member.email,
+    );
+
+    if (!visit) {
+      return {
+        status: null,
+        message: 'Failed to create visit',
+      };
+    }
+    return {
+      status: 'success',
+      email: visit.email,
+      picUrl: visit.picUrl,
+      checkInTime: visit.checkInTime,
+      visitCode: visit.visitCode,
+      weeklyVisits: weeklyVisits,
+      monthlyVisits: monthlyVisits,
+    };
+  }
+
+
+  @Get('scanner')
+  @Roles('front-officer')
+  @Render('fo/scanner')
+  async scanner() {
+    return {};
+  }
+
+  @Post('scanner')
+  @Roles('front-officer')
+  @Render('members/visit-content-only')
+  async scannerPost(@Body('barcode') barcode: string) {
+    console.log(barcode);
+    //barcode data will be https://whygym.mvp.my.id/fo?i=abc123, extract the i value if start with https://whygym.mvp.my.id/fo?i=
+    const id = barcode.split('whygym.mvp.my.id/fo?i=')[1];
     const sqids = new Sqids({
       alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
     });
