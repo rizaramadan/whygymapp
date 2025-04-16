@@ -21,6 +21,7 @@ import {
 } from './dto/membership-application.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 import Sqids from 'sqids';
+import { PrivateCoachingService } from 'src/private-coaching/private-coaching.service';
 @Controller('members')
 export class MembersController {
   constructor(private readonly membersService: MembersService) {}
@@ -231,6 +232,7 @@ export class MembersController {
   @Render('members/private-coaching-apply')
   async getPrivateCoachingApply(@Request() req: { user: User }) {
     return {
+      priceMap: JSON.stringify(PrivateCoachingService.priceMap),
       user: req.user,
     };
   }
