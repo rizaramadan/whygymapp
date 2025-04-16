@@ -20,7 +20,7 @@ import {
   MembershipApplicationDto,
 } from './dto/membership-application.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
-
+import Sqids from 'sqids';
 @Controller('members')
 export class MembersController {
   constructor(private readonly membersService: MembersService) {}
@@ -49,7 +49,18 @@ export class MembersController {
         message: 'Failed to create visit',
       };
     }
+
+    const memberId = await this.membersService.getMemberIdByEmail(
+      req.user.email,
+    );
+
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const id = sqids.encode([memberId?.id || 0, 9, 9]);
+
     return {
+      id,
       status: 'success',
       email: visit.email,
       picUrl: visit.picUrl,

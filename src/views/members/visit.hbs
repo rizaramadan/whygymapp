@@ -54,8 +54,11 @@
 
                         <div class="p-4">
                             <div class="flex flex-col items-center justify-center">
-                                <img src="https://quickchart.io/qr?text=whygym.mvp.my.id%2Ffo%3Fi%3D{{id}}&size=200" alt="QR Code" class="w-80 h-80">
+                                <img id="qrCodeImage"  src="https://quickchart.io/qr?text=whygym.mvp.my.id%2Ffo%3Fi%3D{{id}}&size=200" alt="QR Code" class="w-80 h-80">
                                 <p class="text-sm text-gray-500">You can save this QR Code for your next visit</p>
+                                <button onclick="downloadQRCode()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    Download QR Code
+                                </button>
                             </div>
                         </div>
 
@@ -198,6 +201,26 @@
         // Initialize chart when page loads
         if (document.getElementById('visitChart')) {
             initChart();
+        }
+
+
+        async function downloadQRCode() {
+            try {
+                const qrCodeImage = document.getElementById('qrCodeImage');
+                const response = await fetch(qrCodeImage.src);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'whygym-qr-code.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error downloading QR code:', error);
+                alert('Failed to download QR code. Please try again.');
+            }
         }
     </script>
 </body>
