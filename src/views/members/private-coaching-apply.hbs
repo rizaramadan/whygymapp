@@ -103,24 +103,11 @@
                                 Coach Type
                                 <span class="text-red-500">*</span>
                             </label>
-                            <select name="coachType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                            <select name="coachType" id="coachType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required onchange="handleCoachTypeChange(this)">
                                 <option value="">Select coach type</option>
-                                <option value="head_coach">Head Coach</option>
+                                <option value="sherly">Sherly</option>
+                                <option value="nina">Nina</option>
                                 <option value="coach">Coach</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">
-                                Number of Sessions
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <select name="sessionCount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                                <option value="">Select number of sessions</option>
-                                <option value="1">1 Session</option>
-                                <option value="4">4 Sessions</option>
-                                <option value="8">8 Sessions</option>
-                                <option value="12">12 Sessions</option>
                             </select>
                         </div>
 
@@ -131,8 +118,16 @@
                             </label>
                             <select name="trainingType" id="trainingType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required onchange="handleTrainingTypeChange(this)">
                                 <option value="">Select training type</option>
-                                <option value="single">Single</option>
-                                <option value="duo">Duo</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Number of Sessions
+                                <span class="text-red-500">*</span>
+                            </label>
+                            <select name="sessionCount" id="sessionCount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                                <option value="">Select number of sessions</option>
                             </select>
                         </div>
 
@@ -299,10 +294,86 @@
             });
         });
 
-        // Handle training type change
+        const priceMap = {
+            sherly:{
+                single: {
+                    '1': 798000,
+                    '1 online' : 598000,
+                },
+            },
+            nina: {
+                single: {
+                    '1': 598000,
+                    '4': 2300000,
+                    '8': 4400000,
+                    '12': 6300000,
+                },
+                duo: {
+                    '1': 1050000,
+                    '4': 4000000,
+                    '8': 7600000,
+                    '12': 10800000,
+                },
+            },
+            coach: {
+                single: {
+                    '1': 398000,
+                    '4': 1500000,
+                    '8': 2800000,
+                    '12': 3900000,
+                },
+                duo: {
+                    '1': 650000,
+                    '4': 2400000,
+                    '8': 4400000,
+                    '12': 6000000,
+                },
+            },
+        }
+        
+        // Handle coach type change
+        function handleCoachTypeChange(select) {
+            const sessionCountSelect = document.getElementById('sessionCount');
+            const trainingTypeSelect = document.getElementById('trainingType');
+            const selectedCoach = select.value;
+            
+            // Clear existing options
+            sessionCountSelect.innerHTML = '<option value="">Select number of sessions</option>';
+            trainingTypeSelect.innerHTML = '<option value="">Select training type</option>';
+            
+            if (selectedCoach && priceMap[selectedCoach]) {
+                // Update training type options
+                const trainingTypes = Object.keys(priceMap[selectedCoach]);
+                trainingTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type === 'single' ? 'Single' : 'Duo';
+                    trainingTypeSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update session options based on coach and training type
+        function updateSessionOptions(coach, trainingType) {
+            const sessionCountSelect = document.getElementById('sessionCount');
+            sessionCountSelect.innerHTML = '<option value="">Select number of sessions</option>';
+            
+            if (coach && trainingType && priceMap[coach] && priceMap[coach][trainingType]) {
+                const sessions = priceMap[coach][trainingType];
+                Object.keys(sessions).forEach(session => {
+                    const option = document.createElement('option');
+                    option.value = session;
+                    option.textContent = session === '1 online' ? '1 Session (Online)' : `${session} Sessions`;
+                    sessionCountSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update session options when training type changes
         function handleTrainingTypeChange(select) {
             const partnerEmailContainer = document.getElementById('partnerEmailContainer');
             const partnerEmailInput = document.querySelector('input[name="partnerEmail"]');
+            const coachTypeSelect = document.getElementById('coachType');
             
             if (select.value === 'duo') {
                 partnerEmailContainer.style.display = 'block';
@@ -312,23 +383,12 @@
                 partnerEmailInput.required = false;
                 partnerEmailInput.value = '';
             }
-        }
 
-        const priceMap = {
-            sherly: {
-                single: ['1', '1 online'],
-                
-            },
-            nina: {
-                single: ['1', '4', '8', '12'],
-                duo: ['1', '4', '8', '12'],
-            },  
-            coach: {
-                single: ['1', '4', '8', '12'],
-                duo: ['1', '4', '8', '12'],
-            },
+            // Update session options based on new training type
+            if (coachTypeSelect.value) {
+                updateSessionOptions(coachTypeSelect.value, select.value);
+            }
         }
-        
     </script>
 </body>
 </html> 
