@@ -25,17 +25,19 @@ import {
   getPotentialGroupDataRow,
   getPotentialGroupDataArgs,
   getPotentialGroupData,
-  updateMemberAdditionalData,
   getActiveMemberBreakdown,
   getActiveMemberBreakdownRow,
   linkGroupOrder,
   getMemberActiveDate,
   getMemberActiveDateRow,
-  addOrUpdateMemberPicUrl,
-  addOrUpdateMemberPicUrlRow,
   getMemberById,
   GetMemberByIdRow,
 } from 'db/src/query_sql';
+import {
+  updateMemberAdditionalData,
+  addOrUpdateMemberPicUrl,
+  addOrUpdateMemberPicUrlRow,
+} from 'db/volatile/volatile_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';

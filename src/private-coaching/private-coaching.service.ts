@@ -5,9 +5,11 @@ import { User } from '../users/users.service';
 import {
   createPrivateCoachingOrder,
   CreatePrivateCoachingOrderRow,
+} from '../../db/src/query_sql';
+import {
   createDuoPrivateCoachingOrder,
   CreateDuoPrivateCoachingOrderRow,
-} from '../../db/src/query_sql';
+} from '../../db/volatile/volatile_sql';
 import { MembersService } from '../members/members.service';
 
 
