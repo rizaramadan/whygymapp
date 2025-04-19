@@ -237,6 +237,46 @@ export async function getMemberById(client: Client, args: GetMemberByIdArgs): Pr
     };
 }
 
+export const updateMemberAdditionalDataQuery = `-- name: UpdateMemberAdditionalData :one
+UPDATE whygym.members SET updated_at = current_timestamp, additional_data = jsonb_set(
+     jsonb_set(
+             jsonb_set(
+                     additional_data::jsonb,
+                     '{duration}'::text[], $4::jsonb)
+         , '{gender}'::text[], $5::jsonb
+     ),
+     '{emailPic}'::text[], $3::jsonb)
+WHERE id = $1 AND membership_status = 'pending' AND email = $2 returning id, email`;
+
+export interface UpdateMemberAdditionalDataArgs {
+    id: number;
+    email: string | null;
+    : any;
+    : any;
+    : any;
+}
+
+export interface UpdateMemberAdditionalDataRow {
+    id: number;
+    email: string | null;
+}
+
+export async function updateMemberAdditionalData(client: Client, args: UpdateMemberAdditionalDataArgs): Promise<UpdateMemberAdditionalDataRow | null> {
+    const result = await client.query({
+        text: updateMemberAdditionalDataQuery,
+        values: [args.id, args.email, args., args., args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1]
+    };
+}
+
 export const getVisitsAfterIdQuery = `-- name: GetVisitsAfterId :many
 SELECT id, member_id, email, pic_url, check_in_time, visit_code
 FROM whygym.visits 
@@ -1120,6 +1160,60 @@ export async function createPrivateCoachingOrder(client: Client, args: CreatePri
     };
 }
 
+export const createDuoPrivateCoachingOrderQuery = `-- name: CreateDuoPrivateCoachingOrder :many
+WITH im AS (
+    INSERT INTO whygym.private_coaching (email, member_id, coach_type, number_of_sessions, status, additional_data)
+    VALUES ($1, $2, $3,  $4,'pending', $5),
+           ($6, $7, $3,  $4,'pending', $5)
+    RETURNING id, email, member_id, status, notes, additional_data, created_at, updated_at
+),
+inserted_orders AS (
+    INSERT INTO whygym.orders (member_id, price, order_status, private_coaching_id)
+    SELECT im.member_id, $8, 'waiting payment method', im.id FROM im LIMIT 2
+    RETURNING id, reference_id, member_id, price
+),
+pic_data AS (
+    SELECT id, reference_id, member_id, price from inserted_orders where member_id = $2 limit 1
+)
+INSERT INTO whygym.order_groups (main_reference_id, part_id, part_reference_id, notes)
+SELECT (select reference_id from pic_data), member_id, reference_id, cast(price as varchar)
+FROM inserted_orders
+returning id, main_reference_id, part_id, notes::numeric`;
+
+export interface CreateDuoPrivateCoachingOrderArgs {
+    email: string;
+    memberId: number;
+    coachType: string;
+    numberOfSessions: number;
+    additionalData: any | null;
+    email: string;
+    memberId: number;
+    price: string;
+}
+
+export interface CreateDuoPrivateCoachingOrderRow {
+    id: number;
+    mainReferenceId: string;
+    partId: number;
+    notes: string;
+}
+
+export async function createDuoPrivateCoachingOrder(client: Client, args: CreateDuoPrivateCoachingOrderArgs): Promise<CreateDuoPrivateCoachingOrderRow[]> {
+    const result = await client.query({
+        text: createDuoPrivateCoachingOrderQuery,
+        values: [args.email, args.memberId, args.coachType, args.numberOfSessions, args.additionalData, args.email, args.memberId, args.price],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            mainReferenceId: row[1],
+            partId: row[2],
+            notes: row[3]
+        };
+    });
+}
+
 export const linkGroupOrderQuery = `-- name: linkGroupOrder :one
 with email_pic AS (
 select m.additional_data ->> 'emailPic' as email_pic, m.email, m.id as ori_id
@@ -1895,6 +1989,101 @@ export async function getOrderAndPrivateCoachingByReferenceId(client: Client, ar
     };
 }
 
+export const setOrderInvoiceResponseQuery = `-- name: setOrderInvoiceResponse :one
+WITH data AS (
+    SELECT $1::text AS content, $2::text as ref_id
+)
+UPDATE whygym.orders
+SET updated_at = current_timestamp,
+    additional_info = 
+        jsonb_set(
+            coalesce(additional_info, '{}'),
+            '{invoice_response}', 
+            data.content::jsonb
+        ), 
+    order_status = 'waiting invoice status' 
+FROM data
+WHERE reference_id = data.ref_id
+RETURNING id, additional_info, reference_id`;
+
+export interface setOrderInvoiceResponseArgs {
+    : string;
+    : string;
+}
+
+export interface setOrderInvoiceResponseRow {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function setOrderInvoiceResponse(client: Client, args: setOrderInvoiceResponseArgs): Promise<setOrderInvoiceResponseRow | null> {
+    const result = await client.query({
+        text: setOrderInvoiceResponseQuery,
+        values: [args., args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
+export const setOrderInvoiceRequestResponseQuery = `-- name: setOrderInvoiceRequestResponse :one
+WITH data AS (
+    SELECT $1::text AS content, $2::text as ref_id, $3::text AS request
+)
+UPDATE whygym.orders
+SET updated_at = current_timestamp,
+    additional_info = 
+        jsonb_set(
+            jsonb_set(
+                coalesce(additional_info, '{}'), 
+                '{invoice_request}', 
+                data.request::jsonb
+            ), 
+            '{invoice_response}', 
+            data.content::jsonb
+        ), 
+    order_status = 'waiting invoice status' 
+FROM data
+WHERE reference_id = data.ref_id
+RETURNING id, additional_info, reference_id`;
+
+export interface setOrderInvoiceRequestResponseArgs {
+    : string;
+    : string;
+    : string;
+}
+
+export interface setOrderInvoiceRequestResponseRow {
+    id: number;
+    additionalInfo: any | null;
+    referenceId: string;
+}
+
+export async function setOrderInvoiceRequestResponse(client: Client, args: setOrderInvoiceRequestResponseArgs): Promise<setOrderInvoiceRequestResponseRow | null> {
+    const result = await client.query({
+        text: setOrderInvoiceRequestResponseQuery,
+        values: [args., args., args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        additionalInfo: row[1],
+        referenceId: row[2]
+    };
+}
+
 export const getUserRolesQuery = `-- name: getUserRoles :many
 SELECT name as roles FROM whygym.user_roles ur
     INNER JOIN whygym.roles r ON r.id =  ur.role_id
@@ -1919,6 +2108,109 @@ export async function getUserRoles(client: Client, args: getUserRolesArgs): Prom
             roles: row[0]
         };
     });
+}
+
+export const setInvoiceStatusResponseAndActivateMembershipQuery = `-- name: setInvoiceStatusResponseAndActivateMembership :one
+WITH the_row AS (
+    SELECT id FROM whygym.orders_status_log osl WHERE osl.reference_id = $1
+    ORDER BY created_at DESC LIMIT 1),
+save_invoice_status AS (UPDATE whygym.orders_status_log l SET additional_info = jsonb_set(coalesce(additional_info, '{}'),'{invoiceStatusResponse}', $2::jsonb)
+                                FROM the_row t
+                                WHERE l.id = t.id
+RETURNING l.reference_id, l.id, additional_info),
+the_payer_id AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'complete'
+    FROM save_invoice_status sis WHERE o.reference_id = sis.reference_id
+    RETURNING o.id, o.member_id
+),
+the_follower AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'completed by ' || the_payer_id.id
+    FROM the_payer_id
+    WHERE o.member_id != the_payer_id.member_id
+              AND o.member_id IN
+                  (SELECT part_id FROM whygym.order_groups og WHERE og.main_reference_id = $1)
+    RETURNING o.member_id
+)
+UPDATE whygym.members m SET updated_at = current_timestamp, membership_status = 'active'
+    WHERE m.id IN (SELECT part_id FROM whygym.order_groups og WHERE og.main_reference_id = $1)
+    RETURNING m.id`;
+
+export interface setInvoiceStatusResponseAndActivateMembershipArgs {
+    mainReferenceId: string;
+    : any;
+}
+
+export interface setInvoiceStatusResponseAndActivateMembershipRow {
+    id: number;
+}
+
+export async function setInvoiceStatusResponseAndActivateMembership(client: Client, args: setInvoiceStatusResponseAndActivateMembershipArgs): Promise<setInvoiceStatusResponseAndActivateMembershipRow | null> {
+    const result = await client.query({
+        text: setInvoiceStatusResponseAndActivateMembershipQuery,
+        values: [args.mainReferenceId, args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+
+export const setInvoiceStatusResponseAndActivatePrivateCoachingQuery = `-- name: setInvoiceStatusResponseAndActivatePrivateCoaching :one
+WITH the_row AS (
+    SELECT id FROM whygym.orders_status_log osl WHERE osl.reference_id = $1
+    ORDER BY created_at DESC LIMIT 1),
+save_invoice_status AS (UPDATE whygym.orders_status_log l SET additional_info = jsonb_set(coalesce(additional_info, '{}'),'{invoiceStatusResponse}', $2::jsonb)
+                                FROM the_row t
+                                WHERE l.id = t.id
+RETURNING l.reference_id, l.id, additional_info),
+the_payer_id AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'complete'
+    FROM save_invoice_status sis WHERE o.reference_id = sis.reference_id
+    RETURNING o.id, o.member_id, o.private_coaching_id
+),
+the_follower AS (
+    UPDATE whygym.orders o SET updated_at = current_timestamp, order_status = 'completed by ' || the_payer_id.id
+    FROM the_payer_id
+    WHERE o.member_id != the_payer_id.member_id
+              AND o.member_id IN
+                  (SELECT part_id FROM whygym.order_groups og WHERE og.main_reference_id = $1)
+              AND o.reference_id IN
+                  (SELECT part_reference_id from whygym.order_groups og WHERE og.main_reference_id = $1)
+    RETURNING o.id, o.member_id, o.private_coaching_id
+),
+both_id AS (
+    select p.private_coaching_id from the_payer_id p union select f.private_coaching_id from the_follower f
+)
+UPDATE whygym.private_coaching m SET updated_at = current_timestamp, status = 'active'
+    WHERE m.id IN (SELECT private_coaching_id FROM both_id)
+    RETURNING m.id`;
+
+export interface setInvoiceStatusResponseAndActivatePrivateCoachingArgs {
+    referenceId: string;
+    : any;
+}
+
+export interface setInvoiceStatusResponseAndActivatePrivateCoachingRow {
+    id: number;
+}
+
+export async function setInvoiceStatusResponseAndActivatePrivateCoaching(client: Client, args: setInvoiceStatusResponseAndActivatePrivateCoachingArgs): Promise<setInvoiceStatusResponseAndActivatePrivateCoachingRow | null> {
+    const result = await client.query({
+        text: setInvoiceStatusResponseAndActivatePrivateCoachingQuery,
+        values: [args.referenceId, args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
 }
 
 export const getPaymentUrlByReferenceIdQuery = `-- name: getPaymentUrlByReferenceId :one
@@ -2205,6 +2497,39 @@ export async function getMemberActiveDate(client: Client, args: getMemberActiveD
         startDate: row[0],
         duration: row[1],
         endDate: row[2]
+    };
+}
+
+export const addOrUpdateMemberPicUrlQuery = `-- name: addOrUpdateMemberPicUrl :one
+update whygym.members 
+set updated_at = now(),
+    additional_data = jsonb_set(additional_data::jsonb, '{picUrl}'::text[], $2::jsonb)
+where email = $1
+returning id, email`;
+
+export interface addOrUpdateMemberPicUrlArgs {
+    email: string | null;
+    : any;
+}
+
+export interface addOrUpdateMemberPicUrlRow {
+    id: number;
+    email: string | null;
+}
+
+export async function addOrUpdateMemberPicUrl(client: Client, args: addOrUpdateMemberPicUrlArgs): Promise<addOrUpdateMemberPicUrlRow | null> {
+    const result = await client.query({
+        text: addOrUpdateMemberPicUrlQuery,
+        values: [args.email, args.],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        email: row[1]
     };
 }
 
