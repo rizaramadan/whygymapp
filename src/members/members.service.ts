@@ -104,6 +104,7 @@ export class MembersService {
         rules: applicationData.rulesAgree,
       },
       frontOfficer: applicationData.frontOfficer,
+      weekendOnly: applicationData.weekendOnly || false,
     };
   }
 
@@ -117,8 +118,9 @@ export class MembersService {
       const duration = applicationData.duration as '90' | '180' | '360';
       const gender = additionalData.gender.toLowerCase() as 'male' | 'female';
 
+      console.log(additionalData);
       const price = String(
-        this.memberPricingService.getSinglePrice(priceType, gender, duration),
+        this.memberPricingService.getSinglePrice(priceType, gender, duration, additionalData.weekendOnly),
       );
 
       const memberParams = {

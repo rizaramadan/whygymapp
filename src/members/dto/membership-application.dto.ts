@@ -84,6 +84,13 @@ export class MembershipApplicationDto {
   )
   rulesAgree: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  @Transform(
+    ({ value }) => value === 'true' || value === true || value === 'on',
+  )
+  weekendOnly?: boolean;
+
   @IsString()
   frontOfficer: string;
 }
@@ -96,4 +103,6 @@ export class EditMembershipApplicationDto {
 
   @IsString()
   gender: string;
+
+
 }

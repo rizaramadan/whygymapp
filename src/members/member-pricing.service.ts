@@ -98,7 +98,17 @@ export class MemberPricingService {
     priceType: 'normal' | 'promo',
     gender: 'male' | 'female',
     duration: '90' | '180' | '360',
+    weekendOnly: boolean,
   ): number {
+
+    //only female can have weekendOnly, and only single can have weekendOnly
+    if (gender === 'female' && weekendOnly) {
+      return (
+        MemberPricingService.priceMap[priceType]['single'][gender][duration] * 0.6 /
+        parseInt(process.env.PRICE_DIVISOR ?? '1')
+      );
+    }
+
     return (
       MemberPricingService.priceMap[priceType]['single'][gender][duration] /
       parseInt(process.env.PRICE_DIVISOR ?? '1')

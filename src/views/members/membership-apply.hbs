@@ -164,11 +164,20 @@
                                 Jenis Kelamin
                                 <span class="text-red-500">*</span>
                             </label>
-                            <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                            <select name="gender" id="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required onchange="handleGenderChange(this)">
                                 <option value="">Pilih jenis kelamin</option>
                                 <option value="male">Pria</option>
                                 <option value="female">Wanita</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="weekendOnly" id="weekendOnly" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" disabled>
+                                <span class="ml-2 text-sm text-gray-700">
+                                    Paket Khusus Weekend
+                                </span>
+                            </label>
                         </div>
 
                         <div>
@@ -840,8 +849,24 @@
                 saveFormData();
             }
 
+            // Handle gender change
+            function handleGenderChange(select) {
+                const weekendOnlyCheckbox = document.getElementById('weekendOnly');
+                if (select.value === 'female') {
+                    weekendOnlyCheckbox.disabled = false;
+                } else {
+                    weekendOnlyCheckbox.disabled = true;
+                    weekendOnlyCheckbox.checked = false;
+                }
+                saveFormData();
+            }
+
+            elGender = document.getElementById('gender');
+            handleGenderChange(elGender);
+
             // Add the function to the window object to make it accessible from HTML
             window.handleHealthConditionChange = handleHealthConditionChange;
+            window.handleGenderChange = handleGenderChange;
 
             // Initial trigger of health condition handling on page load
             const healthSelect = form.elements['healthConditionPreset'];
