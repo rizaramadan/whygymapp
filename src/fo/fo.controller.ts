@@ -6,6 +6,7 @@ import { MembersService } from 'src/members/members.service';
 
 interface AdditionalData {
   picUrl: string | undefined;
+  weekendOnly: boolean;
 }
 
 @Controller('fo')
@@ -40,6 +41,16 @@ export class FoController {
       return {
         status: null,
         message: 'Member not found',
+      };
+    }
+
+    //check if member additionalData weekendOnly is true
+    const weekendOnly = (memberFromDb.additionalData as AdditionalData).weekendOnly;
+    //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
+    if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
+      return {
+        status: null,
+        message: 'Member is only allowed to check in on weekend',
       };
     }
 
@@ -105,6 +116,16 @@ export class FoController {
       return {
         status: null,
         message: 'Member not found',
+      };
+    }
+
+    //check if member additionalData weekendOnly is true
+    const weekendOnly = (memberFromDb.additionalData as AdditionalData).weekendOnly;
+    //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
+    if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
+      return {
+        status: null,
+        message: 'Member is only allowed to check in on weekend',
       };
     }
 
