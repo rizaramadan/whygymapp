@@ -139,10 +139,6 @@ export class MemberPricingService {
     weekendOnly: boolean,
   ): number {
 
-    console.log(priceType);
-    console.log(gender);
-    console.log(duration);
-    console.log(weekendOnly);
 
     //only female can have weekendOnly, and only single can have weekendOnly
     if (gender === 'female' && weekendOnly) {
