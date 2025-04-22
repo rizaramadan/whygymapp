@@ -934,6 +934,36 @@ export async function deletePendingMembership(client: Client, args: DeletePendin
     };
 }
 
+export const updateMemberPriceQuery = `-- name: UpdateMemberPrice :one
+UPDATE whygym.orders SET updated_at = current_timestamp,
+                         price = $1
+WHERE id = $2 AND order_status = 'waiting payment method'
+RETURNING id`;
+
+export interface UpdateMemberPriceArgs {
+    price: string;
+    id: number;
+}
+
+export interface UpdateMemberPriceRow {
+    id: number;
+}
+
+export async function updateMemberPrice(client: Client, args: UpdateMemberPriceArgs): Promise<UpdateMemberPriceRow | null> {
+    const result = await client.query({
+        text: updateMemberPriceQuery,
+        values: [args.price, args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+
 export const getWeeklyVisitsByEmailQuery = `-- name: GetWeeklyVisitsByEmail :many
 WITH data AS (SELECT
     EXTRACT(WEEK FROM check_in_date) AS week_of_year, count(*) AS count

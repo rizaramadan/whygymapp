@@ -170,6 +170,12 @@ DELETE FROM whygym.members
 WHERE id = $1 AND membership_status = 'pending' AND (email = $2 OR additional_data->>'emailPic' = $2) RETURNING id;
 
 
+-- name: UpdateMemberPrice :one
+UPDATE whygym.orders SET updated_at = current_timestamp,
+                         price = $1
+WHERE id = $2 AND order_status = 'waiting payment method'
+RETURNING id;
+
 -- name: GetWeeklyVisitsByEmail :many
 WITH data AS (SELECT
     EXTRACT(WEEK FROM check_in_date) AS week_of_year, count(*) AS count

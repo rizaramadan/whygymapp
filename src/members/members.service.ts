@@ -32,6 +32,7 @@ import {
   getMemberActiveDateRow,
   getMemberById,
   GetMemberByIdRow,
+  updateMemberPrice,
 } from 'db/src/query_sql';
 import {
   updateMemberAdditionalData,
@@ -118,7 +119,6 @@ export class MembersService {
       const duration = applicationData.duration as '90' | '180' | '360';
       const gender = additionalData.gender.toLowerCase() as 'male' | 'female';
 
-      console.log(additionalData);
       const price = String(
         this.memberPricingService.getSinglePrice(priceType, gender, duration, additionalData.weekendOnly),
       );
@@ -199,13 +199,41 @@ export class MembersService {
     duration: string,
     gender: string,
   ) {
-    return await updateMemberAdditionalData(this.pool, {
+
+    const member = await getMemberIdByEmail(this.pool, { email });
+    if (!member) {
+      return null;
+    }
+
+    const result = await updateMemberAdditionalData(this.pool, {
       id,
       email,
       emailPic,
       duration,
       gender,
     });
+
+    const priceType = 'normal';
+    const theDuration = duration as '90' | '180' | '360';
+    const theGender = gender.toLowerCase() as 'male' | 'female';
+
+    const price = String(
+      this.memberPricingService.getSinglePrice(
+        priceType, 
+        theGender, 
+        theDuration, 
+        member.additionalData?.weekendOnly ?? false
+      ),
+    );
+
+    console.log(price);
+
+    await updateMemberPrice(this.pool, {
+      id: member.id,
+      price,
+    });
+
+    return result;
   }
 
   async getActiveMemberBreakdown(): Promise<getActiveMemberBreakdownRow[]> {

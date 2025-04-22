@@ -8,7 +8,7 @@ export interface MemberData {
 @Injectable()
 export class MemberPricingService {
   private static readonly priceMap: {
-    [key in 'normal' | 'promo']: {
+    [key in 'normal' | 'promo' | 'weekendOnly']: {
       [key in 'single' | 'duo' | 'group']: {
         [key in 'male' | 'female']: {
           [key in '90' | '180' | '360']: number;
@@ -92,19 +92,62 @@ export class MemberPricingService {
         },
       },
     },
+    weekendOnly: {
+      single: {
+        male: {
+          '90': 590000,
+          '180': 1200000,
+          '360': 1950000,
+        },
+        female: {
+          '90': 750000,
+          '180': 1440000,
+          '360': 2640000,
+        },
+      },
+      duo: {
+        male: {
+          '90': 540000,
+          '180': 1050000,
+          '360': 1750000,
+        },
+        female: {
+          '90': 1000000,
+          '180': 2000000,
+          '360': 3800000,
+        },
+      },
+      group: {
+        male: {
+          '90': 540000,
+          '180': 1050000,
+          '360': 1750000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1700000,
+          '360': 3000000,
+        },
+      },
+    }
   };
 
   getSinglePrice(
-    priceType: 'normal' | 'promo',
+    priceType: 'normal' | 'promo' | 'weekendOnly',
     gender: 'male' | 'female',
     duration: '90' | '180' | '360',
     weekendOnly: boolean,
   ): number {
 
+    console.log(priceType);
+    console.log(gender);
+    console.log(duration);
+    console.log(weekendOnly);
+
     //only female can have weekendOnly, and only single can have weekendOnly
     if (gender === 'female' && weekendOnly) {
       return (
-        MemberPricingService.priceMap[priceType]['single'][gender][duration] * 0.6 /
+        MemberPricingService.priceMap['weekendOnly']['single']['female'][duration] /
         parseInt(process.env.PRICE_DIVISOR ?? '1')
       );
     }

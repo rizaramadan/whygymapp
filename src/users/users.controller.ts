@@ -96,11 +96,6 @@ export class UsersController {
   @Get('upload-picture')
   @Render('users/upload-picture')
   getUploadPicturePage(@Request() req: { user: User }) {
-    // If user already has a picture URL, redirect to dashboard
-    if (req.user.picUrl) {
-      return '<script>window.location.href="/user-dashboard"</script>';
-    }
-
     return {};
   }
 
