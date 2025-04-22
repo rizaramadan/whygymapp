@@ -85,13 +85,24 @@ export class OrdersController {
     @Body('selectedMethod') paymentMethod: string,
     @Body('paymentGatewayFee') paymentGatewayFee: string,
   ) {
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      req.user.email,
+    );
+    //check if potentialGroupData have more than 1 member
+    let haveLength = false;
+    if (potentialGroupData.length > 1) {
+      haveLength = true;
+    }
+
+    console.log(haveLength);
+
     const retval = await this.ordersService.processPayment(
       req.user,
       referenceId,
       paymentMethod,
       parseFloat(paymentGatewayFee),
     );
-    return retval;
+    return { ...retval, haveLength };
   }
 
   @Post('payment-private-coaching-fee/:referenceId')
