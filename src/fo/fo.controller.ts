@@ -6,7 +6,6 @@ import { MembersService } from 'src/members/members.service';
 
 interface AdditionalData {
   picUrl: string | undefined;
-  weekendOnly: boolean | undefined;
 }
 
 @Controller('fo')
@@ -45,7 +44,7 @@ export class FoController {
     }
 
     //check if member additionalData weekendOnly is true
-    const weekendOnly = (memberFromDb.additionalData as AdditionalData)?.weekendOnly;
+    const weekendOnly = memberFromDb.additionalData?.weekendOnly;
     //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
     if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
       return {
@@ -120,7 +119,7 @@ export class FoController {
     }
 
     //check if member additionalData weekendOnly is true
-    const weekendOnly = (memberFromDb.additionalData as AdditionalData)?.weekendOnly;
+    const weekendOnly = memberFromDb.additionalData?.weekendOnly;
     //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
     if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
       return {
