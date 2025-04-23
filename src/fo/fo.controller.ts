@@ -6,7 +6,7 @@ import { MembersService } from 'src/members/members.service';
 
 interface AdditionalData {
   picUrl: string | undefined;
-  weekendOnly: boolean;
+  weekendOnly: boolean | undefined;
 }
 
 @Controller('fo')
