@@ -45,12 +45,12 @@ export class FoController {
     }
 
     //check if member additionalData weekendOnly is true
-    const weekendOnly = (memberFromDb.additionalData as AdditionalData).weekendOnly;
+    const weekendOnly = (memberFromDb.additionalData as AdditionalData)?.weekendOnly;
     //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
     if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
       return {
         status: null,
-        message: 'Member is only allowed to check in on weekend',
+        message: 'Member is not allowed to check in on this day',
       };
     }
 
@@ -120,7 +120,7 @@ export class FoController {
     }
 
     //check if member additionalData weekendOnly is true
-    const weekendOnly = (memberFromDb.additionalData as AdditionalData).weekendOnly;
+    const weekendOnly = (memberFromDb.additionalData as AdditionalData)?.weekendOnly;
     //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
     if (weekendOnly && ![0, 6].includes(new Date().getDay())) {
       return {
