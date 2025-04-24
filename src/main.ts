@@ -21,9 +21,9 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(
+    new HttpExceptionFilter(),
     new UnauthorizedExceptionFilter(),
     new NeedSignUpExceptionFilter(),
-    new HttpExceptionFilter(),
   );
 
   // Serve static files from the public directory
