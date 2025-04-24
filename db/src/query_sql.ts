@@ -2238,3 +2238,48 @@ export async function getMemberActiveDate(client: Client, args: getMemberActiveD
     };
 }
 
+export const getAccountingDataQuery = `-- name: getAccountingData :many
+select m.email,
+       m.additional_data->>'fullName' as name,
+       m.additional_data->>'emailPic' as buyer,
+       m.additional_data->>'gender' as gender,
+       m.additional_data->>'duration' as duration,
+       ((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'amount' as amount,
+       (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
+       count(m.email) over (partition by m.additional_data->>'emailPic')
+from whygym.members m
+ inner join whygym.orders o on m.id = o.member_id
+where m.start_date > '2025-04-03' and m.membership_status = 'active'
+order by m.created_at desc, amount desc, m.additional_data->>'emailPic'`;
+
+export interface getAccountingDataRow {
+    email: string | null;
+    name: string | null;
+    buyer: string | null;
+    gender: string | null;
+    duration: string | null;
+    amount: string | null;
+    paid: Date;
+    count: string;
+}
+
+export async function getAccountingData(client: Client): Promise<getAccountingDataRow[]> {
+    const result = await client.query({
+        text: getAccountingDataQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            email: row[0],
+            name: row[1],
+            buyer: row[2],
+            gender: row[3],
+            duration: row[4],
+            amount: row[5],
+            paid: row[6],
+            count: row[7]
+        };
+    });
+}
+

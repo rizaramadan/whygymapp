@@ -33,6 +33,8 @@ import {
   getMemberById,
   GetMemberByIdRow,
   updateMemberPrice,
+  getAccountingDataRow,
+  getAccountingData,
 } from 'db/src/query_sql';
 import {
   updateMemberAdditionalData,
@@ -256,5 +258,9 @@ export class MembersService {
 
   async getMemberById(id: number): Promise<GetMemberByIdRow | null> {
     return await getMemberById(this.pool, { id });
+  }
+
+  async getAccountingData(): Promise<getAccountingDataRow[]> {
+    return await getAccountingData(this.pool);
   }
 }

@@ -1,0 +1,26 @@
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Buyer</th>
+      <th>Gender</th>
+      <th>Duration</th>
+      <th>Amount</th>
+      <th>Paid At</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each data}}
+      <tr>
+        <td>{{email}}</td>
+        <td>{{name}}</td>
+        <td>{{buyer}}</td>
+        <td>{{gender}}</td>
+        <td>{{duration}}</td>
+        <td>{{amount}}</td>
+        <td>{{extractDate paid}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

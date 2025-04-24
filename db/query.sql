@@ -513,3 +513,16 @@ from whygym.members where email = $1 and membership_status = 'active' limit 1)
 select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date
 from data limit 1;
 
+-- name: getAccountingData :many
+select m.email,
+       m.additional_data->>'fullName' as name,
+       m.additional_data->>'emailPic' as buyer,
+       m.additional_data->>'gender' as gender,
+       m.additional_data->>'duration' as duration,
+       ((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'amount' as amount,
+       (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
+       count(m.email) over (partition by m.additional_data->>'emailPic')
+from whygym.members m
+ inner join whygym.orders o on m.id = o.member_id
+where m.start_date > '2025-04-03' and m.membership_status = 'active'
+order by m.created_at desc, amount desc, m.additional_data->>'emailPic';
