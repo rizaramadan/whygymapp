@@ -51,9 +51,50 @@ export class OrdersController {
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
   ) {
+    console.log(req.user);
+
     const potentialGroupData = await this.membersService.getPotentialGroupData(
       req.user.email,
     );
+
+    console.log(potentialGroupData);
+
+    //check if potentialGroupData have more than 1 member
+    let haveLength = false;
+    if (potentialGroupData.length > 1) {
+      haveLength = true;
+    }
+
+    console.log(potentialGroupData);
+
+    const checkoutData = await this.ordersService.getCheckoutGroupData(
+      referenceId,
+      req.user,
+      potentialGroupData,
+    );
+
+    return {
+      ...checkoutData,
+      haveLength,
+      potentialGroupData,
+      payer: req.user.email,
+    };
+  }
+
+  @Get('checkout-group-by-admin/:referenceId')
+  @Render('orders/checkout-group')
+  async checkoutGroupByAdmin(
+    @Request() req: { user: User },
+    @Param('referenceId') referenceId: string,
+    @Query('email') email: string,
+  ) {
+    
+
+    const potentialGroupData = await this.membersService.getPotentialGroupData(
+      email,
+    );
+
+    console.log(potentialGroupData);
 
     //check if potentialGroupData have more than 1 member
     let haveLength = false;

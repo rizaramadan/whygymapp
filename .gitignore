@@ -60,3 +60,4 @@ src/.env-prod
 # Sentry Config File
 .sentryclirc
 test/.env-test
+src/.env.dev

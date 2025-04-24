@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .error-icon {
+            font-size: 64px;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <button class="text-2xl">☰</button>
+            <h1 class="text-xl font-bold">WhyGym</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
+
+        <!-- Error Content -->
+        <div class="p-6 text-center">
+            <div class="error-icon mb-4">⚠️</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
+            <p class="text-gray-600 mb-2">{{message}}</p>
+            <p class="text-sm text-gray-500 mb-6">Error occurred at: <span class="font-mono">{{url}}</span></p>
+            
+            <div class="space-y-4">
+                <a href="/user-dashboard" 
+                   class="w-full block text-center py-4 px-6 bg-green-500 text-white rounded-full text-lg font-medium hover:bg-green-600 transition-colors">
+                    Return to Dashboard
+                </a>
+                <a href="/" 
+                   class="w-full block text-center py-4 px-6 bg-gray-100 text-gray-700 rounded-full text-lg font-medium hover:bg-gray-200 transition-colors">
+                    Go to Homepage
+                </a>
+            </div>
+
+            {{#if stack}}
+            <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+                <p class="text-sm text-gray-500 text-left font-mono whitespace-pre-wrap">{{stack}}</p>
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html> 

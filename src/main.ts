@@ -8,6 +8,7 @@ import { registerHelpers } from './views/helpers/hbs-helpers';
 import { ValidationPipe } from '@nestjs/common';
 import { UnauthorizedExceptionFilter } from './auth/unauthorized.filter';
 import { NeedSignUpExceptionFilter } from './auth/filters/need-signup.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -22,6 +23,7 @@ async function bootstrap() {
   app.useGlobalFilters(
     new UnauthorizedExceptionFilter(),
     new NeedSignUpExceptionFilter(),
+    new HttpExceptionFilter(),
   );
 
   // Serve static files from the public directory
