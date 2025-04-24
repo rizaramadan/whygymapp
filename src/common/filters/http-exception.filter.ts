@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as Sentry from '@sentry/nestjs';
@@ -41,8 +42,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    // Send to Sentry only if it's not a NotFoundException
-    if (!(exception instanceof NotFoundException)) {
+    // Send to Sentry only if it's not a NotFoundException or UnauthorizedException
+    if (!(exception instanceof NotFoundException || exception instanceof UnauthorizedException)) {
       if (exception instanceof Error) {
         Sentry.captureException(exception, {
           extra: {
