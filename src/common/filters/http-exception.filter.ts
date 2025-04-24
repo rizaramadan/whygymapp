@@ -5,8 +5,10 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/nestjs';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -32,6 +34,34 @@ export class HttpExceptionFilter implements ExceptionFilter {
       `${request.method} ${request.url}`,
       exception instanceof Error ? exception.stack : undefined,
     );
+
+    // Send to Sentry only if it's not a NotFoundException
+    if (!(exception instanceof NotFoundException)) {
+      if (exception instanceof Error) {
+        Sentry.captureException(exception, {
+          extra: {
+            url: request.url,
+            method: request.method,
+            body: request.body,
+            query: request.query,
+            params: request.params,
+            headers: request.headers,
+          },
+        });
+      } else {
+        Sentry.captureMessage(message, {
+          level: 'error',
+          extra: {
+            url: request.url,
+            method: request.method,
+            body: request.body,
+            query: request.query,
+            params: request.params,
+            headers: request.headers,
+          },
+        });
+      }
+    }
 
     // Check if the request accepts HTML
     const acceptsHtml = request.accepts('html');
