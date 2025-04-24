@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as Sentry from '@sentry/nestjs';
+import { NeedSignUpException } from '../../auth/exceptions/need-signup.exception';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -18,6 +19,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+
+    // Special handling for NeedSignUpException
+    if (exception instanceof NeedSignUpException) {
+      return response.redirect('/users/upload-picture');
+    }
 
     const status =
       exception instanceof HttpException
