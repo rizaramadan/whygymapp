@@ -53,5 +53,23 @@ describe('MemberPricingService', () => {
       
       process.env.PRICE_DIVISOR = originalDivisor;
     });
+
+    it('should return correct price for special emails', () => {
+      const price = service.getSinglePrice('normal', 'male', '180', false, 'riza.ramadan+yukngaji@gmail.com');
+      expect(price).toBeDefined();
+      expect(price).toBe(500000);
+      expect(typeof price).toBe('number');
+    });
+
+    it('should return correct price for calculate total price', () => {
+      const price = service.calculateTotalPrice([
+        { gender: 'female', duration: '180', email: 'tikafathul@gmail.com' },
+        { gender: 'female', duration: '180', email: 'triyulyanti29@gmail.com' },
+        { gender: 'female', duration: '180', email: 'dinatharifah@gmail.com' },
+      ]);
+      expect(price).toBeDefined();
+      expect(typeof price).toBe('number');
+      expect(price).toBe(4800000);
+    });
   });
 }); 
