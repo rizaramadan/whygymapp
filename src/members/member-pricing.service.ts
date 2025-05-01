@@ -3,12 +3,31 @@ import { Injectable } from '@nestjs/common';
 export interface MemberData {
   gender: 'male' | 'female';
   duration: '90' | '180' | '360';
+  email: string;
 }
+
+/**
+ * tikafathul@gmail.com
+ * triyulyanti29@gmail.com
+ * dinatharifah@gmail.com
+ * amaniatik@gmail.com
+ * 
+ * 
+ */
 
 @Injectable()
 export class MemberPricingService {
+  private static readonly specialEmails = [
+    'tikafathul@gmail.com',
+    'triyulyanti29@gmail.com',
+    'dinatharifah@gmail.com',
+    'amaniatik@gmail.com',
+    'riza.ramadan+yukngaji@gmail.com',
+    'riza.ramadan+yukngaji@gagasimaji.com'
+  ];
+
   private static readonly priceMap: {
-    [key in 'normal' | 'promo' | 'weekendOnly']: {
+    [key in 'normal' | 'promo' | 'weekendOnly' | 'yukngaji']: {
       [key in 'single' | 'duo' | 'group']: {
         [key in 'male' | 'female']: {
           [key in '90' | '180' | '360']: number;
@@ -129,14 +148,53 @@ export class MemberPricingService {
           '360': 3000000,
         },
       },
-    }
+    },
+    yukngaji: {
+      single: {
+        male: {
+          '90': 390000,
+          '180': 500000,
+          '360': 800000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1600000,
+          '360': 2800000,
+        },
+      },
+      duo: {
+        male: {
+          '90': 590000,
+          '180': 1200000,
+          '360': 1950000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1600000,
+          '360': 2800000,
+        },
+      },
+      group: {
+        male: {
+          '90': 390000, 
+          '180': 500000,
+          '360': 800000,
+        },
+        female: {
+          '90': 850000,
+          '180': 1600000,
+          '360': 2800000,
+        },
+      },
+    },
   };
 
   getSinglePrice(
-    priceType: 'normal' | 'promo' | 'weekendOnly',
+    priceType: 'normal' | 'promo' | 'weekendOnly' | 'yukngaji',
     gender: 'male' | 'female',
     duration: '90' | '180' | '360',
     weekendOnly: boolean,
+    email: string,
   ): number {
 
 
@@ -144,6 +202,13 @@ export class MemberPricingService {
     if (gender === 'female' && weekendOnly) {
       return (
         MemberPricingService.priceMap['weekendOnly']['single']['female'][duration] /
+        parseInt(process.env.PRICE_DIVISOR ?? '1')
+      );
+    }
+
+    if (MemberPricingService.specialEmails.includes(email)) {
+      return (
+        MemberPricingService.priceMap['yukngaji']['single'][gender][duration] /
         parseInt(process.env.PRICE_DIVISOR ?? '1')
       );
     }
@@ -156,6 +221,7 @@ export class MemberPricingService {
 
   calculateTotalPrice(memberData: MemberData[]): number {
     const priceType = 'promo';
+
     //extract if member is single, duo, or group
     //if member is more than 5, then single is used
 
@@ -179,9 +245,14 @@ export class MemberPricingService {
         throw new Error('Invalid price parameters');
       }
 
-      const price = String(
+      const price = MemberPricingService.specialEmails.includes(curr.email) ?
+      String(
+        MemberPricingService.priceMap['yukngaji'][groupType][gender][duration] 
+      ):
+      String(
         MemberPricingService.priceMap[priceType][groupType][gender][duration],
       );
+
       return acc + parseFloat(price);
     }, 0);
 

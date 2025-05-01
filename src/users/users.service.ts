@@ -310,6 +310,91 @@ export class UsersService {
     }
   }
 
+  async updateUserPicture(
+    user: User,
+    args: { file: Multer.File; userId: string; gender: string; fullName: string },
+  ): Promise<{ accessToken: string; picUrl: string; }> {
+    // Skip if error exists from previous step
+    try {
+      // Upload image first
+      const formData = new FormData();
+      const blob = new Blob([args.file.buffer], { type: args.file.mimetype });
+      formData.append('avatar', blob, args.file.originalname);
+      formData.append('fullName', args.fullName);
+      formData.append('gender', args.gender);
+      formData.append('phoneNumber', '+628000000000');
+      formData.append('birthDate', '2000-01-01T10:10:10.111Z');
+      formData.append('province', 'Jawa Barat');
+      formData.append('city', 'Bogor');
+
+      const response = await firstValueFrom(
+        this.httpService.post<{
+          status: number;
+          message: string;
+          data: {
+            url: string;
+          };
+        }>(`${this.authApiUrl}/v1/users/me/update-profile`, formData, {
+          headers: {
+            'x-api-key': this.apiKey,
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        }),
+      );
+
+
+      if (!response.data.status) {
+        return {
+          accessToken: '',
+          picUrl: '',
+        };
+      }
+
+      const responseOfMe = await firstValueFrom(
+        this.httpService.get<UserMeResponse>(`${this.authApiUrl}/v1/users/me`, {
+          headers: {
+            'x-api-key': this.apiKey,
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        }),
+      );
+
+
+      if (!response.data.status) {
+        return {
+          accessToken: '',
+          picUrl: '',
+        };
+      }
+
+      const payload: JwtPayload = {
+        id: '',
+        apiId: user.apiId || '',
+        accessToken: user.accessToken || '',
+        refreshToken: '',
+        email: user.email || '',
+        roles: user.roles || [],
+        fullName: user.fullName || '',
+        picUrl: responseOfMe.data.data.user.picture?.url || '',
+        needSignUp: false,
+      };
+      const access_token = await this.jwtService.signAsync(payload);
+
+      return {
+        accessToken: access_token,
+        picUrl: response.data.data.url,
+      };
+    } catch (error) {
+      console.log(error);
+      const httpError = error as HttpError;
+      return {
+        accessToken: '',
+        picUrl: '',
+      };
+    }
+  }
+
   async AddOrUpdateUserPictureDb(
     userId: string,
     picUrl: string,

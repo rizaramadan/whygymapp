@@ -99,6 +99,13 @@ export class UsersController {
     return {};
   }
 
+  // Upload picture page
+  @Get('update-picture')
+  @Render('users/update-picture')
+  getUpdatePicturePage(@Request() req: { user: User }) {
+    return { user: req.user };
+  }
+
   // Save picture URL endpoint
   @Post('save-picture')
   @UseInterceptors(FileInterceptor('file'))
@@ -124,6 +131,31 @@ export class UsersController {
     if (error.hasError()) {
       throw new Error(error.code + ' ' + error.message);
     }
+
+    return { success: true, picUrl };
+  }
+
+  @Post('update-picture')
+  @UseInterceptors(FileInterceptor('file'))
+  async updatePicture(
+    @Request() req: { user: User },
+    @UploadedFile() file: Multer.File,
+    @Body('fullName') fullName: string,
+    @Body('gender') gender: string,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const { accessToken, picUrl } =
+      await this.usersService.updateUserPicture(
+        req.user,
+        {
+          userId: req.user.id.toString(),
+          file,
+          gender,
+          fullName,
+        },
+      );
+
+    res.cookie('access_token', accessToken);
 
     return { success: true, picUrl };
   }

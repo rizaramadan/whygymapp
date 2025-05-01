@@ -122,7 +122,7 @@ export class MembersService {
       const gender = additionalData.gender.toLowerCase() as 'male' | 'female';
 
       const price = String(
-        this.memberPricingService.getSinglePrice(priceType, gender, duration, additionalData.weekendOnly),
+        this.memberPricingService.getSinglePrice(priceType, gender, duration, additionalData.weekendOnly, user.email || ''),
       );
 
       const memberParams = {
@@ -224,7 +224,8 @@ export class MembersService {
         priceType, 
         theGender, 
         theDuration, 
-        member.additionalData?.weekendOnly ?? false
+        member.additionalData?.weekendOnly ?? false,
+        member.email ?? ''
       ),
     );
 

@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { interval, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import Sqids from 'sqids';
+import { Public } from './auth/decorators/public.decorator';
 
 @Controller()
 export class AppController {
@@ -104,6 +105,7 @@ export class AppController {
   }
 
   @Get('/logout')
+  @Public()
   logout(@Res({ passthrough: true }) res: Response) {
     res.cookie('access_token', null);
     return '<script>window.location.href = "/auth/login";</script>';

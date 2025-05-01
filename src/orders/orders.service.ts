@@ -256,6 +256,7 @@ export class OrdersService {
       .map((member) => ({
         gender: (member.gender ?? 'female') as 'male' | 'female',
         duration: (member.duration ?? '360') as '90' | '180' | '360',
+        email: member.email ?? '',
       }));
 
     const totalPrice =
@@ -397,6 +398,7 @@ export class OrdersService {
       .map((member) => ({
         gender: (member.gender ?? 'female') as 'male' | 'female',
         duration: (member.duration ?? '360') as '90' | '180' | '360',
+        email: member.email ?? '',
       }));
 
     const totalPrice =
