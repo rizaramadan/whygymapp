@@ -17,17 +17,8 @@ export interface MemberData {
 
 @Injectable()
 export class MemberPricingService {
-  private static readonly specialEmails = [
-    'tikafathul@gmail.com',
-    'triyulyanti29@gmail.com',
-    'dinatharifah@gmail.com',
-    'amaniatik@gmail.com',
-    'riza.ramadan+yukngaji@gmail.com',
-    'riza.ramadan+yukngaji@gagasimaji.com'
-  ];
-
   private static readonly priceMap: {
-    [key in 'normal' | 'promo' | 'weekendOnly' | 'yukngaji']: {
+    [key in 'normal' | 'promo' | 'weekendOnly']: {
       [key in 'single' | 'duo' | 'group']: {
         [key in 'male' | 'female']: {
           [key in '90' | '180' | '360']: number;
@@ -38,152 +29,114 @@ export class MemberPricingService {
     normal: {
       single: {
         male: {
-          '90': 590000,
-          '180': 1200000,
-          '360': 1950000,
+          '90': 740000,
+          '180': 1440000,
+          '360': 2440000,
         },
         female: {
-          '90': 1100000,
-          '180': 2150000,
-          '360': 4000000,
+          '90': 1150000,
+          '180': 2230000,
+          '360': 4100000,
         },
       },
       duo: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
+          '90': 690000,
+          '180': 1290000,
+          '360': 2090000,
         },
         female: {
-          '90': 1000000,
-          '180': 2000000,
-          '360': 3800000,
+          '90': 1080000,
+          '180': 2100000,
+          '360': 3920000,
         },
       },
       group: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
+          '90': 690000,
+          '180': 1290000,
+          '360': 2090000,
         },
         female: {
-          '90': 850000,
-          '180': 1700000,
-          '360': 3000000,
+          '90': 990000,
+          '180': 1990000,
+          '360': 3500000,
         },
       },
     },
     promo: {
       single: {
         male: {
-          '90': 590000,
-          '180': 1200000,
-          '360': 1950000,
+          '90': 740000,
+          '180': 1440000,
+          '360': 2440000,
         },
         female: {
-          '90': 1100000,
-          '180': 2150000,
-          '360': 4000000,
+          '90': 1150000,
+          '180': 2230000,
+          '360': 4100000,
         },
       },
       duo: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
+          '90': 690000,
+          '180': 1290000,
+          '360': 2090000,
         },
         female: {
-          '90': 1000000,
-          '180': 2000000,
-          '360': 3800000,
+          '90': 1080000,
+          '180': 2100000,
+          '360': 3920000,
         },
       },
       group: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
+          '90': 690000,
+          '180': 1290000,
+          '360': 2090000,
         },
         female: {
-          '90': 850000,
-          '180': 1700000,
-          '360': 3000000,
+          '90': 990000,
+          '180': 1990000,
+          '360': 3500000,
         },
       },
     },
     weekendOnly: {
       single: {
         male: {
-          '90': 590000,
-          '180': 1200000,
-          '360': 1950000,
-        },
-        female: {
-          '90': 750000,
+          '90': 740000,
           '180': 1440000,
-          '360': 2640000,
+          '360': 2440000,
+        },        
+        female: {
+          '90': 690000,
+          '180': 1350000,
+          '360': 2450000,
         },
       },
       duo: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
-        },
+          '90': 740000,
+          '180': 1440000,
+          '360': 2440000,
+        },        
         female: {
-          '90': 1000000,
-          '180': 2000000,
-          '360': 3800000,
+          '90': 690000,
+          '180': 1350000,
+          '360': 2450000,
         },
       },
       group: {
         male: {
-          '90': 540000,
-          '180': 1050000,
-          '360': 1750000,
-        },
+          '90': 740000,
+          '180': 1440000,
+          '360': 2440000,
+        },        
         female: {
-          '90': 850000,
-          '180': 1700000,
-          '360': 3000000,
-        },
-      },
-    },
-    yukngaji: {
-      single: {
-        male: {
-          '90': 390000,
-          '180': 500000,
-          '360': 800000,
-        },
-        female: {
-          '90': 850000,
-          '180': 1600000,
-          '360': 2800000,
-        },
-      },
-      duo: {
-        male: {
-          '90': 590000,
-          '180': 1200000,
-          '360': 1950000,
-        },
-        female: {
-          '90': 850000,
-          '180': 1600000,
-          '360': 2800000,
-        },
-      },
-      group: {
-        male: {
-          '90': 390000, 
-          '180': 500000,
-          '360': 800000,
-        },
-        female: {
-          '90': 850000,
-          '180': 1600000,
-          '360': 2800000,
+          '90': 690000,
+          '180': 1350000,
+          '360': 2450000,
         },
       },
     },
@@ -202,13 +155,6 @@ export class MemberPricingService {
     if (gender === 'female' && weekendOnly) {
       return (
         MemberPricingService.priceMap['weekendOnly']['single']['female'][duration] /
-        parseInt(process.env.PRICE_DIVISOR ?? '1')
-      );
-    }
-
-    if (MemberPricingService.specialEmails.includes(email)) {
-      return (
-        MemberPricingService.priceMap['yukngaji']['single'][gender][duration] /
         parseInt(process.env.PRICE_DIVISOR ?? '1')
       );
     }
@@ -245,11 +191,7 @@ export class MemberPricingService {
         throw new Error('Invalid price parameters');
       }
 
-      const price = MemberPricingService.specialEmails.includes(curr.email) ?
-      String(
-        MemberPricingService.priceMap['yukngaji'][groupType][gender][duration] 
-      ):
-      String(
+      const price = String(
         MemberPricingService.priceMap[priceType][groupType][gender][duration],
       );
 
