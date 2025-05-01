@@ -60,7 +60,7 @@ interface OrderWithAdditionalInfo {
 interface OrderPrivateCoachingFeeData {
   additionalData: {
     coachType: string;
-    numberOfSessions: number;
+    sessionCount: number;
   };
 }
 
@@ -473,7 +473,7 @@ export class OrdersService {
       memberData?.phoneNumber ?? '',
       paymentMethod,
       (order as OrderPrivateCoachingFeeData).additionalData.coachType,
-      (order as OrderPrivateCoachingFeeData).additionalData.numberOfSessions,
+      (order as OrderPrivateCoachingFeeData).additionalData.sessionCount,
     );
 
     const invoice = await this.postCreateInvoice(request);

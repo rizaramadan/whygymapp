@@ -59,6 +59,9 @@ export class CreateInvoiceRequest {
     this.failureRedirectUrl = `${url}/orders/payment/${referenceId}/fail`;
     this.successRedirectUrl = `${url}/orders/payment/${referenceId}/success`;
     this.title = 'Membership Payment';
+    if ((additionalData as AdditionalData)?.duration) {
+      this.title = `Membership payment duration ${(additionalData as AdditionalData).duration || ''}`;
+    } 
     this.amount = amount;
     this.invoiceDuration = 3600;
     this.customerEmail = email;
