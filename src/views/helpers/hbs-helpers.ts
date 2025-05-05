@@ -17,7 +17,7 @@ export function registerHelpers() {
   hbs.registerHelper('extractDate', function (date: string) {
     if (!date) return '';
     const dateObj = new Date(date);
-    return dateObj.toLocaleString('id-ID', {
+    return dateObj.toLocaleString('en-US', {
       year: '2-digit',
       month: 'short',
       day: 'numeric',
