@@ -253,4 +253,11 @@ export class MembersController {
       user: req.user,
     };
   }
+
+  //api receive member id and return expire date
+  @Public()
+  @Get('expire-date/:id')
+  getMemberExpireDate(@Param('id') id: string) {
+    return '2025-10-10';
+  }
 }
