@@ -258,6 +258,6 @@ export class MembersController {
   @Public()
   @Get('expire-date/:id')
   getMemberExpireDate(@Param('id') id: string) {
-    return '2025-10-10';
+    return '<ul><li>2025-10-10</li></ul>';
   }
 }
