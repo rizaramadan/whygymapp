@@ -2246,7 +2246,8 @@ select m.email,
        m.additional_data->>'duration' as duration,
        ((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'amount' as amount,
        (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
-       count(m.email) over (partition by m.additional_data->>'emailPic')
+       count(m.email) over (partition by m.additional_data->>'emailPic'),
+       m.id as member_id
 from whygym.members m
  inner join whygym.orders o on m.id = o.member_id
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
@@ -2261,6 +2262,7 @@ export interface getAccountingDataRow {
     amount: string | null;
     paid: Date;
     count: string;
+    memberId: number;
 }
 
 export async function getAccountingData(client: Client): Promise<getAccountingDataRow[]> {
@@ -2278,7 +2280,8 @@ export async function getAccountingData(client: Client): Promise<getAccountingDa
             duration: row[4],
             amount: row[5],
             paid: row[6],
-            count: row[7]
+            count: row[7],
+            memberId: row[8]
         };
     });
 }
