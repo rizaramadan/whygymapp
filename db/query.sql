@@ -527,3 +527,16 @@ from whygym.members m
  inner join whygym.orders o on m.id = o.member_id
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
 order by m.created_at desc, amount desc, m.additional_data->>'emailPic';
+
+-- name: getMemberDurationData :many
+select m.id, m.additional_data->>'duration' as base_duration,
+       m.additional_data->>'extend15' as extend15,
+       m.additional_data->>'extend30' as extend30,
+       m.additional_data->>'extend60' as extend60,
+       oet.extra_time as extra_time
+from whygym.members m
+    left join whygym.order_extra_time oet on m.id = oet.member_id
+where m.id = $1
+limit 100;
+
+

@@ -35,6 +35,8 @@ import {
   updateMemberPrice,
   getAccountingDataRow,
   getAccountingData,
+  getMemberDurationData,
+  getMemberDurationDataRow,
 } from 'db/src/query_sql';
 import {
   updateMemberAdditionalData,
@@ -263,5 +265,25 @@ export class MembersService {
 
   async getAccountingData(): Promise<getAccountingDataRow[]> {
     return await getAccountingData(this.pool);
+  }
+
+  async getMemberDurationData(id: number) {
+    const durationData = await getMemberDurationData(this.pool, { id });
+    const totalDuration = this.calculateTotalDuration(durationData);
+    return totalDuration;
+  }
+
+  calculateTotalDuration(members: getMemberDurationDataRow[]): number {
+    let total = parseInt(members[0].baseDuration || '0');
+    
+    // Add extension days only first row
+    if (members[0].extend15 === 'true') total += 15;
+    if (members[0].extend30 === 'true') total += 30;
+    if (members[0].extend60 === 'true') total += 60;
+    
+    // Add extra time from all rows 
+    if (members[0].extraTime) total += members[0].extraTime;
+    
+    return total;
   }
 }

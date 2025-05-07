@@ -2286,3 +2286,45 @@ export async function getAccountingData(client: Client): Promise<getAccountingDa
     });
 }
 
+export const getMemberDurationDataQuery = `-- name: getMemberDurationData :many
+select m.id, m.additional_data->>'duration' as base_duration,
+       m.additional_data->>'extend15' as extend15,
+       m.additional_data->>'extend30' as extend30,
+       m.additional_data->>'extend60' as extend60,
+       oet.extra_time as extra_time
+from whygym.members m
+    left join whygym.order_extra_time oet on m.id = oet.member_id
+where m.id = $1
+limit 100`;
+
+export interface getMemberDurationDataArgs {
+    id: number;
+}
+
+export interface getMemberDurationDataRow {
+    id: number;
+    baseDuration: string | null;
+    extend15: string | null;
+    extend30: string | null;
+    extend60: string | null;
+    extraTime: number | null;
+}
+
+export async function getMemberDurationData(client: Client, args: getMemberDurationDataArgs): Promise<getMemberDurationDataRow[]> {
+    const result = await client.query({
+        text: getMemberDurationDataQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            baseDuration: row[1],
+            extend15: row[2],
+            extend30: row[3],
+            extend60: row[4],
+            extraTime: row[5]
+        };
+    });
+}
+

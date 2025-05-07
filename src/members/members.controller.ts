@@ -257,7 +257,17 @@ export class MembersController {
   //api receive member id and return expire date
   @Public()
   @Get('expire-date/:id')
-  getMemberExpireDate(@Param('id') id: string) {
-    return '<ul><li>2025-10-10</li></ul>';
+  async getMemberExpireDate(@Param('id') id: string) {
+    const memberId = parseInt(id);
+    if (isNaN(memberId)) {
+      throw new HttpException('Invalid member ID', HttpStatus.BAD_REQUEST);
+    }
+
+    const totalDuration = await this.membersService.getMemberDurationData(memberId);
+    if (!totalDuration) {
+      throw new HttpException('Member not found', HttpStatus.NOT_FOUND);
+    }
+
+    return `<ul><li>${totalDuration}</li></ul>`;
   }
 }
