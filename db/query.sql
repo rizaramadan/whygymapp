@@ -498,7 +498,8 @@ select m.email,
        END as  group_type,
        m.additional_data->> 'duration' as duration,
        g.count,
-       m.start_date
+       m.start_date,
+       m.id
 from whygym.members m
     left join whygym.orders o on m.id = o.member_id
     left join group_counts g on o.reference_id = g.part_reference_id

@@ -2167,7 +2167,8 @@ select m.email,
        END as  group_type,
        m.additional_data->> 'duration' as duration,
        g.count,
-       m.start_date
+       m.start_date,
+       m.id
 from whygym.members m
     left join whygym.orders o on m.id = o.member_id
     left join group_counts g on o.reference_id = g.part_reference_id
@@ -2181,6 +2182,7 @@ export interface getActiveMemberBreakdownRow {
     duration: string | null;
     count: string | null;
     startDate: Date | null;
+    id: number;
 }
 
 export async function getActiveMemberBreakdown(client: Client): Promise<getActiveMemberBreakdownRow[]> {
@@ -2197,7 +2199,8 @@ export async function getActiveMemberBreakdown(client: Client): Promise<getActiv
             groupType: row[3],
             duration: row[4],
             count: row[5],
-            startDate: row[6]
+            startDate: row[6],
+            id: row[7]
         };
     });
 }
