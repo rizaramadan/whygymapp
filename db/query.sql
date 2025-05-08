@@ -534,7 +534,7 @@ select m.email,
 from whygym.members m
  inner join whygym.orders o on m.id = o.member_id
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
-order by m.created_at asc, amount desc, m.additional_data->>'emailPic';
+order by m.created_at desc, amount desc, m.additional_data->>'emailPic';
 
 
 
