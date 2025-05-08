@@ -503,15 +503,16 @@ select m.email,
 from whygym.members m
     left join whygym.orders o on m.id = o.member_id
     left join group_counts g on o.reference_id = g.part_reference_id
-where m.membership_status = 'active' order by m.id desc;
+where m.membership_status = 'active' order by m.id asc;
 
 -- name: getMemberActiveDate :one
 WITH data as (
 select
-    case when created_at < '2025-04-01 00:00:00' THEN '2025-04-01' else created_at::date end as start_date,
-    additional_data->>'duration' || ' days' as duration
+    start_date,
+    additional_data->>'duration' || ' days' as duration,
+    id
 from whygym.members where email = $1 and membership_status = 'active' limit 1)
-select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date
+select data.start_date, data.duration,  (data.start_date + data.duration::interval)::date as end_date, data.id
 from data limit 1;
 
 -- name: getAccountingData :many
@@ -527,7 +528,10 @@ select m.email,
 from whygym.members m
  inner join whygym.orders o on m.id = o.member_id
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
-order by m.created_at desc, amount desc, m.additional_data->>'emailPic';
+order by m.created_at asc, amount desc, m.additional_data->>'emailPic';
+
+
+
 
 -- name: getMemberDurationData :many
 select m.id, m.additional_data->>'duration' as base_duration,
@@ -539,5 +543,3 @@ from whygym.members m
     left join whygym.order_extra_time oet on m.id = oet.member_id
 where m.id = $1
 limit 100;
-
-

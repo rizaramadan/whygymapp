@@ -50,6 +50,8 @@ import { MemberPricingService } from './member-pricing.service';
 
 @Injectable()
 export class MembersService {
+  private readonly MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
+
   constructor(
     @Inject('DATABASE_POOL') private pool: Pool,
     private readonly memberPricingService: MemberPricingService,
@@ -249,7 +251,14 @@ export class MembersService {
   async getMemberActiveDate(
     email: string,
   ): Promise<getMemberActiveDateRow | null> {
-    return await getMemberActiveDate(this.pool, { email });
+    const data = await getMemberActiveDate(this.pool, { email });
+    if (!data || !data.startDate) {
+      return null;
+    }
+
+    const duration = await this.getMemberDurationData(data.id);
+    data.endDate = new Date(data.startDate.getTime() + duration * this.MILLISECONDS_IN_DAY);
+    return data;
   }
 
   async addOrUpdateMemberPicUrl(

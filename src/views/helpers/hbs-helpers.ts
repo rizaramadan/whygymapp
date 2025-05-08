@@ -24,6 +24,16 @@ export function registerHelpers() {
     });
   });
 
+  hbs.registerHelper('extractDateId', function (date: string) {
+    if (!date) return '';
+    const dateObj = new Date(date);
+    return dateObj.toLocaleString('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  });
+
   hbs.registerHelper('dashToSpaceCapitalize', function (text: string) {
     if (!text) return '';
     return text.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
