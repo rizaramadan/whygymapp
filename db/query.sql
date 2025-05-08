@@ -486,6 +486,9 @@ with groups as (
 ),
 group_counts AS (
   select og.part_reference_id, coalesce(g.count, 1) as count from whygym.order_groups og left join groups g on og.main_reference_id = g.main_reference_id
+),
+extra_times AS (
+    select member_id, sum(extra_time) as total_extra from whygym.order_extra_time group by member_id
 )
 select m.email,
        m.additional_data->> 'gender' as gender,
@@ -499,11 +502,14 @@ select m.email,
        m.additional_data->> 'duration' as duration,
        g.count,
        m.start_date,
-       m.id
+       m.id,
+       e.total_extra
 from whygym.members m
-    left join whygym.orders o on m.id = o.member_id
+    left outer join whygym.orders o on m.id = o.member_id AND o.private_coaching_id is null
     left join group_counts g on o.reference_id = g.part_reference_id
-where m.membership_status = 'active' order by m.id asc;
+    left join extra_times e on m.id = e.member_id
+where m.membership_status = 'active'
+order by m.id desc;
 
 -- name: getMemberActiveDate :one
 WITH data as (
