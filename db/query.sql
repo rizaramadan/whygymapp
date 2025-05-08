@@ -532,12 +532,9 @@ select m.email,
        count(m.email) over (partition by m.additional_data->>'emailPic'),
        m.id as member_id
 from whygym.members m
- inner join whygym.orders o on m.id = o.member_id
+ inner join whygym.orders o on m.id = o.member_id AND o.private_coaching_id is null
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
 order by m.created_at desc, amount desc, m.additional_data->>'emailPic';
-
-
-
 
 -- name: getMemberDurationData :many
 select m.id, m.additional_data->>'duration' as base_duration,
@@ -549,3 +546,20 @@ from whygym.members m
     left join whygym.order_extra_time oet on m.id = oet.member_id
 where m.id = $1
 limit 100;
+
+
+-- name: getAccountingDataPrivateCoaching :many
+select p.id,
+       p.additional_data->>'trainingType' as training_type,
+       p.additional_data->>'sessionCount' as session_count,
+       p.email,
+       p.additional_data->>'partnerEmail' as buyer,
+       p.additional_data->>'trainingType' as training_type,
+       p.additional_data->>'coachType' as coachType,
+       ((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'amount' as amount,
+       (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
+       o.additional_info
+from whygym.private_coaching p
+inner join whygym.orders o on p.id = o.private_coaching_id
+where p.status = 'active'
+order by p.created_at desc;

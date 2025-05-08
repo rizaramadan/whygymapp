@@ -245,6 +245,23 @@ export class MembersController {
     return { data };
   }
 
+  @Public()
+  @Get('private-coaching-accounting-data')
+  @Render('members/private-coaching-accounting-data')
+  async getPrivateCoachingAccountingData(
+    @Query('key') key: string,
+    @Query('value') value: string,
+  ) {
+    if (key !== process.env.ACTIVE_MEMBER_BREAKDOWN_KEY) {
+      throw new HttpException('Invalid key', HttpStatus.UNAUTHORIZED);
+    }
+    if (value !== process.env.ACTIVE_MEMBER_BREAKDOWN_VALUE) {
+      throw new HttpException('Invalid key', HttpStatus.UNAUTHORIZED);
+    }
+    const data = await this.membersService.getAccountingDataPrivateCoaching();
+    return { data };
+  }
+
   @Get('private-coaching-apply')
   @Render('members/private-coaching-apply')
   async getPrivateCoachingApply(@Request() req: { user: User }) {

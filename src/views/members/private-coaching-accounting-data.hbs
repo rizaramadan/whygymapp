@@ -1,0 +1,30 @@
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Name</th>
+      <th>Coach</th>
+      <th>Session Type</th>
+      <th>Duration</th>
+      <th>Amount</th>
+      <th>Paid At</th>
+      <th>Session Count</th>
+      <th>Member ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each data}}
+      <tr>
+        <td>{{email}}</td>
+        <td>{{name}}</td>
+        <td>{{coach}}</td>
+        <td>{{sessionType}}</td>
+        <td>{{duration}}</td>
+        <td>{{amount}}</td>
+        <td>{{extractDate paid}}</td>
+        <td>{{sessionCount}}</td>
+        <td>{{memberId}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table> 

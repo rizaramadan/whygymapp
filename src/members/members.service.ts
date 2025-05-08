@@ -37,6 +37,8 @@ import {
   getAccountingData,
   getMemberDurationData,
   getMemberDurationDataRow,
+  getAccountingDataPrivateCoachingRow,
+  getAccountingDataPrivateCoaching,
 } from 'db/src/query_sql';
 import {
   updateMemberAdditionalData,
@@ -274,6 +276,10 @@ export class MembersService {
 
   async getAccountingData(): Promise<getAccountingDataRow[]> {
     return await getAccountingData(this.pool);
+  }
+
+  async getAccountingDataPrivateCoaching(): Promise<getAccountingDataPrivateCoachingRow[]> {
+    return await getAccountingDataPrivateCoaching(this.pool);
   }
 
   async getMemberDurationData(id: number) {
