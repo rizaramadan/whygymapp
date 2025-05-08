@@ -2352,7 +2352,8 @@ select p.id,
        p.additional_data->>'coachType' as coachType,
        ((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'amount' as amount,
        (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
-       o.additional_info
+       o.additional_info,
+       o.created_at
 from whygym.private_coaching p
 inner join whygym.orders o on p.id = o.private_coaching_id
 where p.status = 'active'
@@ -2369,6 +2370,7 @@ export interface getAccountingDataPrivateCoachingRow {
     amount: string | null;
     paid: Date;
     additionalInfo: any | null;
+    createdAt: Date | null;
 }
 
 export async function getAccountingDataPrivateCoaching(client: Client): Promise<getAccountingDataPrivateCoachingRow[]> {
@@ -2388,7 +2390,8 @@ export async function getAccountingDataPrivateCoaching(client: Client): Promise<
             coachtype: row[6],
             amount: row[7],
             paid: row[8],
-            additionalInfo: row[9]
+            additionalInfo: row[9],
+            createdAt: row[10]
         };
     });
 }
