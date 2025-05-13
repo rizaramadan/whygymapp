@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { HttpException } from '@nestjs/common';
+import { AppService } from 'src/app.service';
 
 describe('MembersController', () => {
   let controller: MembersController;
@@ -11,6 +12,10 @@ describe('MembersController', () => {
     getMemberDurationData: jest.fn(),
   };
 
+  const mockAppService = {
+    getWeekendOnly: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MembersController],
@@ -18,6 +23,10 @@ describe('MembersController', () => {
         {
           provide: MembersService,
           useValue: mockMembersService,
+        },
+        {
+          provide: AppService,
+          useValue: mockAppService,
         },
       ],
     }).compile();

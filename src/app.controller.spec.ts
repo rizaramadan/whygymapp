@@ -7,12 +7,14 @@ import { MemberPricingService } from './members/member-pricing.service';
 import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { Pool } from 'pg';
+import { UnauthorizedException } from '@nestjs/common';
 
 describe('AppController', () => {
   let appController: AppController;
   let mockPool: jest.Mocked<Pool>;
   let mockHttpService: jest.Mocked<HttpService>;
   let mockJwtService: jest.Mocked<JwtService>;
+  let mockAppService: jest.Mocked<AppService>;
 
   beforeEach(async () => {
     // Create mock pool
@@ -39,10 +41,20 @@ describe('AppController', () => {
       decode: jest.fn(),
     } as any;
 
+    // Create mock AppService
+    mockAppService = {
+      getWeekendOnly: jest.fn(),
+      enableWeekendOnly: jest.fn(),
+      disableWeekendOnly: jest.fn(),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [
-        AppService,
+        {
+          provide: AppService,
+          useValue: mockAppService,
+        },
         MembersService,
         UsersService,
         MemberPricingService,
@@ -73,6 +85,4 @@ describe('AppController', () => {
       expect(appController.getHello()).toBe('<script>window.location.href="/auth/login"</script>');
     });
   });
-
-  // Add more test cases here
 });

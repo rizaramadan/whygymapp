@@ -2399,3 +2399,90 @@ export async function getAccountingDataPrivateCoaching(client: Client): Promise<
     });
 }
 
+export const getConfigQuery = `-- name: getConfig :one
+SELECT value_string, value_integer, value_datetime, value_boolean, value_jsonb
+FROM whygym.config
+WHERE key = $1`;
+
+export interface getConfigArgs {
+    key: string;
+}
+
+export interface getConfigRow {
+    valueString: string | null;
+    valueInteger: number | null;
+    valueDatetime: Date | null;
+    valueBoolean: boolean | null;
+    valueJsonb: any | null;
+}
+
+export async function getConfig(client: Client, args: getConfigArgs): Promise<getConfigRow | null> {
+    const result = await client.query({
+        text: getConfigQuery,
+        values: [args.key],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        valueString: row[0],
+        valueInteger: row[1],
+        valueDatetime: row[2],
+        valueBoolean: row[3],
+        valueJsonb: row[4]
+    };
+}
+
+export const insertOrUpdateConfigQuery = `-- name: InsertOrUpdateConfig :one
+INSERT INTO whygym.config (key, value_string, value_integer, value_datetime, value_boolean, value_jsonb)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (key) DO UPDATE SET
+    value_string = $2,
+    value_integer = $3,
+    value_datetime = $4,
+    value_boolean = $5, 
+    value_jsonb = $6
+RETURNING id, key, value_string, value_integer, value_datetime, value_boolean, value_jsonb`;
+
+export interface InsertOrUpdateConfigArgs {
+    key: string;
+    valueString: string | null;
+    valueInteger: number | null;
+    valueDatetime: Date | null;
+    valueBoolean: boolean | null;
+    valueJsonb: any | null;
+}
+
+export interface InsertOrUpdateConfigRow {
+    id: number;
+    key: string;
+    valueString: string | null;
+    valueInteger: number | null;
+    valueDatetime: Date | null;
+    valueBoolean: boolean | null;
+    valueJsonb: any | null;
+}
+
+export async function insertOrUpdateConfig(client: Client, args: InsertOrUpdateConfigArgs): Promise<InsertOrUpdateConfigRow | null> {
+    const result = await client.query({
+        text: insertOrUpdateConfigQuery,
+        values: [args.key, args.valueString, args.valueInteger, args.valueDatetime, args.valueBoolean, args.valueJsonb],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        key: row[1],
+        valueString: row[2],
+        valueInteger: row[3],
+        valueDatetime: row[4],
+        valueBoolean: row[5],
+        valueJsonb: row[6]
+    };
+}
+

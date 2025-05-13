@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekend Only Mode - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/htmx.min.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .hero-section {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        .hero-section img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+        }
+        .toggle-card {
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+        }
+        .toggle-button {
+            transition: all 0.3s ease;
+        }
+        .toggle-button.enabled {
+            background-color: #10B981;
+            color: white;
+        }
+        .toggle-button.disabled {
+            background-color: #E5E7EB;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <a href="/admin/dashboard" class="text-2xl">←</a>
+            <h1 class="text-xl font-bold">WhyGym</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
+
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <img src="/img/user-dashboard.webp" alt="WhyGym Facilities">
+            <div class="hero-overlay">
+                <h2 class="text-4xl font-bold mb-2">Weekend Only Mode</h2>
+            </div>
+        </div>
+
+        <!-- Toggle Section -->
+        <div class="p-6" id="toggle-section">
+            <div class="toggle-card border-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-medium">Weekend Only Access</h3>
+                    </div>
+                    <button 
+                        class="toggle-button px-4 py-2 rounded-full flex items-center gap-2 font-medium {{#if weekendOnly}}enabled{{else}}disabled{{/if}}"
+                        hx-post="/weekend-only-toggle"
+                        hx-target="#toggle-section"
+                    >
+                    {{#if weekendOnly}}enabled{{else}}disabled{{/if}}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

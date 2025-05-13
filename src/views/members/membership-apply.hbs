@@ -171,15 +171,16 @@
                             </select>
                         </div>
 
+                        {{#if weekendOnly}}
                         <div>
-                            <label class="flex items-center" style="display: none;">
+                            <label class="flex items-center">
                                 <input type="checkbox" name="weekendOnly" id="weekendOnly" class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-500 focus:ring-green-500" disabled>
                                 <span class="ml-2 text-sm text-gray-700">
                                     Paket Khusus Weekend
                                 </span>
                             </label>
                         </div>
-
+                        {{/if}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700">
                                 Tanggal Lahir

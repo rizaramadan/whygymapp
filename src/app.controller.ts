@@ -6,6 +6,9 @@ import {
   Res,
   Param,
   Sse,
+  Post,
+  Body,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User, UsersService } from './users/users.service';
@@ -16,6 +19,10 @@ import { interval, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import Sqids from 'sqids';
 import { Public } from './auth/decorators/public.decorator';
+
+interface ToggleWeekendOnlyDto {
+  enabled: boolean;
+}
 
 @Controller()
 export class AppController {
@@ -126,5 +133,50 @@ export class AppController {
     return interval(1000).pipe(
       map(() => ({ data: { hello: 'world' } }) as MessageEvent),
     );
+  }
+
+  @Get('weekend-only')
+  async getWeekendOnly() {
+    try {
+      const enabled = await this.appService.getWeekendOnly();
+      return { enabled };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new Error('Failed to get weekend-only status');
+    }
+  }
+
+  @Post('weekend-only-toggle')
+  @Roles('admin')
+  @Render('post-toggle-weekend-only')
+  async toggleWeekendOnly() {
+    try {
+      const weekendOnly = await this.appService.getWeekendOnly();
+      if (weekendOnly) {
+        await this.appService.disableWeekendOnly();
+      } else {
+        await this.appService.enableWeekendOnly();
+      }
+
+      return {
+        weekendOnly: await this.appService.getWeekendOnly(),
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new Error('Failed to toggle weekend-only status');
+    }
+  }
+
+  @Get('weekend-only-toggle')
+  @Roles('admin')
+  @Render('toggle-weekend-only')
+  async toggleWeekendOnlyView() {
+    return {
+      weekendOnly: await this.appService.getWeekendOnly(),
+    };
   }
 }

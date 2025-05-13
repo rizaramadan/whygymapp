@@ -565,3 +565,20 @@ from whygym.private_coaching p
 inner join whygym.orders o on p.id = o.private_coaching_id
 where p.status = 'active'
 order by p.created_at desc;
+
+
+-- name: getConfig :one
+SELECT value_string, value_integer, value_datetime, value_boolean, value_jsonb
+FROM whygym.config
+WHERE key = $1;
+
+-- name: InsertOrUpdateConfig :one
+INSERT INTO whygym.config (key, value_string, value_integer, value_datetime, value_boolean, value_jsonb)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (key) DO UPDATE SET
+    value_string = $2,
+    value_integer = $3,
+    value_datetime = $4,
+    value_boolean = $5, 
+    value_jsonb = $6
+RETURNING id, key, value_string, value_integer, value_datetime, value_boolean, value_jsonb;

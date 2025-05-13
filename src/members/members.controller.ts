@@ -22,9 +22,13 @@ import {
 import { Public } from 'src/auth/decorators/public.decorator';
 import Sqids from 'sqids';
 import { PrivateCoachingService } from 'src/private-coaching/private-coaching.service';
+import { AppService } from 'src/app.service';
 @Controller('members')
 export class MembersController {
-  constructor(private readonly membersService: MembersService) {}
+  constructor(
+    private readonly membersService: MembersService,
+    private readonly appService: AppService,
+  ) {}
 
   @Get('visit')
   @Render('members/visit')
@@ -104,6 +108,7 @@ export class MembersController {
         getCurrentDate: new Date().toISOString().split('T')[0],
         user: req.user,
         member: member,
+        weekendOnly: await this.appService.getWeekendOnly(),
       };
     }
   }

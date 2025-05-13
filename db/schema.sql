@@ -71,6 +71,45 @@ CREATE TABLE public.schema_migrations (
 ALTER TABLE public.schema_migrations OWNER TO postgres;
 
 --
+-- Name: config; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.config (
+    id integer NOT NULL,
+    key character varying(255) NOT NULL,
+    value_string character varying(255),
+    value_integer integer,
+    value_datetime timestamp with time zone,
+    value_boolean boolean,
+    value_jsonb jsonb
+);
+
+
+ALTER TABLE whygym.config OWNER TO postgres;
+
+--
+-- Name: config_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.config_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE whygym.config_id_seq OWNER TO postgres;
+
+--
+-- Name: config_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.config_id_seq OWNED BY whygym.config.id;
+
+
+--
 -- Name: create_user_requests; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -520,6 +559,13 @@ ALTER SEQUENCE whygym.visits_id_seq OWNED BY whygym.visits.id;
 
 
 --
+-- Name: config id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.config ALTER COLUMN id SET DEFAULT nextval('whygym.config_id_seq'::regclass);
+
+
+--
 -- Name: create_user_requests id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -605,6 +651,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: config config_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.config
+    ADD CONSTRAINT config_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: create_user_requests create_user_requests_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
 --
 
@@ -682,6 +736,14 @@ ALTER TABLE ONLY whygym.roles
 
 ALTER TABLE ONLY whygym.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: config unique_key; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.config
+    ADD CONSTRAINT unique_key UNIQUE (key);
 
 
 --
