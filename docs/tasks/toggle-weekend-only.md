@@ -88,6 +88,6 @@ Feature: Toggle Weekend-Only Membership Option
 1. The weekend-only option should be stored in a database setting
 2. The toggle should be implemented as a boolean flag
 3. Changes to the setting should be atomic and transactional
-5. The feature should be implemented with proper access control
-6. The membership form should dynamically update based on the current setting
-7. Existing weekend-only memberships should be grandfathered in when the option is disabled
+4. The feature should be implemented with proper access control
+5. The membership form should dynamically update based on the current setting
+6. Existing weekend-only memberships should be grandfathered in when the option is disabled
