@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extend Your Membership - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .extension-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .extension-option {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .extension-option:hover {
+            border-color: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.15);
+        }
+        .extension-option.selected {
+            border-color: #22c55e;
+            background-color: #f0fdf4;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+        }
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .duration-label {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: #1f2937;
+        }
+        .savings-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .price-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+        .discounted-price {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #22c55e;
+        }
+        .new-expiry {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .membership-info {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 1rem;
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        .continue-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 1rem;
+            border-radius: 9999px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .continue-btn:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .continue-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .radio-indicator {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            transition: all 0.3s ease;
+        }
+        .extension-option.selected .radio-indicator {
+            border-color: #22c55e;
+            background-color: #22c55e;
+        }
+        .extension-option.selected .radio-indicator::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <a href="/member-dashboard" class="text-2xl">←</a>
+            <h1 class="text-xl text-green-800 font-bold">Extend Your Membership</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
+
+        {{#if error}}
+            <div class="p-4">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    {{error}}
+                </div>
+                <a href="{{redirectUrl}}" class="text-green-600 underline">Go back</a>
+            </div>
+        {{else}}
+            <!-- Current Membership Info -->
+            <div class="membership-info">
+                <h2 class="text-xl font-semibold mb-4">Current Membership</h2>
+                <div class="info-row">
+                    <span>Member:</span>
+                    <span>{{member.nickname}}</span>
+                </div>
+                <div class="info-row">
+                    <span>Status:</span>
+                    <span class="capitalize">{{member.membershipStatus}}</span>
+                </div>
+                <div class="info-row">
+                    <span>Current Expiry:</span>
+                    <span>{{formatDate member.endDate}}</span>
+                </div>
+                <div class="info-row">
+                    <span>Days Remaining:</span>
+                    <span class="font-bold">{{member.daysRemaining}} days</span>
+                </div>
+            </div>
+
+            <form action="/member-extend/request" method="POST" id="extensionForm">
+                <!-- Extension Options -->
+                <div class="extension-options">
+                    {{#each extensionOptions}}
+                        <div class="extension-option" data-duration="{{this.duration}}" onclick="selectOption({{this.duration}})">
+                            <div class="radio-indicator"></div>
+                            <div class="option-header">
+                                <div class="duration-label">{{this.label}}</div>
+                                {{#if this.savings}}
+                                    <div class="savings-badge">Save {{formatCurrency this.savings}}</div>
+                                {{/if}}
+                            </div>
+                            <div class="price-section">
+                                {{#if this.discountedPrice}}
+                                    <span class="original-price">{{formatCurrency this.price}}</span>
+                                    <span class="discounted-price">{{formatCurrency this.discountedPrice}}</span>
+                                {{else}}
+                                    <span class="discounted-price">{{formatCurrency this.price}}</span>
+                                {{/if}}
+                            </div>
+                            <div class="new-expiry">
+                                New expiration: {{formatDate this.newExpirationDate}}
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <input type="hidden" name="selectedDuration" id="selectedDuration">
+                <button type="submit" class="continue-btn" id="continueBtn" disabled>
+                    Continue to Checkout <span class="ml-2">→</span>
+                </button>
+            </form>
+        {{/if}}
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function selectOption(duration) {
+            // Remove selected class from all options
+            document.querySelectorAll('.extension-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            const selectedOption = document.querySelector(`[data-duration="${duration}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+            
+            // Update hidden input and enable continue button
+            document.getElementById('selectedDuration').value = duration;
+            document.getElementById('continueBtn').disabled = false;
+        }
+
+        // Handle form submission with redirect
+        document.getElementById('extensionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const response = await fetch('/member-extend/request', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            if (result.redirect) {
+                window.location.href = result.redirect;
+            }
+        });
+    </script>
+</body>
+</html> 

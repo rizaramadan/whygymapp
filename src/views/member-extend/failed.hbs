@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .failure-header {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .failure-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .failure-details {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            margin: 1rem;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #fee2e2;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #7f1d1d;
+            font-weight: 500;
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #991b1b;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .btn {
+            padding: 1rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        .btn-secondary {
+            background: white;
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+        .btn-secondary:hover {
+            background: #fef2f2;
+        }
+        .btn-outline {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+        .support-info {
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 1rem;
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+        .reference-id {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            color: #ef4444;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .troubleshooting {
+            background: white;
+            border-radius: 1rem;
+            margin: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .troubleshooting ul {
+            list-style: none;
+            padding: 0;
+        }
+        .troubleshooting li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: flex-start;
+        }
+        .troubleshooting li:last-child {
+            border-bottom: none;
+        }
+        .check-icon {
+            color: #22c55e;
+            margin-right: 0.75rem;
+            margin-top: 0.125rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Failure Header -->
+        <div class="failure-header">
+            <div class="failure-icon">
+                <div class="text-4xl">❌</div>
+            </div>
+            <h1 class="text-2xl font-bold mb-2">Payment Failed</h1>
+            <p class="text-red-100">Your membership extension could not be processed</p>
+        </div>
+
+        <!-- Failure Details -->
+        <div class="failure-details">
+            <h2 class="text-xl font-semibold mb-4 text-center text-red-800">Transaction Details</h2>
+            
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">❌ Failed</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Reference ID:</span>
+                <span class="detail-value font-mono text-sm">{{referenceId}}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Attempted:</span>
+                <span class="detail-value">{{formatDate (new Date)}}</span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Reason:</span>
+                <span class="detail-value">Payment processing error</span>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Tips -->
+        <div class="troubleshooting">
+            <h3 class="text-lg font-semibold mb-4">Common Issues & Solutions</h3>
+            <ul>
+                <li>
+                    <span class="check-icon">•</span>
+                    <span>Check your internet connection and try again</span>
+                </li>
+                <li>
+                    <span class="check-icon">•</span>
+                    <span>Ensure sufficient balance in your account/wallet</span>
+                </li>
+                <li>
+                    <span class="check-icon">•</span>
+                    <span>Verify your payment method details are correct</span>
+                </li>
+                <li>
+                    <span class="check-icon">•</span>
+                    <span>Try using a different payment method</span>
+                </li>
+                <li>
+                    <span class="check-icon">•</span>
+                    <span>Contact your bank if using bank transfer</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Support Information -->
+        <div class="support-info">
+            <h3 class="text-lg font-semibold mb-3 text-blue-800">Need Help?</h3>
+            <p class="text-sm text-blue-700 mb-2">
+                If the problem persists, please contact our support team with the reference number below:
+            </p>
+            <div class="reference-id">{{referenceId}}</div>
+            
+            <div class="text-center mt-4">
+                <p class="text-sm text-blue-700">
+                    📧 Email: <a href="mailto:{{supportContact}}" class="underline">{{supportContact}}</a>
+                </p>
+                <p class="text-sm text-blue-700">
+                    📞 Phone: <a href="tel:+628123456789" class="underline">+62 812 3456 789</a>
+                </p>
+                <p class="text-sm text-blue-700">
+                    💬 Live Chat: Available 9 AM - 9 PM
+                </p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/member-extend/request" class="btn btn-primary">
+                Try Again
+            </a>
+            <a href="/member-extend/checkout/{{referenceId}}" class="btn btn-secondary">
+                Change Payment Method
+            </a>
+            <a href="/member-dashboard" class="btn btn-outline">
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="p-4 text-center">
+            <p class="text-xs text-gray-500">
+                Your membership was not affected by this failed transaction.
+                You can try extending again at any time.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Auto-redirect to extension request after 2 minutes
+        setTimeout(() => {
+            const redirectChoice = confirm('Would you like to try extending your membership again?');
+            if (redirectChoice) {
+                window.location.href = '/member-extend/request';
+            }
+        }, 120000); // 2 minutes
+
+        // Track retry attempts (for analytics)
+        function trackRetry(type) {
+            console.log(`User attempting retry via: ${type}`);
+            // In real implementation, send analytics event
+        }
+
+        // Add click tracking to retry buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const text = e.target.textContent.trim();
+                if (text.includes('Try Again') || text.includes('Change Payment')) {
+                    trackRetry(text);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Processing - WhyGym</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .mobile-container {
+            max-width: 430px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        .payment-container {
+            padding: 1rem;
+        }
+        .payment-info {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        .qr-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .virtual-account {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .va-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #22c55e;
+            text-align: center;
+            padding: 1rem;
+            background: #f0fdf4;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            letter-spacing: 2px;
+        }
+        .instructions {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+        }
+        .instruction-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: flex-start;
+        }
+        .instruction-list li:last-child {
+            border-bottom: none;
+        }
+        .step-number {
+            background: #22c55e;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .timer {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .timer-text {
+            color: #92400e;
+            font-weight: 600;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .btn {
+            padding: 0.75rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .btn-success {
+            background: #22c55e;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #16a34a;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center">
+            <a href="javascript:history.back()" class="text-2xl">←</a>
+            <h1 class="text-xl text-green-800 font-bold">Complete Payment</h1>
+            <a href="/logout" class="text-green-500 font-medium">Logout</a>
+        </header>
+
+        <div class="payment-container">
+            <!-- Payment Information -->
+            <div class="payment-info">
+                <h2 class="text-xl font-semibold mb-4">Payment Details</h2>
+                <div class="info-row">
+                    <span>Amount:</span>
+                    <span class="font-bold">{{formatCurrency amount}}</span>
+                </div>
+                <div class="info-row">
+                    <span>Payment Method:</span>
+                    <span>{{paymentMethod}}</span>
+                </div>
+                <div class="info-row">
+                    <span>Order ID:</span>
+                    <span class="font-mono text-sm">{{referenceId}}</span>
+                </div>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer">
+                <div class="timer-text">Payment expires in: <span id="countdown">30:00</span></div>
+            </div>
+
+            {{#if qrCode}}
+                <!-- QR Code Payment -->
+                <div class="qr-container">
+                    <h3 class="text-lg font-semibold mb-4">Scan QR Code to Pay</h3>
+                    <div class="qr-code">
+                        <div class="text-6xl">📱</div>
+                    </div>
+                    <p class="text-sm text-gray-600">Open your e-wallet app and scan this QR code</p>
+                </div>
+            {{/if}}
+
+            {{#if virtualAccountNumber}}
+                <!-- Virtual Account Payment -->
+                <div class="virtual-account">
+                    <h3 class="text-lg font-semibold mb-4">Transfer to Virtual Account</h3>
+                    <p class="text-sm text-gray-600 mb-2">Virtual Account Number:</p>
+                    <div class="va-number">{{virtualAccountNumber}}</div>
+                    <p class="text-xs text-gray-500 text-center">Copy this number and transfer the exact amount</p>
+                </div>
+            {{/if}}
+
+            <!-- Payment Instructions -->
+            <div class="instructions">
+                <h3 class="text-lg font-semibold mb-4">Payment Instructions</h3>
+                <ol class="instruction-list">
+                    {{#each instructions}}
+                        <li>
+                            <div class="step-number">{{@index}}</div>
+                            <span>{{this}}</span>
+                        </li>
+                    {{/each}}
+                </ol>
+            </div>
+
+            <!-- Simulation Buttons (for testing) -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <p class="text-sm text-yellow-800 mb-3">
+                    <strong>Demo Mode:</strong> Click buttons below to simulate payment results
+                </p>
+                <div class="action-buttons">
+                    <a href="/member-extend/payment/{{referenceId}}/success" class="btn btn-success">
+                        Simulate Success
+                    </a>
+                    <a href="/member-extend/payment/{{referenceId}}/failed" class="btn btn-danger">
+                        Simulate Failure
+                    </a>
+                </div>
+            </div>
+
+            <!-- Help and Support -->
+            <div class="text-center text-sm text-gray-600">
+                <p>Having trouble? <a href="mailto:support@whygym.com" class="text-green-600 underline">Contact Support</a></p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-8 text-center">
+            <p class="text-green-600">© 2025 whygym. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Countdown timer
+        let timeLeft = 30 * 60; // 30 minutes in seconds
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            document.getElementById('countdown').textContent = display;
+            
+            if (timeLeft <= 0) {
+                document.getElementById('countdown').textContent = 'EXPIRED';
+                // In real implementation, redirect to timeout page
+                return;
+            }
+            
+            timeLeft--;
+        }
+        
+        // Update timer every second
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        
+        // Auto-refresh to check payment status (in real implementation)
+        // This would poll the server to check if payment was completed
+        setTimeout(() => {
+            // In real implementation, check payment status via API
+            console.log('Checking payment status...');
+        }, 5000);
+    </script>
+</body>
+</html> 
