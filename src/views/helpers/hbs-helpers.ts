@@ -34,6 +34,16 @@ export function registerHelpers() {
     });
   });
 
+  //create helper to show remaining days from now to the date
+  hbs.registerHelper('remainingDays', function (date: string) {
+    if (!date) return '';
+    const dateObj = new Date(date);
+    const now = new Date();
+    const diffTime = dateObj.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  });
+
   hbs.registerHelper('dashToSpaceCapitalize', function (text: string) {
     if (!text) return '';
     return text.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());

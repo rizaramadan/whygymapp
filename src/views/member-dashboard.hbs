@@ -98,6 +98,7 @@
                 <h2 class="text-lg font-semibold text-gray-800">Welcome back, {{user.email}}</h2>
                 <p class="text-sm text-gray-500">Your membership is active until {{extractDateId memberActiveDate.endDate}}</p>
             </div>
+            
             <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
                 {{#if user.picUrl}}
                     <img src="{{user.picUrl}}" alt="{{user.fullName}}" class="w-full h-full object-cover">
@@ -110,6 +111,9 @@
                     </div>
                 {{/if}}
             </div>
+        </div>
+        <div class="p-4">
+            <h2 class="text-lg font-semibold text-green-800">Membership remaining:  <span id="remainingDays">{{remainingDays memberActiveDate.endDate}}</span> <span id="remainingDaysText">day</span></p>
         </div>
 
         <div class="p-4">
@@ -139,6 +143,17 @@
     </div> 
 
     <script>
+    // Initialize pluralization on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const remainingDaysElement = document.getElementById('remainingDays');
+        const remainingDaysTextElement = document.getElementById('remainingDaysText');
+        
+        if (remainingDaysElement && remainingDaysTextElement) {
+            const daysCount = parseInt(remainingDaysElement.textContent);
+            remainingDaysTextElement.textContent = daysCount > 1 ? 'days' : 'day';
+        }
+    });
+
     async function downloadQRCode() {
         try {
             const qrCodeImage = document.getElementById('qrCodeImage');
