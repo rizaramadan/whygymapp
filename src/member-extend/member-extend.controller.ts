@@ -56,14 +56,15 @@ export class MemberExtendController {
   async processExtensionRequest(
     @Request() req: { user: User },
     @Body('selectedDuration') selectedDuration: string,
-    @Res() res: Response,
   ) {
     const referenceId = await this.memberExtendService.createExtensionOrder(
       req.user.email,
       parseInt(selectedDuration)
     );
     
-    res.redirect(`/member-extend/checkout/${referenceId}`);
+    return {
+        redirectUrl: `/member-extend/checkout/${referenceId}`
+    }
   }
 
   @Get('checkout/:referenceId')
@@ -72,7 +73,15 @@ export class MemberExtendController {
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
   ) {
-    const checkoutData = await this.memberExtendService.getCheckoutData(referenceId, req.user.email);
+    const memberActiveDate = await this.membersService.getMemberActiveDate(req.user.email);
+    
+    if (!memberActiveDate) {
+      return {
+        error: 'You must have an active membership to extend it.',
+        redirectUrl: '/member-dashboard'
+      };
+    }
+    const checkoutData = await this.memberExtendService.getCheckoutData(referenceId, req.user.email, memberActiveDate);
     
     if (!checkoutData) {
       return {

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { getMemberActiveDateRow } from 'db/src/query_sql';
 
 export interface MemberData {
   id: number;
@@ -113,13 +114,13 @@ export class MemberExtendService {
     return referenceId;
   }
 
-  async getCheckoutData(referenceId: string, email: string): Promise<CheckoutData | null> {
+  async getCheckoutData(referenceId: string, email: string, memberActiveDate: getMemberActiveDateRow): Promise<CheckoutData | null> {
     const memberData = await this.getMemberDataForExtension(email);
     if (!memberData) return null;
 
     // Extract duration from reference ID or fetch from database
     // For static data, let's assume 180 days extension
-    const extensionOptions = await this.getExtensionOptions({ endDate: memberData.endDate, gender: memberData.gender });
+    const extensionOptions = await this.getExtensionOptions({ endDate: memberActiveDate.endDate, gender: memberData.gender });
     const selectedExtension = extensionOptions[1]; // 180 days option
     
     const subtotal = selectedExtension.discountedPrice || selectedExtension.price;
