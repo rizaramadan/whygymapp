@@ -16,267 +16,126 @@ This feature allows active gym members to extend their membership duration by ma
 - **Annual Extension**: 360 days
 
 
-## User Stories
-
-### As an Active Member
-- I want to view my current membership status and expiration date
-- I want to see available extension options with pricing
-- I want to select an extension duration and proceed to payment
-- I want to receive confirmation of successful extension
-- I want to see my updated membership expiration date
-
-### As a Gym Administrator
-- I want to track all membership extensions
-- I want to see extension revenue analytics
-- I want to handle failed payment scenarios
-- I want to apply manual extensions when needed
-
-## Technical Requirements
-
-### Database Schema Changes
-
-#### New Table: `membership_extensions`
-```sql
-CREATE TABLE whygym.membership_extensions (
-    id integer PRIMARY KEY,
-    member_id integer NOT NULL REFERENCES whygym.members(id),
-    extension_days integer NOT NULL,
-    extension_type varchar(20) NOT NULL, -- 'monthly', 'quarterly', 'semi-annual', 'annual'
-    price numeric(10,2) NOT NULL,
-    previous_end_date date NOT NULL,
-    new_end_date date NOT NULL,
-    order_reference_id varchar(40) REFERENCES whygym.orders(reference_id),
-    status varchar(20) DEFAULT 'pending', -- 'pending', 'completed', 'failed', 'cancelled'
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    notes text,
-    additional_data jsonb
-);
-```
-
-#### Members Table Update
-```sql
--- Add membership end date tracking
-ALTER TABLE whygym.members 
-ADD COLUMN membership_end_date date,
-ADD COLUMN last_extension_date timestamp with time zone;
-```
-
-### API Endpoints
-
-#### GET `/api/members/{member_id}/membership-status`
-**Purpose**: Get current membership details and extension eligibility
-**Response**:
-```json
-{
-  "member_id": 123,
-  "membership_status": "active",
-  "membership_start_date": "2024-01-01",
-  "membership_end_date": "2024-12-31",
-  "days_remaining": 45,
-  "eligible_for_extension": true,
-  "extension_options": [
-    {
-      "type": "monthly",
-      "days": 30,
-      "price": 50.00,
-      "discount_percentage": 0
-    },
-    {
-      "type": "quarterly", 
-      "days": 90,
-      "price": 142.50,
-      "discount_percentage": 5
-    }
-  ]
-}
-```
-
-#### POST `/api/members/{member_id}/extend-membership`
-**Purpose**: Initiate membership extension process
-**Request Body**:
-```json
-{
-  "extension_type": "quarterly",
-  "payment_method": "credit_card"
-}
-```
-**Response**:
-```json
-{
-  "extension_id": 456,
-  "member_id": 123,
-  "extension_type": "quarterly",
-  "extension_days": 90,
-  "price": 142.50,
-  "new_end_date": "2025-03-31",
-  "order_reference_id": "ext_789abc",
-  "payment_url": "https://payment.gateway.com/pay/ext_789abc",
-  "status": "pending"
-}
-```
-
-#### PUT `/api/membership-extensions/{extension_id}/status`
-**Purpose**: Update extension status (webhook for payment gateway)
-**Request Body**:
-```json
-{
-  "status": "completed",
-  "payment_reference": "pay_123xyz",
-  "payment_timestamp": "2024-01-15T10:30:00Z"
-}
-```
-
-#### GET `/api/members/{member_id}/extension-history`
-**Purpose**: Get member's extension history
-**Response**:
-```json
-{
-  "extensions": [
-    {
-      "id": 456,
-      "extension_type": "quarterly",
-      "extension_days": 90,
-      "price": 142.50,
-      "previous_end_date": "2024-12-31",
-      "new_end_date": "2025-03-31",
-      "status": "completed",
-      "created_at": "2024-01-15T10:00:00Z"
-    }
-  ]
-}
-```
-
 ## User Experience Flow
 
-### Member Extension Flow
-1. **Login & Dashboard**: Member logs in and sees membership status widget
-2. **Extension Page**: Click "Extend Membership" shows current status and options
-3. **Selection**: Choose extension duration and see pricing breakdown
-4. **Payment**: Redirect to payment gateway with pre-filled order details
-5. **Confirmation**: Return to success page with updated membership details
-6. **Email Notification**: Receive confirmation email with receipt
 
-### Admin Management Flow
-1. **Extensions Dashboard**: View all pending/completed extensions
-2. **Member Lookup**: Search member and see extension history
-3. **Manual Extension**: Apply manual extensions with reason tracking
-4. **Revenue Analytics**: View extension revenue by period and type
+### Step 2: Extension Duration Selection
+2.1. Display page header: "Extend Your Membership" at url /member-extend/request
+2.2. Show current membership information:
+    - Current membership type
+    - Current expiration date
+    - Days remaining
+2.3. Present three extension options with clear pricing:
+    - **90 Days (Quarterly)**: $X.XX - New expiration: [calculated date]
+    - **180 Days (Semi-Annual)**: $X.XX - New expiration: [calculated date]  
+    - **360 Days (Annual)**: $X.XX - New expiration: [calculated date]
+2.4. Include promotional messaging or discounts if applicable
+2.5. User selects one option via radio buttons or cards
+2.6. "Continue" button becomes active after selection
+2.7. Form validation ensures one option is selected before proceeding
 
-## Business Logic
+### Step 3: Order Summary & Payment Method Selection
+**URL: `/member-extend/checkout`**
 
-### Extension Calculation
-- New end date = Current end date + Extension days
-- If membership already expired, base calculation on current date
-- Track previous end date for audit purposes
+3.1. Display comprehensive order summary:
+    - Selected extension duration
+    - Price breakdown (base price, taxes, fees)
+    - Current membership expiration
+    - New membership expiration date
+    - Total amount due
+3.2. Show available payment methods:
+    - Credit/Debit Card
+    - Bank Transfer (if supported)
+    - Digital Wallets (PayPal, Apple Pay, etc.)
+    - Stored payment methods (if user has saved cards)
+3.3. Display terms and conditions checkbox
+3.4. Include cancellation/refund policy information
+3.5. "Proceed to Payment" button (disabled until payment method selected and terms accepted)
 
-### Payment Processing
-- Integration with existing payment gateway
-- Use existing `orders` table for payment tracking
-- Link extension record to order via `reference_id`
-- Handle payment callbacks to update status
+### Step 4: Payment Processing
+**URL: `/member-extend/process`** (internal processing)
 
-### Status Management
-- **pending**: Extension created, payment not completed
-- **completed**: Payment successful, membership updated
-- **failed**: Payment failed, membership unchanged
-- **cancelled**: Extension cancelled before payment
+4.1. Validate form inputs and selected options
+4.2. If validation fails:
+    - Display error messages inline
+    - Highlight problematic fields
+    - Keep user on current page
+4.3. If validation passes:
+    - Show loading indicator
+    - Create payment session/order in system
+    - Redirect to payment gateway with:
+      - Order ID
+      - Amount
+      - Member details
+      - Return URLs (success/failure/cancel)
 
-## Edge Cases & Error Handling
+### Step 5: Payment Gateway Interaction
+**URL: External payment gateway** (third-party URL)
 
-### Payment Failures
-- Keep extension record with 'failed' status
-- Allow retry of same extension within 24 hours
-- Send email notification of payment failure
+5.1. User interacts with third-party payment interface
+5.2. Possible outcomes:
+    - **Success**: Payment processed successfully
+    - **Failure**: Payment declined or failed
+    - **Cancelled**: User cancels payment process
+    - **Timeout**: Session expires
 
-### Membership Status Changes
-- If member becomes inactive during payment process, reject extension
-- Handle concurrent extension attempts with database locking
+### Step 6: Payment Gateway Callback Processing
+**URL: `/member-extend/callback`** (webhook endpoint)
 
-### Data Consistency
-- Use database transactions for membership updates
-- Implement rollback for failed extension applications
-- Log all extension attempts for audit trail
+6.1. Payment gateway sends webhook/callback to system
+6.2. System validates callback authenticity and payment status
+6.3. **For successful payments**:
+    - Update member's expiration date in database
+    - Create payment record with transaction details
+    - Generate receipt/invoice
+    - Send confirmation email to member
+    - Log transaction for audit purposes
+6.4. **For failed payments**:
+    - Log failure reason
+    - Update order status to 'failed'
+    - Prepare user-friendly error message
 
-### Validation Rules
-- Cannot extend if membership status is not 'active'
-- Cannot extend if member has pending extension orders
-- Cannot extend beyond system-defined maximum future date (e.g., 5 years)
+### Step 7: User Return & Result Display
+**URLs:**
+- Success: `/member-extend/success`
+- Failure: `/member-extend/failed` 
+- Cancelled: `/member-extend/cancelled`
 
-## Security Considerations
+7.1. **Success Flow**:
+    - Redirect to success page (`/member-extend/success`)
+    - Display confirmation message with:
+      - Extension details (duration, new expiration date)
+      - Payment confirmation number
+      - Receipt download link
+      - Updated membership card/QR code
+    - Provide navigation back to member dashboard
+7.2. **Failure Flow**:
+    - Redirect to failure page (`/member-extend/failed`)
+    - Display error message explaining what went wrong
+    - Offer options to:
+      - Retry payment with same selection
+      - Choose different payment method
+      - Contact support for assistance
+7.3. **Cancelled Flow**:
+    - Redirect back to extension selection page (`/member-extend/request`)
+    - Display message: "Payment was cancelled. Your membership was not extended."
+    - Allow user to restart process
 
-### Payment Security
-- Never store full payment details
-- Use secure payment gateway integration
-- Implement payment webhook signature validation
+### Step 8: Post-Transaction Updates
+**Backend processes** (no specific user-facing URL)
 
-### Access Control
-- Members can only extend their own membership
-- Admins can extend any member's subscription
-- Validate member ownership in API endpoints
+8.1. Update member dashboard to reflect new expiration date
+8.2. Update gym access systems with new membership validity
+8.3. Send automated email with:
+    - Extension confirmation
+    - Updated membership details
+    - PDF receipt attachment
+8.4. Update member's mobile app (if applicable)
+8.5. Create audit trail entry for the transaction
 
-### Data Protection
-- Encrypt sensitive extension data
-- Audit log all extension activities
-- Implement rate limiting for extension attempts
-
-## Monitoring & Analytics
-
-### Key Metrics
-- Extension conversion rate
-- Average extension duration selected
-- Revenue per extension type
-- Failed payment rate
-
-### Alerts
-- High number of failed extensions
-- Unusual extension patterns
-- Payment gateway issues
-
-## Integration Points
-
-### Email Service
-- Extension confirmation emails
-- Payment failure notifications
-- Membership expiry reminders
-
-### Payment Gateway
-- Process extension payments
-- Handle webhooks for status updates
-- Manage refunds if needed
-
-### Existing Systems
-- Update member records in real-time
-- Integrate with existing order management
-- Sync with membership status tracking
-
-## Future Enhancements
-
-### Phase 2 Features
-- Auto-renewal subscriptions
-- Family membership extensions
-- Corporate bulk extensions
-- Promotional discount codes
-
-### Mobile App Integration
-- Push notifications for extension reminders
-- In-app purchase flow
-- Offline extension queue
-
-## Success Criteria
-
-### Functional
-- Active members can successfully extend memberships
-- Payment processing works reliably
-- Membership dates update correctly
-- Admin tools provide necessary visibility
-
-### Performance
-- Extension process completes within 30 seconds
-- Payment gateway response time < 5 seconds
-- System handles 100 concurrent extensions
-
-### Business
-- 80% of eligible members use self-service extension
-- 95% extension payment success rate
-- Reduced manual administrative work by 70% 
+### Error Handling & Edge Cases
+- **Network connectivity issues**: Display retry options and offline message
+- **Payment gateway unavailable**: Show maintenance message and alternative contact methods
+- **Duplicate payment attempts**: Prevent double-charging with idempotency checks
+- **Session timeout**: Save form progress and allow resumption after re-authentication
+- **Invalid membership during process**: Real-time validation and graceful error handling
