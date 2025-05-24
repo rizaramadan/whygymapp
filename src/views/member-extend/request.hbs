@@ -173,12 +173,8 @@
                     <span>{{member.nickname}}</span>
                 </div>
                 <div class="info-row">
-                    <span>Status:</span>
-                    <span class="capitalize">{{member.membershipStatus}}</span>
-                </div>
-                <div class="info-row">
-                    <span>Current Expiry:</span>
-                    <span>{{formatDate member.endDate}}</span>
+                    <span>Current Expire Date:</span>
+                    <span>{{extractDateId member.endDate}}</span>
                 </div>
                 <div class="info-row">
                     <span>Days Remaining:</span>
@@ -194,9 +190,6 @@
                             <div class="radio-indicator"></div>
                             <div class="option-header">
                                 <div class="duration-label">{{this.label}}</div>
-                                {{#if this.savings}}
-                                    <div class="savings-badge">Save {{formatCurrency this.savings}}</div>
-                                {{/if}}
                             </div>
                             <div class="price-section">
                                 {{#if this.discountedPrice}}
@@ -207,7 +200,7 @@
                                 {{/if}}
                             </div>
                             <div class="new-expiry">
-                                New expiration: {{formatDate this.newExpirationDate}}
+                                New expiration: {{extractDateId this.newExpirationDate}}
                             </div>
                         </div>
                     {{/each}}
