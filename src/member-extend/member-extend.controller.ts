@@ -39,10 +39,11 @@ export class MemberExtendController {
       startDate: memberActiveDate.startDate,
       endDate: memberActiveDate.endDate,
       duration: memberActiveDate.duration,
-      daysRemaining: Math.max(0, daysRemaining)
+      daysRemaining: Math.max(0, daysRemaining),
+      gender: memberDetails?.additionalData?.gender || 'male',
     };
 
-    const extensionOptions = await this.memberExtendService.getExtensionOptions(memberActiveDate);
+    const extensionOptions = await this.memberExtendService.getExtensionOptions(memberData);
     
     return {
       member: memberData,

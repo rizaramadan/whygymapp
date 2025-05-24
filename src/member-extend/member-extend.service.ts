@@ -9,6 +9,7 @@ export interface MemberData {
   endDate: Date;
   duration: number;
   daysRemaining: number;
+  gender: string;
 }
 
 export interface ExtensionOption {
@@ -30,9 +31,30 @@ export interface CheckoutData {
   newExpiration: Date;
 }
 
+
+
 @Injectable()
 export class MemberExtendService {
   
+  private static mapPrice = {
+    'male': {
+        '90': 740000,
+        '180': 1440000,
+        '360': 2440000
+    },
+    'female': {
+        '90': 1150000,
+        '180': 2230000,
+        '360': 4100000
+    }
+  }
+      
+    private static mapExtension = {
+          '90': [90, 30],
+          '180': [180, 30, 60],
+          '360': [360, 60, 90]
+      }
+
   async getMemberDataForExtension(email: string): Promise<MemberData | null> {
     // Static data for testing - in real implementation, this would query the database
     const staticMemberData: MemberData = {
@@ -43,7 +65,8 @@ export class MemberExtendService {
       startDate: new Date('2024-01-15'),
       endDate: new Date('2025-04-15'), // 90 days from now
       duration: 360,
-      daysRemaining: 90
+      daysRemaining: 90,
+      gender: 'male'
     };
     
     // Only return data if member has active status
@@ -54,33 +77,28 @@ export class MemberExtendService {
     return staticMemberData;
   }
 
-  async getExtensionOptions(memberData: { endDate: Date }): Promise<ExtensionOption[]> {
+  async getExtensionOptions(memberData: { endDate: Date, gender: string }): Promise<ExtensionOption[]> {
     const baseDate = memberData.endDate;
+    const gender = memberData.gender;
      
     return [
       {
-        duration: 90,
-        label: 'Quarterly Extension (90 Days)',
-        price: 750000,
-        discountedPrice: 675000,
-        savings: 75000,
-        newExpirationDate: new Date(baseDate.getTime() + (90 * 24 * 60 * 60 * 1000))
+        duration: 90,   
+        label: '3 bulan',
+        price:  MemberExtendService.mapPrice[gender]['90'],
+        newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['90'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       },
       {
         duration: 180,
-        label: 'Semi-Annual Extension (180 Days)',
-        price: 1400000,
-        discountedPrice: 1200000,
-        savings: 200000,
-        newExpirationDate: new Date(baseDate.getTime() + (180 * 24 * 60 * 60 * 1000))
+        label: '6 bulan',
+        price: MemberExtendService.mapPrice[gender]['180'],
+        newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['180'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       },
       {
         duration: 360,
-        label: 'Annual Extension (360 Days)',
-        price: 2700000,
-        discountedPrice: 2200000,
-        savings: 500000,
-        newExpirationDate: new Date(baseDate.getTime() + (360 * 24 * 60 * 60 * 1000))
+        label: '1 tahun',
+        price: MemberExtendService.mapPrice[gender]['360'],
+        newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['360'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       }
     ];
   }
@@ -101,7 +119,7 @@ export class MemberExtendService {
 
     // Extract duration from reference ID or fetch from database
     // For static data, let's assume 180 days extension
-    const extensionOptions = await this.getExtensionOptions({ endDate: memberData.endDate });
+    const extensionOptions = await this.getExtensionOptions({ endDate: memberData.endDate, gender: memberData.gender });
     const selectedExtension = extensionOptions[1]; // 180 days option
     
     const subtotal = selectedExtension.discountedPrice || selectedExtension.price;
