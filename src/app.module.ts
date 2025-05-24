@@ -13,6 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
 import { PrivateCoachingModule } from './private-coaching/private-coaching.module';
+import { MemberExtendModule } from './member-extend/member-extend.module';
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -24,6 +25,7 @@ import { PrivateCoachingModule } from './private-coaching/private-coaching.modul
     HttpModule,
     OrdersModule,
     PrivateCoachingModule,
+    MemberExtendModule,
   ],
   controllers: [AppController],
   providers: [
