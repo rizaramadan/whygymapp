@@ -592,3 +592,8 @@ INSERT INTO whygym.extension_orders (
 VALUES ($1, $2, $3)
 RETURNING id, member_id, member_email, reference_id, duration_days;
 
+-- name: getExtensionOrder :one
+SELECT id, member_id, member_email, reference_id, duration_days
+FROM whygym.extension_orders
+WHERE reference_id = $1
+LIMIT 1;

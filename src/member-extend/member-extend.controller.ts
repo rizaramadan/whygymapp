@@ -92,9 +92,7 @@ export class MemberExtendController {
       parseInt(selectedDuration)
     );
     
-    return {
-        redirectUrl: `/member-extend/checkout/${referenceId}`
-    }
+    return `<script>window.location.href = '/member-extend/checkout/${referenceId}';</script>`
   }
 
   @Get('checkout/:referenceId')
@@ -120,7 +118,7 @@ export class MemberExtendController {
       };
     }
 
-    const paymentMethods = await this.memberExtendService.getPaymentMethods();
+    const paymentMethods = await this.memberExtendService.getPaymentMethods(checkoutData.total);
     
     return {
       ...checkoutData,

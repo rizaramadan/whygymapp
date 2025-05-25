@@ -1,5 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { getMemberActiveDateRow, createExtensionOrder } from '../../db/src/query_sql';
+import { getMemberActiveDateRow, createExtensionOrder, getExtensionOrder } from '../../db/src/query_sql';
+import { OrdersService } from '../orders/orders.service';
+import { PaymentMethodsResponse } from '../orders/orders.interfaces';
 import { Pool } from 'pg';
 
 export interface MemberData {
@@ -37,6 +39,7 @@ export interface CheckoutData {
 export class MemberExtendService {
   constructor(
     @Inject('DATABASE_POOL') private pool: Pool,
+    private readonly orderService: OrdersService
   ) {}
 
   //parseInt(process.env.PRICE_DIVISOR ?? '1')
@@ -131,9 +134,12 @@ export class MemberExtendService {
     // Extract duration from reference ID or fetch from database
     // For static data, let's assume 180 days extension
     const extensionOptions = await this.getExtensionOptions({ endDate: memberActiveDate.endDate, gender: memberData.gender });
-    const selectedExtension = extensionOptions[1]; // 180 days option
+
+    const extensionOrder = await getExtensionOrder(this.pool, { referenceId: referenceId });
+    const selectedExtension = extensionOptions.find(option => `${option.duration}` === `${extensionOrder?.durationDays || '90'}`)
+      || extensionOptions[0];
     
-    const subtotal = selectedExtension.discountedPrice || selectedExtension.price;
+    const subtotal = selectedExtension.price;
     const tax = Math.round(subtotal * 0.1); // 10% tax
     const total = subtotal + tax;
 
@@ -148,72 +154,9 @@ export class MemberExtendService {
     };
   }
 
-  async getPaymentMethods(): Promise<any> {
+  async getPaymentMethods(total: number): Promise<PaymentMethodsResponse> {
     // Static payment methods data similar to the existing checkout
-    return {
-      data: [
-        {
-          code: 'QRIS',
-          name: 'QRIS',
-          method: 'QR_CODE',
-          status: 'ACTIVE',
-          paymentGatewayFee: 2500,
-          logo: {
-            url: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/qr/qr-original.svg'
-          }
-        },
-        {
-          code: 'GOPAY',
-          name: 'GoPay',
-          method: 'E_WALLET',
-          status: 'ACTIVE',
-          paymentGatewayFee: 1500,
-          logo: {
-            url: 'https://seeklogo.com/images/G/gopay-logo-D62E2BE504-seeklogo.com.png'
-          }
-        },
-        {
-          code: 'OVO',
-          name: 'OVO',
-          method: 'E_WALLET',
-          status: 'ACTIVE',
-          paymentGatewayFee: 1500,
-          logo: {
-            url: 'https://seeklogo.com/images/O/ovo-logo-40A3F7F4A0-seeklogo.com.png'
-          }
-        },
-        {
-          code: 'DANA',
-          name: 'DANA',
-          method: 'E_WALLET',
-          status: 'ACTIVE',
-          paymentGatewayFee: 1500,
-          logo: {
-            url: 'https://seeklogo.com/images/D/dana-logo-8A96BB0A0A-seeklogo.com.png'
-          }
-        },
-        {
-          code: 'BCA',
-          name: 'Bank BCA',
-          method: 'BANK_TRANSFER',
-          status: 'ACTIVE',
-          paymentGatewayFee: 5000,
-          logo: {
-            url: 'https://seeklogo.com/images/B/bank-bca-logo-8D8F84CBAB-seeklogo.com.png'
-          }
-        },
-        {
-          code: 'MANDIRI',
-          name: 'Bank Mandiri',
-          method: 'BANK_TRANSFER',
-          status: 'ACTIVE',
-          paymentGatewayFee: 5000,
-          logo: {
-            url: 'https://seeklogo.com/images/B/bank-mandiri-logo-3F8F285F34-seeklogo.com.png'
-          }
-        }
-      ]
-    };
+    return this.orderService.getPaymentMethods(total);
   }
 
   async processPayment(email: string, referenceId: string, paymentMethod: string, paymentGatewayFee: number): Promise<any> {

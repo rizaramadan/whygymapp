@@ -2528,3 +2528,40 @@ export async function createExtensionOrder(client: Client, args: CreateExtension
     };
 }
 
+export const getExtensionOrderQuery = `-- name: getExtensionOrder :one
+SELECT id, member_id, member_email, reference_id, duration_days
+FROM whygym.extension_orders
+WHERE reference_id = $1
+LIMIT 1`;
+
+export interface getExtensionOrderArgs {
+    referenceId: string;
+}
+
+export interface getExtensionOrderRow {
+    id: number;
+    memberId: number;
+    memberEmail: string;
+    referenceId: string;
+    durationDays: number;
+}
+
+export async function getExtensionOrder(client: Client, args: getExtensionOrderArgs): Promise<getExtensionOrderRow | null> {
+    const result = await client.query({
+        text: getExtensionOrderQuery,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        memberEmail: row[2],
+        referenceId: row[3],
+        durationDays: row[4]
+    };
+}
+
