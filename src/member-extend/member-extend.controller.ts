@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Render, Request, Body, Param, Query, Redirect, Res } from '@nestjs/common';
-import { MemberExtendService } from './member-extend.service';
+import { MemberData, MemberExtendService } from './member-extend.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
 import { Response } from 'express';
@@ -57,8 +57,38 @@ export class MemberExtendController {
     @Request() req: { user: User },
     @Body('selectedDuration') selectedDuration: string,
   ) {
+    //duplicate code from GET /request because we need to check if the member has an active membership
+    const memberActiveDate = await this.membersService.getMemberActiveDate(req.user.email);
+    if (!memberActiveDate) {
+        return {
+          error: 'You must have an active membership to extend it.',
+          redirectUrl: '/member-dashboard'
+        };
+      }
+
+    // Get additional member details for the template
+    const memberDetails = await this.membersService.getActiveMembershipByEmail(req.user.email);
+    
+    // Calculate days remaining
+    const today = new Date();
+    const daysRemaining = Math.ceil((memberActiveDate.endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    const memberData : MemberData = {
+        id: memberActiveDate.id,
+        email: req.user.email,
+        nickname: memberDetails?.nickname || 'Member',
+        membershipStatus: memberDetails?.membershipStatus || 'active',
+        startDate: memberActiveDate.startDate || new Date(),
+        endDate: memberActiveDate.endDate || new Date(),
+        duration: parseInt(memberActiveDate.duration?.toString() || '0'),
+        daysRemaining: Math.max(0, daysRemaining),
+        gender: memberDetails?.additionalData?.gender || 'male',
+      };
+
+    console.log(parseInt(selectedDuration));
     const referenceId = await this.memberExtendService.createExtensionOrder(
       req.user.email,
+      memberData,
       parseInt(selectedDuration)
     );
     

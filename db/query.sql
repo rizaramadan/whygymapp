@@ -582,3 +582,13 @@ ON CONFLICT (key) DO UPDATE SET
     value_boolean = $5, 
     value_jsonb = $6
 RETURNING id, key, value_string, value_integer, value_datetime, value_boolean, value_jsonb;
+
+-- name: CreateExtensionOrder :one
+INSERT INTO whygym.extension_orders (
+    member_id,
+    member_email,
+    duration_days
+)
+VALUES ($1, $2, $3)
+RETURNING id, member_id, member_email, reference_id, duration_days;
+

@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { getMemberActiveDateRow } from 'db/src/query_sql';
+import { Injectable, Inject } from '@nestjs/common';
+import { getMemberActiveDateRow, createExtensionOrder } from '../../db/src/query_sql';
+import { Pool } from 'pg';
 
 export interface MemberData {
   id: number;
@@ -32,11 +33,13 @@ export interface CheckoutData {
   newExpiration: Date;
 }
 
-
-
 @Injectable()
 export class MemberExtendService {
-  
+  constructor(
+    @Inject('DATABASE_POOL') private pool: Pool,
+  ) {}
+
+  //parseInt(process.env.PRICE_DIVISOR ?? '1')
   private static mapPrice = {
     'male': {
         '90': 740000,
@@ -86,32 +89,39 @@ export class MemberExtendService {
       {
         duration: 90,   
         label: '3 bulan',
-        price:  MemberExtendService.mapPrice[gender]['90'],
+        price:  MemberExtendService.mapPrice[gender]['90'] / parseInt(process.env.PRICE_DIVISOR ?? '1'),
         newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['90'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       },
       {
         duration: 180,
         label: '6 bulan',
-        price: MemberExtendService.mapPrice[gender]['180'],
+        price: MemberExtendService.mapPrice[gender]['180'] / parseInt(process.env.PRICE_DIVISOR ?? '1'),
         newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['180'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       },
       {
         duration: 360,
         label: '1 tahun',
-        price: MemberExtendService.mapPrice[gender]['360'],
+        price: MemberExtendService.mapPrice[gender]['360'] / parseInt(process.env.PRICE_DIVISOR ?? '1'),
         newExpirationDate: new Date(baseDate.getTime() + MemberExtendService.mapExtension['360'].reduce((sum, days) => sum + days, 0) * 24 * 60 * 60 * 1000)
       }
     ];
   }
 
-  async createExtensionOrder(email: string, duration: number): Promise<string> {
+  async createExtensionOrder(email: string, memberData: MemberData, duration: number): Promise<string> {
     // Generate a reference ID for the extension order
-    const referenceId = `EXT-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
     
-    // In real implementation, this would create an order record in the database
-    console.log(`Creating extension order for ${email}, duration: ${duration} days, reference: ${referenceId}`);
+    // Create the order in the database
+    const order = await createExtensionOrder(this.pool, {
+      memberId: memberData.id,
+      memberEmail: email,
+      durationDays: duration
+    });
+
+    if (!order) {
+      throw new Error('Failed to create extension order');
+    }
     
-    return referenceId;
+    return order.referenceId;
   }
 
   async getCheckoutData(referenceId: string, email: string, memberActiveDate: getMemberActiveDateRow): Promise<CheckoutData | null> {

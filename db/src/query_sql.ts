@@ -2486,3 +2486,45 @@ export async function insertOrUpdateConfig(client: Client, args: InsertOrUpdateC
     };
 }
 
+export const createExtensionOrderQuery = `-- name: CreateExtensionOrder :one
+INSERT INTO whygym.extension_orders (
+    member_id,
+    member_email,
+    duration_days
+)
+VALUES ($1, $2, $3)
+RETURNING id, member_id, member_email, reference_id, duration_days`;
+
+export interface CreateExtensionOrderArgs {
+    memberId: number;
+    memberEmail: string;
+    durationDays: number;
+}
+
+export interface CreateExtensionOrderRow {
+    id: number;
+    memberId: number;
+    memberEmail: string;
+    referenceId: string;
+    durationDays: number;
+}
+
+export async function createExtensionOrder(client: Client, args: CreateExtensionOrderArgs): Promise<CreateExtensionOrderRow | null> {
+    const result = await client.query({
+        text: createExtensionOrderQuery,
+        values: [args.memberId, args.memberEmail, args.durationDays],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        memberEmail: row[2],
+        referenceId: row[3],
+        durationDays: row[4]
+    };
+}
+

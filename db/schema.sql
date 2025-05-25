@@ -150,6 +150,46 @@ ALTER SEQUENCE whygym.create_user_requests_id_seq OWNED BY whygym.create_user_re
 
 
 --
+-- Name: extension_orders; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.extension_orders (
+    id integer NOT NULL,
+    member_id integer NOT NULL,
+    reference_id character varying(50) DEFAULT public.uuid_generate_v4() NOT NULL,
+    member_email character varying(255) NOT NULL,
+    duration_days integer NOT NULL,
+    status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.extension_orders OWNER TO postgres;
+
+--
+-- Name: extension_orders_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.extension_orders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE whygym.extension_orders_id_seq OWNER TO postgres;
+
+--
+-- Name: extension_orders_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.extension_orders_id_seq OWNED BY whygym.extension_orders.id;
+
+
+--
 -- Name: members; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -573,6 +613,13 @@ ALTER TABLE ONLY whygym.create_user_requests ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: extension_orders id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders ALTER COLUMN id SET DEFAULT nextval('whygym.extension_orders_id_seq'::regclass);
+
+
+--
 -- Name: members id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -672,6 +719,22 @@ ALTER TABLE ONLY whygym.create_user_requests
 
 ALTER TABLE ONLY whygym.create_user_requests
     ADD CONSTRAINT create_user_requests_username_key UNIQUE (username);
+
+
+--
+-- Name: extension_orders extension_orders_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders
+    ADD CONSTRAINT extension_orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: extension_orders extension_orders_reference_id_key; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders
+    ADD CONSTRAINT extension_orders_reference_id_key UNIQUE (reference_id);
 
 
 --
@@ -784,6 +847,27 @@ ALTER TABLE ONLY whygym.users
 
 ALTER TABLE ONLY whygym.visits
     ADD CONSTRAINT visits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_extension_orders_member_email; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_extension_orders_member_email ON whygym.extension_orders USING btree (member_email);
+
+
+--
+-- Name: idx_extension_orders_member_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_extension_orders_member_id ON whygym.extension_orders USING btree (member_id);
+
+
+--
+-- Name: idx_extension_orders_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_extension_orders_reference_id ON whygym.extension_orders USING btree (reference_id);
 
 
 --
@@ -953,6 +1037,14 @@ CREATE UNIQUE INDEX members_unique_pending_email ON whygym.members USING btree (
 
 ALTER TABLE ONLY whygym.create_user_requests
     ADD CONSTRAINT create_user_requests_approved_by_fkey FOREIGN KEY (approved_by) REFERENCES whygym.users(id);
+
+
+--
+-- Name: extension_orders extension_orders_member_id_fkey; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders
+    ADD CONSTRAINT extension_orders_member_id_fkey FOREIGN KEY (member_id) REFERENCES whygym.members(id);
 
 
 --
