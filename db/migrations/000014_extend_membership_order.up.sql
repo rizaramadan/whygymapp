@@ -20,3 +20,14 @@ CREATE INDEX idx_extension_orders_member_email ON whygym.extension_orders(member
 -- Create an index on member_id for faster lookups
 CREATE INDEX idx_extension_orders_member_id ON whygym.extension_orders(member_id);
 
+CREATE TABLE IF NOT EXISTS whygym.extension_orders_status_log (
+    id SERIAL PRIMARY KEY,
+    reference_id VARCHAR(40) NOT NULL,
+    extension_order_status VARCHAR(40) NOT NULL DEFAULT 'failed',
+    notes TEXT,
+    additional_info JSONB DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create an index on reference_id for faster lookups
+CREATE INDEX idx_extension_orders_status_log_reference_id ON whygym.extension_orders_status_log(reference_id);

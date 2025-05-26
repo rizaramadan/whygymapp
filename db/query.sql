@@ -597,3 +597,14 @@ SELECT id, member_id, member_email, reference_id, duration_days
 FROM whygym.extension_orders
 WHERE reference_id = $1
 LIMIT 1;
+
+-- name: InsertExtensionOrderStatusLog :one
+INSERT INTO whygym.extension_orders_status_log (
+    reference_id,
+    extension_order_status,
+    notes,
+    additional_info
+)
+VALUES ($1, $2, $3, $4)
+RETURNING id, reference_id, extension_order_status, notes, additional_info;
+

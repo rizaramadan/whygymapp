@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { getMemberActiveDateRow, createExtensionOrder, getExtensionOrder } from '../../db/src/query_sql';
+import { getMemberActiveDateRow, createExtensionOrder, getExtensionOrder, insertExtensionOrderStatusLog } from '../../db/src/query_sql';
 import { OrdersService } from '../orders/orders.service';
-import { PaymentMethodsResponse } from '../orders/orders.interfaces';
+import { CreateInvoiceRequest, PaymentMethodsResponse } from '../orders/orders.interfaces';
 import { Pool } from 'pg';
 
 export interface MemberData {
@@ -159,17 +159,44 @@ export class MemberExtendService {
     return this.orderService.getPaymentMethods(total);
   }
 
-  async processPayment(email: string, referenceId: string, paymentMethod: string, paymentGatewayFee: number): Promise<any> {
-    // Static payment processing data
-    return {
-      paymentUrl: `https://payment-gateway.example.com/pay?ref=${referenceId}&method=${paymentMethod}`,
-      qrCode: paymentMethod === 'QRIS' ? `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==` : null,
-      virtualAccountNumber: paymentMethod.includes('BANK') ? `8876${Date.now().toString().slice(-6)}` : null,
-      amount: await this.getTotalAmount(referenceId),
+  async processPayment(fullName: string, referenceId: string, paymentMethod: string, total: number): Promise<any> {
+    const extensionOrder = await getExtensionOrder(this.pool, { referenceId: referenceId });
+    if (!extensionOrder) {
+      throw new Error('Extension order not found');
+    }
+    const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
+
+    // here is tightly coupled part 2 of 2
+    const request = CreateInvoiceRequest.createExtensionOrderInvoiceRequest(
+      referenceId,
+      url,
+      extensionOrder.memberEmail,
+      fullName,
       paymentMethod,
-      expiresAt: new Date(Date.now() + (30 * 60 * 1000)), // 30 minutes from now
-      instructions: this.getPaymentInstructions(paymentMethod)
-    };
+      extensionOrder.durationDays,
+      total
+    );
+
+    await insertExtensionOrderStatusLog(this.pool, {
+      referenceId: referenceId,
+      extensionOrderStatus: 'process-payment-request',
+      notes: 'Payment invoice request',
+      additionalInfo: {
+        request: request
+      }
+    });
+
+    const invoice = await this.orderService.postCreateInvoice(request);
+    await insertExtensionOrderStatusLog(this.pool, {
+      referenceId: referenceId,
+      extensionOrderStatus: 'process-payment-response',
+      notes: 'Payment invoice response',
+      additionalInfo: {
+        response: invoice
+      }
+    });
+
+    return invoice;
   }
 
   async handlePaymentSuccess(referenceId: string): Promise<any> {

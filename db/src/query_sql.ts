@@ -2565,3 +2565,47 @@ export async function getExtensionOrder(client: Client, args: getExtensionOrderA
     };
 }
 
+export const insertExtensionOrderStatusLogQuery = `-- name: InsertExtensionOrderStatusLog :one
+INSERT INTO whygym.extension_orders_status_log (
+    reference_id,
+    extension_order_status,
+    notes,
+    additional_info
+)
+VALUES ($1, $2, $3, $4)
+RETURNING id, reference_id, extension_order_status, notes, additional_info`;
+
+export interface InsertExtensionOrderStatusLogArgs {
+    referenceId: string;
+    extensionOrderStatus: string;
+    notes: string | null;
+    additionalInfo: any | null;
+}
+
+export interface InsertExtensionOrderStatusLogRow {
+    id: number;
+    referenceId: string;
+    extensionOrderStatus: string;
+    notes: string | null;
+    additionalInfo: any | null;
+}
+
+export async function insertExtensionOrderStatusLog(client: Client, args: InsertExtensionOrderStatusLogArgs): Promise<InsertExtensionOrderStatusLogRow | null> {
+    const result = await client.query({
+        text: insertExtensionOrderStatusLogQuery,
+        values: [args.referenceId, args.extensionOrderStatus, args.notes, args.additionalInfo],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        referenceId: row[1],
+        extensionOrderStatus: row[2],
+        notes: row[3],
+        additionalInfo: row[4]
+    };
+}
+

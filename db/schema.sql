@@ -190,6 +190,44 @@ ALTER SEQUENCE whygym.extension_orders_id_seq OWNED BY whygym.extension_orders.i
 
 
 --
+-- Name: extension_orders_status_log; Type: TABLE; Schema: whygym; Owner: postgres
+--
+
+CREATE TABLE whygym.extension_orders_status_log (
+    id integer NOT NULL,
+    reference_id character varying(40) NOT NULL,
+    extension_order_status character varying(40) DEFAULT 'failed'::character varying NOT NULL,
+    notes text,
+    additional_info jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE whygym.extension_orders_status_log OWNER TO postgres;
+
+--
+-- Name: extension_orders_status_log_id_seq; Type: SEQUENCE; Schema: whygym; Owner: postgres
+--
+
+CREATE SEQUENCE whygym.extension_orders_status_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE whygym.extension_orders_status_log_id_seq OWNER TO postgres;
+
+--
+-- Name: extension_orders_status_log_id_seq; Type: SEQUENCE OWNED BY; Schema: whygym; Owner: postgres
+--
+
+ALTER SEQUENCE whygym.extension_orders_status_log_id_seq OWNED BY whygym.extension_orders_status_log.id;
+
+
+--
 -- Name: members; Type: TABLE; Schema: whygym; Owner: postgres
 --
 
@@ -620,6 +658,13 @@ ALTER TABLE ONLY whygym.extension_orders ALTER COLUMN id SET DEFAULT nextval('wh
 
 
 --
+-- Name: extension_orders_status_log id; Type: DEFAULT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders_status_log ALTER COLUMN id SET DEFAULT nextval('whygym.extension_orders_status_log_id_seq'::regclass);
+
+
+--
 -- Name: members id; Type: DEFAULT; Schema: whygym; Owner: postgres
 --
 
@@ -735,6 +780,14 @@ ALTER TABLE ONLY whygym.extension_orders
 
 ALTER TABLE ONLY whygym.extension_orders
     ADD CONSTRAINT extension_orders_reference_id_key UNIQUE (reference_id);
+
+
+--
+-- Name: extension_orders_status_log extension_orders_status_log_pkey; Type: CONSTRAINT; Schema: whygym; Owner: postgres
+--
+
+ALTER TABLE ONLY whygym.extension_orders_status_log
+    ADD CONSTRAINT extension_orders_status_log_pkey PRIMARY KEY (id);
 
 
 --
@@ -868,6 +921,13 @@ CREATE INDEX idx_extension_orders_member_id ON whygym.extension_orders USING btr
 --
 
 CREATE INDEX idx_extension_orders_reference_id ON whygym.extension_orders USING btree (reference_id);
+
+
+--
+-- Name: idx_extension_orders_status_log_reference_id; Type: INDEX; Schema: whygym; Owner: postgres
+--
+
+CREATE INDEX idx_extension_orders_status_log_reference_id ON whygym.extension_orders_status_log USING btree (reference_id);
 
 
 --

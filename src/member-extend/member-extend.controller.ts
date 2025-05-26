@@ -3,6 +3,7 @@ import { MemberData, MemberExtendService } from './member-extend.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
 import { Response } from 'express';
+import { PaymentInput, PaymentResponse } from './member-extend.interfaces';
 
 @Controller('member-extend')
 export class MemberExtendController {
@@ -106,7 +107,7 @@ export class MemberExtendController {
     if (!memberActiveDate) {
       return {
         error: 'You must have an active membership to extend it.',
-        redirectUrl: '/member-dashboard'
+        redirectUrl: '/member-extend/request'
       };
     }
     const checkoutData = await this.memberExtendService.getCheckoutData(referenceId, req.user.email, memberActiveDate);
@@ -135,12 +136,18 @@ export class MemberExtendController {
     @Param('referenceId') referenceId: string,
     @Body('selectedMethod') paymentMethod: string,
     @Body('paymentGatewayFee') paymentGatewayFee: string,
-  ) {
+    @Body('total') total: number,
+    @Body('subtotal') subtotal: number,
+    @Body('tax') tax: number,
+    @Body('extensionDuration') extensionDuration: string,
+    @Body('currentExpiry') currentExpiry: Date,
+    @Body('newExpiry') newExpiry: Date,
+  ): Promise<PaymentResponse> {
     const paymentData = await this.memberExtendService.processPayment(
-      req.user.email,
+      req.user.fullName,
       referenceId,
       paymentMethod,
-      parseFloat(paymentGatewayFee)
+      total
     );
     
     return {

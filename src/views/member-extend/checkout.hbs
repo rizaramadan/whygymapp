@@ -186,6 +186,18 @@
             </div>
         
             <form action="/member-extend/payment/{{referenceId}}" method="POST" id="paymentForm">
+                <!-- Hidden Fields for Additional Data -->
+                <input type="hidden" name="total" value="{{total}}">
+                <input type="hidden" name="subtotal" value="{{subtotal}}">
+                <input type="hidden" name="tax" value="{{tax}}">
+                <input type="hidden" name="extensionDuration" value="{{selectedExtension.label}}">
+                <input type="hidden" name="currentExpiry" value="{{currentExpiration}}">
+                <input type="hidden" name="newExpiry" value="{{newExpiration}}">
+                <input type="hidden" name="selectedMethod" id="selectedMethod">
+                <input type="hidden" name="paymentGatewayFee" id="paymentGatewayFee">
+                <input type="hidden" name="referenceId" value="{{referenceId}}">
+                <input type="hidden" name="extensionId" value="{{selectedExtension.id}}">
+
                 <!-- Payment Methods -->
                 <div class="payment-methods">
                     <!-- QRIS -->
@@ -246,8 +258,6 @@
                     </div>
                 </div>
 
-                <input type="hidden" name="selectedMethod" id="selectedMethod">
-                <input type="hidden" name="paymentGatewayFee" id="paymentGatewayFee">
                 <button type="submit" class="continue-btn" id="continueBtn" disabled>
                     Continue to Payment<span class="ml-2">→</span>
                 </button>

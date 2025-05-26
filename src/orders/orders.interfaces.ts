@@ -72,8 +72,6 @@ export class CreateInvoiceRequest {
     }
     this.paymentChannelCode = paymentChannelCode;
 
-    this.paymentChannelCode = paymentChannelCode;
-
     if ((additionalData as AdditionalData)?.duration) {
       this.description = `Membership payment for ${email} duration ${(additionalData as AdditionalData).duration || ''}`;
     } else {
@@ -109,6 +107,33 @@ export class CreateInvoiceRequest {
     request.description = `Private coaching fee payment for ${email} ${coachType} ${numberOfSessions} sessions`;
     return request;
   }
+
+  public static createExtensionOrderInvoiceRequest(
+    referenceId: string,
+    url: string,
+    email: string,
+    customerFullName: string,
+    paymentChannelCode: string,
+    duration: number,
+    amount: number,
+  ) {
+    const request = new CreateInvoiceRequest(
+      referenceId,
+      url,
+      email,
+      {},
+      amount,
+      customerFullName,
+      '',
+      paymentChannelCode,
+    );
+    request.failureRedirectUrl = `${url}/member-extend/payment/${referenceId}/fail`;
+    request.successRedirectUrl = `${url}/member-extend/payment/${referenceId}/success`;
+    request.title = `Extension ${email} for ${duration} days`;
+    request.description = request.title;
+    return request;
+  }
+
 }
 export interface CreateInvoiceResponse {
   status: boolean;
