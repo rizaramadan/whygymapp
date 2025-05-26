@@ -14,6 +14,8 @@ import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
 import { PrivateCoachingModule } from './private-coaching/private-coaching.module';
 import { MemberExtendModule } from './member-extend/member-extend.module';
+import { DevToolsController } from './common/controllers/devtools.controller';
+
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -27,7 +29,7 @@ import { MemberExtendModule } from './member-extend/member-extend.module';
     PrivateCoachingModule,
     MemberExtendModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, DevToolsController],
   providers: [
     AppService,
     MembersService,

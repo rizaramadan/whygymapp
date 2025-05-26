@@ -130,7 +130,6 @@ export class MemberExtendController {
   }
 
   @Post('payment/:referenceId')
-  @Render('member-extend/payment')
   async processPayment(
     @Request() req: { user: User },
     @Param('referenceId') referenceId: string,
@@ -142,18 +141,15 @@ export class MemberExtendController {
     @Body('extensionDuration') extensionDuration: string,
     @Body('currentExpiry') currentExpiry: Date,
     @Body('newExpiry') newExpiry: Date,
-  ): Promise<PaymentResponse> {
+  ) {
     const paymentData = await this.memberExtendService.processPayment(
       req.user.fullName,
       referenceId,
       paymentMethod,
       total
     );
-    
-    return {
-      ...paymentData,
-      referenceId
-    };
+
+    return `<script>window.location.href = '${paymentData.data.paymentUrl}';</script>`;
   }
 
   @Get('payment/:referenceId/success')

@@ -174,7 +174,7 @@ export class MemberExtendService {
       fullName,
       paymentMethod,
       extensionOrder.durationDays,
-      total
+      parseFloat(total.toString())
     );
 
     await insertExtensionOrderStatusLog(this.pool, {
