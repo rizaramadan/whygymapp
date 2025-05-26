@@ -2609,3 +2609,150 @@ export async function insertExtensionOrderStatusLog(client: Client, args: Insert
     };
 }
 
+export const getExtensionInvoiceIdByReferenceIdQuery = `-- name: getExtensionInvoiceIdByReferenceId :one
+select ((additional_info->>'response')::jsonb->>'data')::jsonb->>'id' as invoice_id
+from whygym.extension_orders_status_log
+where extension_order_status = 'process-payment-response' and reference_id = $1
+order by created_at desc limit 1`;
+
+export interface getExtensionInvoiceIdByReferenceIdArgs {
+    referenceId: string;
+}
+
+export interface getExtensionInvoiceIdByReferenceIdRow {
+    invoiceId: string | null;
+}
+
+export async function getExtensionInvoiceIdByReferenceId(client: Client, args: getExtensionInvoiceIdByReferenceIdArgs): Promise<getExtensionInvoiceIdByReferenceIdRow | null> {
+    const result = await client.query({
+        text: getExtensionInvoiceIdByReferenceIdQuery,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        invoiceId: row[0]
+    };
+}
+
+export const getPaidPaymentInvoiceResponseByReferenceIdQuery = `-- name: getPaidPaymentInvoiceResponseByReferenceId :one
+select additional_info->>'response' as response
+from whygym.extension_orders_status_log
+where extension_order_status = 'get-payment-invoice-response' 
+    and reference_id = $1
+    and ((additional_info->>'response')::jsonb->>'data')::jsonb->>'status' = 'PAID'
+order by created_at desc limit 1`;
+
+export interface getPaidPaymentInvoiceResponseByReferenceIdArgs {
+    referenceId: string;
+}
+
+export interface getPaidPaymentInvoiceResponseByReferenceIdRow {
+    response: string | null;
+}
+
+export async function getPaidPaymentInvoiceResponseByReferenceId(client: Client, args: getPaidPaymentInvoiceResponseByReferenceIdArgs): Promise<getPaidPaymentInvoiceResponseByReferenceIdRow | null> {
+    const result = await client.query({
+        text: getPaidPaymentInvoiceResponseByReferenceIdQuery,
+        values: [args.referenceId],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        response: row[0]
+    };
+}
+
+export const addExtraTimeQuery = `-- name: addExtraTime :one
+INSERT INTO whygym.order_extra_time (
+    member_id,
+    extra_time,
+    reason,
+    order_reference_id,
+    created_by
+)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, member_id, extra_time, reason, order_reference_id`;
+
+export interface addExtraTimeArgs {
+    memberId: number;
+    extraTime: number;
+    reason: string | null;
+    orderReferenceId: string;
+    createdBy: number | null;
+}
+
+export interface addExtraTimeRow {
+    id: number;
+    memberId: number;
+    extraTime: number;
+    reason: string | null;
+    orderReferenceId: string;
+}
+
+export async function addExtraTime(client: Client, args: addExtraTimeArgs): Promise<addExtraTimeRow | null> {
+    const result = await client.query({
+        text: addExtraTimeQuery,
+        values: [args.memberId, args.extraTime, args.reason, args.orderReferenceId, args.createdBy],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        extraTime: row[2],
+        reason: row[3],
+        orderReferenceId: row[4]
+    };
+}
+
+export const setExtensionOrderStatusQuery = `-- name: setExtensionOrderStatus :one
+UPDATE whygym.extension_orders
+SET updated_at = current_timestamp,
+    status = $2
+WHERE reference_id = $1
+RETURNING id, member_id, member_email, reference_id, duration_days, status`;
+
+export interface setExtensionOrderStatusArgs {
+    referenceId: string;
+    status: string;
+}
+
+export interface setExtensionOrderStatusRow {
+    id: number;
+    memberId: number;
+    memberEmail: string;
+    referenceId: string;
+    durationDays: number;
+    status: string;
+}
+
+export async function setExtensionOrderStatus(client: Client, args: setExtensionOrderStatusArgs): Promise<setExtensionOrderStatusRow | null> {
+    const result = await client.query({
+        text: setExtensionOrderStatusQuery,
+        values: [args.referenceId, args.status],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0],
+        memberId: row[1],
+        memberEmail: row[2],
+        referenceId: row[3],
+        durationDays: row[4],
+        status: row[5]
+    };
+}
+

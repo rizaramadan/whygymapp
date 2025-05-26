@@ -31,3 +31,5 @@ CREATE TABLE IF NOT EXISTS whygym.extension_orders_status_log (
 
 -- Create an index on reference_id for faster lookups
 CREATE INDEX idx_extension_orders_status_log_reference_id ON whygym.extension_orders_status_log(reference_id);
+
+alter table whygym.order_extra_time drop constraint fk_order_reference_id;

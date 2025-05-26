@@ -1,5 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { getMemberActiveDateRow, createExtensionOrder, getExtensionOrder, insertExtensionOrderStatusLog } from '../../db/src/query_sql';
+import { getMemberActiveDateRow, 
+  createExtensionOrder, 
+  getExtensionOrder, 
+  insertExtensionOrderStatusLog, 
+  getExtensionInvoiceIdByReferenceId, 
+  addExtraTime, 
+  getPaidPaymentInvoiceResponseByReferenceId, 
+  setExtensionOrderStatus 
+} from '../../db/src/query_sql';
 import { OrdersService } from '../orders/orders.service';
 import { CreateInvoiceRequest, PaymentMethodsResponse } from '../orders/orders.interfaces';
 import { Pool } from 'pg';
@@ -197,6 +205,83 @@ export class MemberExtendService {
     });
 
     return invoice;
+  }
+
+
+  async getCurrentInvoiceData(referenceId: string): Promise<any> {
+    const invoice = await getExtensionInvoiceIdByReferenceId(this.pool, { referenceId: referenceId });
+    if (!invoice) {
+      throw new Error('Invoice ID not found');
+    }
+
+    const paidInvoice = await getPaidPaymentInvoiceResponseByReferenceId(this.pool, { referenceId: referenceId });
+    if (paidInvoice) {
+      return {
+        invoiceData: paidInvoice
+      };
+    }
+
+    const invoiceStatus = await this.orderService.getInvoiceStatusNoSave(invoice.invoiceId || '');
+    await insertExtensionOrderStatusLog(this.pool, {
+      referenceId: referenceId,
+      extensionOrderStatus: 'get-payment-invoice-response',
+      notes: 'Get payment invoice response',
+      additionalInfo: {
+        response: invoiceStatus
+      }
+    });
+
+    if (invoiceStatus.data.status === 'PAID') {
+      const extensionOrder = await getExtensionOrder(this.pool, { referenceId: referenceId });
+      if (!extensionOrder) {
+        throw new Error('Extension order not found (wait what?)');
+      }
+
+      await setExtensionOrderStatus(this.pool, {
+        referenceId: referenceId,
+        status: 'paid'
+      });
+      
+      await addExtraTime(this.pool, {
+        memberId: extensionOrder.memberId,
+        extraTime: extensionOrder.durationDays,
+        reason: `Extension order (${extensionOrder.durationDays} days)`,
+        orderReferenceId: referenceId,
+        createdBy: extensionOrder.memberId
+      });
+
+      switch (extensionOrder.durationDays) {
+        case 90:
+          await addExtraTime(this.pool, {
+            memberId: extensionOrder.memberId,
+            extraTime: 30,
+            reason: `EXTRA 30 days from Extension order (${extensionOrder.durationDays} days)`,
+            orderReferenceId: referenceId,
+            createdBy: extensionOrder.memberId
+          });
+          break;
+        case 180:
+          await addExtraTime(this.pool, {
+            memberId: extensionOrder.memberId,
+            extraTime: 60,
+            reason: `EXTRA 60 days from Extension order (${extensionOrder.durationDays} days)`,
+            orderReferenceId: referenceId,
+            createdBy: extensionOrder.memberId
+          });
+          break;
+        case 360:
+          await addExtraTime(this.pool, {
+            memberId: extensionOrder.memberId,
+            extraTime: 90,
+            reason: `EXTRA 90 days from Extension order (${extensionOrder.durationDays} days)`,
+            orderReferenceId: referenceId,
+            createdBy: extensionOrder.memberId
+          });
+          break;
+      }
+    }
+    
+    return invoiceStatus;
   }
 
   async handlePaymentSuccess(referenceId: string): Promise<any> {

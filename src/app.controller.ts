@@ -55,9 +55,13 @@ export class AppController {
   @Get('/member-dashboard')
   @Render('member-dashboard')
   async memberDashboard(@Request() req: { user: User }) {
-    const memberActiveDate = await this.membersService.getMemberActiveDate(
+    let memberActiveDate = await this.membersService.getMemberActiveDate(
       req.user.email,
     );
+
+    if (!memberActiveDate) {
+      throw new Error('Member active date not found');
+    }
 
     const memberId = await this.membersService.getMemberIdByEmail(
       req.user.email,
@@ -70,10 +74,18 @@ export class AppController {
       `"${req.user.picUrl}"`,
     );
 
+    const extraTime = await this.membersService.getMemberDurationData(memberId?.id || 0);
+
     const sqids = new Sqids({
       alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
     });
     const id = sqids.encode([memberId?.id || 0, 9, 9]);
+
+
+    //add days from extraTime to memberActiveDate.endDate
+    const activeUntil = new Date(memberActiveDate?.startDate || new Date()); 
+    activeUntil.setDate(activeUntil.getDate() + extraTime);
+    memberActiveDate.endDate = activeUntil;
     return {
       user: req.user,
       memberActiveDate,

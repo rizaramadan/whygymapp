@@ -297,7 +297,9 @@ export class MembersService {
     if (members[0].extend60 === 'true') total += 60;
     
     // Add extra time from all rows 
-    if (members[0].extraTime) total += members[0].extraTime;
+    for (const member of members) {
+      if (member.extraTime) total += member.extraTime;
+    }
     
     return total;
   }

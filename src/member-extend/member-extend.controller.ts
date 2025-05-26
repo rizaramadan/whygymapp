@@ -24,6 +24,11 @@ export class MemberExtendController {
       };
     }
 
+    const extraTime = await this.membersService.getMemberDurationData(memberActiveDate?.id || 0);
+    const activeUntil = new Date(memberActiveDate?.startDate || new Date()); 
+    activeUntil.setDate(activeUntil.getDate() + extraTime);
+    memberActiveDate.endDate = activeUntil;
+
     // Get additional member details for the template
     const memberDetails = await this.membersService.getActiveMembershipByEmail(req.user.email);
     
@@ -155,11 +160,18 @@ export class MemberExtendController {
   @Get('payment/:referenceId/success')
   @Render('member-extend/success')
   async paymentSuccess(@Param('referenceId') referenceId: string) {
-    const successData = await this.memberExtendService.handlePaymentSuccess(referenceId);
-    
     return {
-      ...successData,
       referenceId
+    };
+  }
+
+  @Get('payment/:referenceId/complete')
+  @Render('member-extend/success')
+  async paymentComplete(@Param('referenceId') referenceId: string) {
+    const invoiceData = await this.memberExtendService.getCurrentInvoiceData(referenceId);
+    console.log(invoiceData);
+    return {
+      invoiceData
     };
   }
 

@@ -608,3 +608,36 @@ INSERT INTO whygym.extension_orders_status_log (
 VALUES ($1, $2, $3, $4)
 RETURNING id, reference_id, extension_order_status, notes, additional_info;
 
+-- name: getExtensionInvoiceIdByReferenceId :one
+select ((additional_info->>'response')::jsonb->>'data')::jsonb->>'id' as invoice_id
+from whygym.extension_orders_status_log
+where extension_order_status = 'process-payment-response' and reference_id = $1
+order by created_at desc limit 1;
+
+
+-- name: getPaidPaymentInvoiceResponseByReferenceId :one
+select additional_info->>'response' as response
+from whygym.extension_orders_status_log
+where extension_order_status = 'get-payment-invoice-response' 
+    and reference_id = $1
+    and ((additional_info->>'response')::jsonb->>'data')::jsonb->>'status' = 'PAID'
+order by created_at desc limit 1;
+
+
+-- name: addExtraTime :one
+INSERT INTO whygym.order_extra_time (
+    member_id,
+    extra_time,
+    reason,
+    order_reference_id,
+    created_by
+)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, member_id, extra_time, reason, order_reference_id;
+
+-- name: setExtensionOrderStatus :one
+UPDATE whygym.extension_orders
+SET updated_at = current_timestamp,
+    status = $2
+WHERE reference_id = $1
+RETURNING id, member_id, member_email, reference_id, duration_days, status;

@@ -535,6 +535,29 @@ export class OrdersService {
     }
   }
 
+  // get invoice status. Safe for other than membership application
+  async getInvoiceStatusNoSave(
+    invoiceId: string,
+  ): Promise<CreateInvoiceResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get<CreateInvoiceResponse>(
+          `${process.env.AUTH_API_URL}/v1/marketplace/invoices/${invoiceId}`,
+          {
+            headers: {
+              'x-api-key': process.env.API_KEY,
+            },
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error getting invoice status (no save):', error);
+      throw error;
+    }
+  }
+
   // post payment process. Safe for other than membership application
   async postPaymentProcess(amount: number): Promise<PaymentMethodsResponse> {
     const response = await firstValueFrom(
