@@ -268,12 +268,26 @@ export class MemberExtendService {
             orderReferenceId: referenceId,
             createdBy: extensionOrder.memberId
           });
+          await addExtraTime(this.pool, {
+            memberId: extensionOrder.memberId,
+            extraTime: 30,
+            reason: `EXTRA 30 days from Extension order (${extensionOrder.durationDays} days)`,
+            orderReferenceId: referenceId,
+            createdBy: extensionOrder.memberId
+          });
           break;
         case 360:
           await addExtraTime(this.pool, {
             memberId: extensionOrder.memberId,
             extraTime: 90,
             reason: `EXTRA 90 days from Extension order (${extensionOrder.durationDays} days)`,
+            orderReferenceId: referenceId,
+            createdBy: extensionOrder.memberId
+          });
+          await addExtraTime(this.pool, {
+            memberId: extensionOrder.memberId,
+            extraTime: 60,
+            reason: `EXTRA 60 days from Extension order (${extensionOrder.durationDays} days)`,
             orderReferenceId: referenceId,
             createdBy: extensionOrder.memberId
           });
