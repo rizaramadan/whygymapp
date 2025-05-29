@@ -6,7 +6,9 @@ import { getMemberActiveDateRow,
   getExtensionInvoiceIdByReferenceId, 
   addExtraTime, 
   getPaidPaymentInvoiceResponseByReferenceId, 
-  setExtensionOrderStatus 
+  setExtensionOrderStatus,
+  getExtensionOrderExtraTime,
+  getExtensionOrderExtraTimeRow
 } from '../../db/src/query_sql';
 import { OrdersService } from '../orders/orders.service';
 import { CreateInvoiceRequest, PaymentMethodsResponse } from '../orders/orders.interfaces';
@@ -379,5 +381,10 @@ export class MemberExtendService {
     };
 
     return instructions[paymentMethod] || ['Follow the payment instructions provided'];
+  }
+
+  async getExtensionOrderExtraTime() : Promise<getExtensionOrderExtraTimeRow[]>{
+    const extensionOrderExtraTime = await getExtensionOrderExtraTime(this.pool);
+    return extensionOrderExtraTime;
   }
 }

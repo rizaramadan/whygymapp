@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Render, Request, Body, Param, Query, Redirect, Res } from '@nestjs/common';
+import { Controller, Get, Post, Render, Request, Body, Param, Query, Redirect, HttpException, HttpStatus } from '@nestjs/common';
 import { MemberData, MemberExtendService } from './member-extend.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../users/users.service';
 import { Response } from 'express';
 import { PaymentInput, PaymentResponse } from './member-extend.interfaces';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('member-extend')
 export class MemberExtendController {
@@ -195,5 +196,22 @@ export class MemberExtendController {
   @Post('callback')
   async paymentCallback(@Body() callbackData: any) {
     return await this.memberExtendService.handlePaymentCallback(callbackData);
+  }
+
+  @Public()
+  @Get('member-extend-payment-data')
+  @Render('members-extend/payment-data')
+  async getAccountingData(
+    @Query('key') key: string,
+    @Query('value') value: string,
+  ) {
+    if (key !== process.env.ACTIVE_MEMBER_BREAKDOWN_KEY) {
+      throw new HttpException('Invalid key', HttpStatus.UNAUTHORIZED);
+    }
+    if (value !== process.env.ACTIVE_MEMBER_BREAKDOWN_VALUE) {
+      throw new HttpException('Invalid key', HttpStatus.UNAUTHORIZED);
+    }
+    const data = await this.memberExtendService.getExtensionOrderExtraTime();
+    return { data };
   }
 }
