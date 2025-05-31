@@ -32,6 +32,12 @@ export class AppController {
     private readonly usersService: UsersService,
   ) {}
 
+  @Get('/health')
+  @Public()
+  health() {
+    return { status: 'ok' };
+  }
+
   @Get('/')
   getHello() {
     return '<script>window.location.href="/auth/login"</script>';

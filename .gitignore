@@ -61,3 +61,15 @@ src/.env-prod
 .sentryclirc
 test/.env-test
 src/.env.dev
+
+# Test artifacts
+test/regression/received/
+test/regression/**/received/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Keep approved snapshots
+!test/regression/approvals/
+!test/regression/**/approvals/

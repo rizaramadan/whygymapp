@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS whygym;
+
 -- Create roles table if it doesn't exist
 CREATE TABLE IF NOT EXISTS whygym.roles (
     id SERIAL PRIMARY KEY,

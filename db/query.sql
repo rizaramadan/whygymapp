@@ -84,6 +84,7 @@ SELECT id, username, password, email, status, created_at, updated_at, approved_b
 FROM whygym.create_user_requests
 ORDER BY created_at DESC;
 
+
 -- name: ApproveAndApplyUser :one
 WITH approve_create_user AS
     (

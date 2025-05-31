@@ -1,0 +1,27 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code and environment files
+COPY . .
+
+# Create and set permissions for dist directory
+RUN mkdir -p /app/dist && \
+    chown -R node:node /app && \
+    chmod -R 755 /app
+
+# Build the application without Sentry
+USER node
+RUN npx nest build
+
+# Expose the port
+EXPOSE 3000
+
+# Start the application
+CMD ["npm", "run", "start:dev"] 
