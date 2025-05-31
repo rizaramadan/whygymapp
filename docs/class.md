@@ -344,21 +344,182 @@ This document outlines the detailed specifications for the class management syst
 - Mobile-first CSS
 - Viewport meta tag
 - Touch event handling
-- Gesture recognition
-- Offline support
-- Push notifications
-- Image optimization
-- Performance optimization
-- Accessibility for touch
-- Deep linking support
-- App-like experience
-- Responsive images
 - Touch-friendly forms
 - Mobile-optimized modals
 - Bottom sheet patterns
-- Pull-to-refresh
-- Infinite scroll
-- Skeleton loading
-- Error boundaries
 - Form validation
-- Mobile analytics
+
+
+
+
+
+### Domains of the feature
+
+#### Core Entities
+- Class: a Moment-Interval, it can be copied for future schedule
+  - Properties:
+    - Name
+    - Category
+    - Description
+    - Duration
+    - Base capacity
+    - Price
+    - Status (draft, published, cancelled)
+  - Behaviors:
+    - Can be copied to create future schedules
+    - Can be cancelled
+    - Can be published/unpublished
+    - Can be modified (if in draft)
+
+- Class Seat: a seat for member to book
+  - Properties:
+    - Seat number
+    - Status (available, booked, cancelled)
+    - Booking reference
+    - Member reference
+  - Behaviors:
+    - Can be booked
+    - Can be cancelled
+    - Can be transferred to voucher
+    - Can be released back to pool
+
+- Voucher: a voucher to book a class
+  - Properties:
+    - Code
+    - Status (active, used, expired)
+    - Expiration date
+    - Class reference
+    - Member reference
+  - Behaviors:
+    - Can be generated from cancelled class
+    - Can be redeemed for class booking
+    - Can expire
+    - Can be validated
+
+#### Domain Services
+- Class Management Service
+  - Class creation and scheduling
+  - Class copying and templating
+  - Class status management
+  - Class capacity management
+  - Class cancellation handling
+
+- Booking Service
+  - Seat allocation
+  - Booking confirmation
+  - Booking cancellation
+  - Seat status management
+  - Booking validation
+
+- Voucher Service
+  - Voucher generation
+  - Voucher validation
+  - Voucher redemption
+  - Voucher expiration management
+  - Voucher status tracking
+
+#### Domain Events
+- Class Events
+  - ClassCreated
+  - ClassScheduled
+  - ClassCancelled
+  - ClassPublished
+  - ClassCapacityChanged
+
+- Seat Events
+  - SeatBooked
+  - SeatCancelled
+  - SeatReleased
+  - SeatTransferredToVoucher
+
+- Voucher Events
+  - VoucherGenerated
+  - VoucherRedeemed
+  - VoucherExpired
+  - VoucherValidated
+
+#### Domain Rules
+- Class Rules
+  - Class must have a valid schedule
+  - Class capacity cannot be increased after creation
+  - Class can only be cancelled by admin
+  - Cancelled class automatically generates vouchers
+
+- Seat Rules
+  - Seat can only be booked if available
+  - Seat booking requires payment
+  - Seat can be cancelled before class starts
+  - Cancelled seat converts to voucher
+
+- Voucher Rules
+  - Voucher expires after 60 days
+  - Voucher can only be used once
+  - Voucher is tied to specific class
+  - Voucher cannot be transferred
+
+#### Domain Aggregates
+- Class Aggregate
+  - Root: Class
+  - Entities: ClassSeat
+  - Value Objects: Schedule, Capacity, Price
+  - Invariants:
+    - Total seats cannot exceed capacity
+    - Class status affects seat availability
+    - Cancellation affects all seats
+
+- Booking Aggregate
+  - Root: ClassSeat
+  - Entities: Booking
+  - Value Objects: Payment, Status
+  - Invariants:
+    - Seat can only be booked once
+    - Booking requires valid payment
+    - Cancellation follows business rules
+
+- Voucher Aggregate
+  - Root: Voucher
+  - Entities: VoucherUsage
+  - Value Objects: Expiration, Status
+  - Invariants:
+    - Voucher can only be used once
+    - Voucher must be valid for class
+    - Voucher must not be expired
+
+#### Domain Boundaries
+- Class Boundary
+  - Input: Class creation, scheduling, cancellation
+  - Output: Class availability, status, capacity
+  - Dependencies: Booking, Voucher
+
+- Booking Boundary
+  - Input: Seat booking, cancellation
+  - Output: Booking confirmation, status
+  - Dependencies: Class, Payment
+
+- Voucher Boundary
+  - Input: Voucher generation, redemption
+  - Output: Voucher status, validation
+  - Dependencies: Class, Booking
+
+#### Domain Policies
+- Class Policies
+  - Capacity management policy
+  - Cancellation policy
+  - Scheduling policy
+  - Pricing policy
+
+- Booking Policies
+  - Payment policy
+  - Cancellation policy
+  - Refund policy
+  - Booking validation policy
+
+- Voucher Policies
+  - Generation policy
+  - Expiration policy
+  - Redemption policy
+  - Validation policy
+
+## Section Design
+
+### Plan

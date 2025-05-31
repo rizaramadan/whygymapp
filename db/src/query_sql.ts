@@ -2262,7 +2262,8 @@ select m.email,
        (((o.additional_info->>'invoice_response')::jsonb->>'data')::jsonb->>'paidAt')::date as paid,
        count(m.email) over (partition by m.additional_data->>'emailPic'),
        m.id as member_id,
-       m.additional_data->>'frontOfficer' as frontOfficer
+       m.additional_data->>'frontOfficer' as frontOfficer,
+       case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting
 from whygym.members m
  inner join whygym.orders o on m.id = o.member_id AND o.private_coaching_id is null
 where m.start_date > '2025-04-03' and m.membership_status = 'active'
@@ -2279,6 +2280,7 @@ export interface getAccountingDataRow {
     count: string;
     memberId: number;
     frontofficer: string | null;
+    weekSetting: string;
 }
 
 export async function getAccountingData(client: Client): Promise<getAccountingDataRow[]> {
@@ -2298,7 +2300,8 @@ export async function getAccountingData(client: Client): Promise<getAccountingDa
             paid: row[6],
             count: row[7],
             memberId: row[8],
-            frontofficer: row[9]
+            frontofficer: row[9],
+            weekSetting: row[10]
         };
     });
 }
