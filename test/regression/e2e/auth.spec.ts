@@ -23,22 +23,19 @@ test.describe('Authentication', () => {
     dbClient = new Client(DB_CONFIG);
     await dbClient.connect();
 
-    // Setup test user
+    // Setup test user - this runs once before all tests
+    // Using ON CONFLICT DO NOTHING to ensure idempotency
     await dbClient.query(`
-      INSERT INTO whygym.users (id, username, password, email, created_at, updated_at) 
-      VALUES (11, 'rizaramadan', '$1$hPPLn9.g$XUcY2AlqOigL/qR7oX8Hl0', 'riza.ramadan@gmail.com', '2025-03-07 09:04:31.784083 +00:00', '2025-03-07 09:04:31.784083 +00:00')
-      ON CONFLICT (id) DO UPDATE 
-      SET username = EXCLUDED.username,
-          password = EXCLUDED.password,
-          email = EXCLUDED.email,
-          updated_at = EXCLUDED.updated_at;
+      INSERT INTO whygym.users (username, password, email, created_at, updated_at) 
+      VALUES ('rizaramadan', '$1$hPPLn9.g$XUcY2AlqOigL/qR7oX8Hl0', 'riza.ramadan@gmail.com', 'now()', 'now()')
+      ON CONFLICT (username) DO NOTHING;
     `);
   });
 
   test.afterAll(async () => {
-    // Cleanup test user
+    // Cleanup test user by username instead of id
     await dbClient.query(`
-      DELETE FROM whygym.users WHERE id = 11;
+      DELETE FROM whygym.users WHERE username = 'rizaramadan';
     `);
     
     // Close database connection
