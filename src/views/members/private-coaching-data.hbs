@@ -1,0 +1,24 @@
+<table>
+  <thead>
+    <tr>
+      <th>Buyer</th>
+      <th>Training Type</th>     
+      <th>Session Count</th>
+      <th>Payer Partner</th>
+      <th>Coach Type</th>
+      <th>Created At</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each data}}
+      <tr>
+        <td>{{email}}</td>
+        <td>{{trainingType}}</td>
+        <td>{{sessionCount}}</td>
+        <td>{{buyer}}</td>
+        <td>{{coachtype}}</td>
+        <td>{{extractDate createdAt}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table> 
