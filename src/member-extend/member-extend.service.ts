@@ -12,6 +12,7 @@ import { getMemberActiveDateRow,
 } from '../../db/src/query_sql';
 import { OrdersService } from '../orders/orders.service';
 import { CreateInvoiceRequest, PaymentMethodsResponse } from '../orders/orders.interfaces';
+import { MembersService } from '../members/members.service';
 import { Pool } from 'pg';
 
 export interface MemberData {
@@ -49,7 +50,8 @@ export interface CheckoutData {
 export class MemberExtendService {
   constructor(
     @Inject('DATABASE_POOL') private pool: Pool,
-    private readonly orderService: OrdersService
+    private readonly orderService: OrdersService,
+    private readonly memberService: MembersService
   ) {}
 
   //parseInt(process.env.PRICE_DIVISOR ?? '1')
@@ -74,24 +76,29 @@ export class MemberExtendService {
 
   async getMemberDataForExtension(email: string): Promise<MemberData | null> {
     // Static data for testing - in real implementation, this would query the database
-    const staticMemberData: MemberData = {
+    const memberData = await this.memberService.getMemberIdByEmail(email);
+    if (!memberData) {
+      return null;
+    }
+
+    const returnMemberData: MemberData = {
       id: 1,
       email: email,
-      nickname: 'John Doe',
-      membershipStatus: 'active',
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2025-04-15'), // 90 days from now
-      duration: 360,
-      daysRemaining: 90,
-      gender: 'male'
+      nickname: memberData.nickname,
+      membershipStatus: memberData.membershipStatus,
+      startDate: memberData.additionalData?.startDate,
+      endDate: memberData.additionalData?.endDate,
+      duration: memberData.additionalData?.duration,
+      daysRemaining: memberData.additionalData?.daysRemaining,
+      gender: memberData.additionalData?.gender
     };
     
     // Only return data if member has active status
-    if (staticMemberData.membershipStatus !== 'active') {
+    if (returnMemberData.membershipStatus !== 'active') {
       return null;
     }
     
-    return staticMemberData;
+    return returnMemberData;
   }
 
   async getExtensionOptions(memberData: { endDate: Date, gender: string }): Promise<ExtensionOption[]> {
