@@ -2764,7 +2764,7 @@ WITH statu_log AS (
     SELECT osl.reference_id as ref_id, osl.additional_info as info from whygym.extension_orders_status_log osl
              inner join whygym.extension_orders eo on osl.reference_id = eo.reference_id
              WHERE osl.extension_order_status = 'get-payment-invoice-response'
-             and eo.status = 'success'
+             and eo.status = 'paid'
 )
 select o.member_email, o.reference_id as order_id, array_agg(l.reason ) as extras, 
 ((sl.info->>'response')::jsonb->>'data')::jsonb->>'total' as amount,
@@ -2772,7 +2772,7 @@ o.created_at
 from whygym.extension_orders o
     inner join whygym.order_extra_time l on o.reference_id = l.order_reference_id
     left outer join statu_log sl on o.reference_id = sl.ref_id
-where o.status = 'success'
+where o.status = 'paid'
 group by o.member_email,  o.reference_id , o.created_at,  sl.info
 order by o.created_at desc`;
 
