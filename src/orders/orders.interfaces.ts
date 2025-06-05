@@ -103,8 +103,8 @@ export class CreateInvoiceRequest {
     );
     request.failureRedirectUrl = `${url}/orders/payment-private-coaching-fee/${referenceId}/fail`;
     request.successRedirectUrl = `${url}/orders/payment-private-coaching-fee/${referenceId}/success`;
-    request.title = 'Private Coaching Fee Payment';
     request.description = `Private coaching fee payment for ${email} ${coachType} ${numberOfSessions} sessions`;
+    request.title = request.description;
     return request;
   }
 
