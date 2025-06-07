@@ -5,7 +5,7 @@
 
 
 ## Todo
-- [ ] show PT duration vs membership duration
+- [x] show PT duration vs membership duration
 - [ ] buy PT without membership
 - [x] add online self option
 - [ ] class and PT catalogue
