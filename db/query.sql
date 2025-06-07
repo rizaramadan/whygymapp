@@ -41,7 +41,7 @@ WHERE email = $1
 LIMIT 1;
 
 -- name: GetMemberById :one
-SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data, start_date FROM whygym.members
 WHERE id = $1
 LIMIT 1;
 

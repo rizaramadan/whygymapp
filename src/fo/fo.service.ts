@@ -15,6 +15,7 @@ import {
   turnOnExtend15,
   turnOnExtend30,
   turnOnExtend60,
+  getConfig,
 } from 'db/src/query_sql';
 
 @Injectable()
@@ -71,5 +72,12 @@ export class FoService {
     } else {
       return await turnOffCashback50(this.pool, { referenceId });
     }
+  }
+
+  async getCheckExpireDate(): Promise<boolean> {
+    const config = await getConfig(this.pool, {
+      key: 'getCheckExpireDate',
+    });
+    return config?.valueBoolean ?? true; //default is true
   }
 }

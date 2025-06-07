@@ -139,6 +139,12 @@ export class FoController {
       picUrl: (memberFromDb.additionalData as AdditionalData).picUrl || '',
     };
 
+    //get member expire date
+    const duration = await this.membersService.getMemberDurationData(memberFromDb.id);
+    let expireDate = memberFromDb.startDate || new Date();
+    expireDate.setDate(expireDate.getDate() + duration);
+
+
     //call member service to create visit
     const visit = await this.membersService.createVisit(
       member.email,
@@ -160,6 +166,17 @@ export class FoController {
         message: 'Failed to create visit',
       };
     }
+
+    if (await this.foService.getCheckExpireDate()) {
+      //if expire date is in the past, then return error
+      if (expireDate < new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))) {
+        return {
+          status: null,
+          message: 'Member is expired',
+        };
+      }
+    }
+
     return {
       status: 'success',
       email: visit.email,

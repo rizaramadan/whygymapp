@@ -198,7 +198,7 @@ export async function getMemberIdByEmail(client: Client, args: GetMemberIdByEmai
 }
 
 export const getMemberByIdQuery = `-- name: GetMemberById :one
-SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data FROM whygym.members
+SELECT id, email, membership_status, nickname, date_of_birth, phone_number, additional_data, start_date FROM whygym.members
 WHERE id = $1
 LIMIT 1`;
 
@@ -214,6 +214,7 @@ export interface GetMemberByIdRow {
     dateOfBirth: Date | null;
     phoneNumber: string | null;
     additionalData: any | null;
+    startDate: Date | null;
 }
 
 export async function getMemberById(client: Client, args: GetMemberByIdArgs): Promise<GetMemberByIdRow | null> {
@@ -233,7 +234,8 @@ export async function getMemberById(client: Client, args: GetMemberByIdArgs): Pr
         nickname: row[3],
         dateOfBirth: row[4],
         phoneNumber: row[5],
-        additionalData: row[6]
+        additionalData: row[6],
+        startDate: row[7]
     };
 }
 
