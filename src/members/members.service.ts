@@ -98,6 +98,7 @@ export class MembersService {
       identityNumber: applicationData.identityNumber,
       healthCondition: applicationData.healthCondition,
       duration: applicationData.duration,
+      wa: applicationData.wa,
       parentInfo: applicationData.parentName
         ? {
             name: applicationData.parentName,
