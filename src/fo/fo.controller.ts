@@ -259,4 +259,14 @@ export class FoController {
     console.log(response);
     return response;
   }
+
+  @Get('active-member-breakdown')
+  @Roles('front-officer')
+  @Render('fo/active-member-breakdown')
+  async getActiveMemberBreakdown(
+  ) {
+    
+    const breakdown = await this.membersService.getActiveMemberBreakdown();
+    return { breakdown };
+  }
 }

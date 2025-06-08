@@ -505,7 +505,9 @@ select m.email,
        m.start_date,
        m.id,
        e.total_extra,
-       case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting
+       case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting,
+       m.additional_data->>'wa' as tel,
+       m.additional_data->>'fullName' as fullname
 from whygym.members m
     left outer join whygym.orders o on m.id = o.member_id AND o.private_coaching_id is null
     left join group_counts g on o.reference_id = g.part_reference_id
