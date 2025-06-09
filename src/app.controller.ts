@@ -129,6 +129,13 @@ export class AppController {
     };
   }
 
+  @Get('/rtwa')
+  redirectToWaChat(@Request() req: { user: User }) {
+    const result = req?.user;
+    const waChatUrl = `https://wa.me/6281298241472?text=Halo, email saya ${result.email}`;
+    return `<script>window.location.href = "${waChatUrl}";</script>`;
+  }
+
   @Get('/logout')
   @Public()
   logout(@Res({ passthrough: true }) res: Response) {
