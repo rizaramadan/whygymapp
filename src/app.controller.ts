@@ -136,8 +136,12 @@ export class AppController {
     const gender = member?.additionalData?.gender || '';
     const genderText = gender === 'male' ? 'laki-laki' : 'Perempuan';
     const genderLink = gender === 'male' ? 'https://whygym.id/wgm' : 'https://whygym.id/wgf';
-    const msg = `Hi Gym Min Mau konfirmasi, ini WhatsApp dari Member atas nama ${result.fullName} dengan email ${result.email} ... 
-    \n\nNB : Untuk mendapat info dan promo paling update di Whygym Bogor, Yuk gabung ke group whatsapp member khusus ${genderText} di link berikut : ${genderLink}. Tenang aja kami ga akan spam kok, dan group ini terpisah laki-laki dan perempuan`;
+    const msg = `Hi Gym Min!,
+Mau konfirmasi, ini WhatsApp dari Member atas nama ${result.fullName} dengan email ${result.email}
+    \n
+INFO : Dapatkan info dan promo paling update dengan bergabung ke group whatsapp member khusus ${genderText} di link berikut : ${genderLink}.
+    \n
+Tenang aja! group ini terpisah laki-laki dan perempuan, dan kami hanya akan menginfokan hal2 terkait whygym bogor`;
 
     const waChatUrl = `https://wa.me/6281298241472?text=${encodeURIComponent(msg)}`;
     return `<script>window.location.href = "${waChatUrl}";</script>`;
