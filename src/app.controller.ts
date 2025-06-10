@@ -130,9 +130,16 @@ export class AppController {
   }
 
   @Get('/rtwa')
-  redirectToWaChat(@Request() req: { user: User }) {
+  async redirectToWaChat(@Request() req: { user: User }) {
     const result = req?.user;
-    const waChatUrl = `https://wa.me/6281298241472?text=Halo, email saya ${result.email}`;
+    const member = await this.membersService.getMemberIdByEmail(result.email);
+    const gender = member?.additionalData?.gender || '';
+    const genderText = gender === 'male' ? 'laki-laki' : 'Perempuan';
+    const genderLink = gender === 'male' ? 'https://whygym.id/wgm' : 'https://whygym.id/wgf';
+    const msg = `Hi Gym Min Mau konfirmasi, ini WhatsApp dari Member atas nama ${result.fullName} dengan email ${result.email} ... 
+    \n\nNB : Untuk mendapat info dan promo paling update di Whygym Bogor, Yuk gabung ke group whatsapp member khusus ${genderText} di link berikut : ${genderLink}. Tenang aja kami ga akan spam kok, dan group ini terpisah laki-laki dan perempuan`;
+
+    const waChatUrl = `https://wa.me/6281298241472?text=${encodeURIComponent(msg)}`;
     return `<script>window.location.href = "${waChatUrl}";</script>`;
   }
 
