@@ -2176,7 +2176,7 @@ select m.email,
        m.id,
        e.total_extra,
        case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting,
-       m.additional_data->>'wa' as tel,
+       coalesce(m.additional_data->>'wa', m.phone_number) as tel,
        m.additional_data->>'fullName' as fullname
 from whygym.members m
     left outer join whygym.orders o on m.id = o.member_id AND o.private_coaching_id is null
