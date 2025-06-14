@@ -82,6 +82,7 @@ export class FoController {
         message: 'Failed to create visit',
       };
     }
+
     return {
       status: 'success',
       email: visit.email,
@@ -90,6 +91,7 @@ export class FoController {
       visitCode: visit.visitCode,
       weeklyVisits: weeklyVisits,
       monthlyVisits: monthlyVisits,
+      fullName: memberFromDb.additionalData?.fullName,
     };
   }
 
@@ -105,7 +107,6 @@ export class FoController {
   @Roles('front-officer')
   @Render('members/visit-content-only')
   async scannerPost(@Body('barcode') barcode: string) {
-    console.log(barcode);
     //barcode data will be https://whygym.mvp.my.id/fo?i=abc123, extract the i value if start with https://whygym.mvp.my.id/fo?i=
     const id = barcode.split('whygym.mvp.my.id/fo?i=')[1];
     const sqids = new Sqids({
@@ -185,6 +186,8 @@ export class FoController {
       visitCode: visit.visitCode,
       weeklyVisits: weeklyVisits,
       monthlyVisits: monthlyVisits,
+      expireDate: expireDate,
+      fullName: memberFromDb.additionalData?.fullName,
     };
   }
 
