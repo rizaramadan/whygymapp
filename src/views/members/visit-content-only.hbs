@@ -50,6 +50,30 @@
                         </div>
                         <h2 class="text-xl font-semibold text-red-800">Check-in Failed</h2>
                         
+                        {{#if fullName}}
+                            <div class="bg-red-50/50 rounded-xl p-4 mt-4">
+                                <p class="text-red-700 text-sm">
+                                    <span class="font-medium">Full Name:</span> {{fullName}}
+                                </p>
+                            </div>
+                        {{/if}}
+
+                        {{#if email}}
+                            <div class="bg-red-50/50 rounded-xl p-4 mt-4">
+                                <p class="text-red-700 text-sm">
+                                    <span class="font-medium">Email:</span> {{email}}
+                                </p>
+                            </div>
+                        {{/if}}
+
+                        {{#if expireDate}}
+                            <div class="bg-red-50/50 rounded-xl p-4 mt-4">
+                                <p class="text-red-700 text-sm">
+                                    <span class="font-medium">Expire Date:</span> {{formatDate expireDate}}
+                                </p>
+                            </div>
+                        {{/if}}
+                        
                         <div class="bg-red-50/50 rounded-xl p-4 mt-4">
                             <p class="text-red-700 text-sm">{{message}}</p>
                         </div>

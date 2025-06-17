@@ -174,6 +174,9 @@ export class FoController {
         return {
           status: null,
           message: 'Member is expired',
+          fullName: memberFromDb.additionalData?.fullName,
+          expireDate: expireDate,
+          email: visit.email
         };
       }
     }
