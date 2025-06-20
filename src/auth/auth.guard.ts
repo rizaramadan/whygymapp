@@ -40,7 +40,6 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       token = request.cookies['access_token'];
       if (!token) {
-        console.log('token not found in both cookie and header');
         throw new UnauthorizedException();
       }
     }
@@ -55,8 +54,6 @@ export class AuthGuard implements CanActivate {
       request['user'] = payload;
       needSignUp = payload.needSignUp;
     } catch (error) {
-      console.log('error auth guard');
-      console.log(error);
       throw new UnauthorizedException();
     }
 
