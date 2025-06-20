@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { User, UsersService } from './users/users.service';
@@ -214,5 +215,17 @@ Tenang aja! group ini terpisah laki-laki dan perempuan, dan kami hanya akan meng
     return {
       weekendOnly: await this.appService.getWeekendOnly(),
     };
+  }
+
+  @Post('ws/v1/cluster/apps/new-application')
+  @Public()
+  async postWsV1ClusterAppsNewApplication() {
+    return new BadRequestException('Bad Request');
+  }
+
+  @Get('ws/v1/cluster/apps/new-application')
+  @Public()
+  async getWsV1ClusterAppsNewApplication() {
+    return new BadRequestException('Bad Request');
   }
 }
