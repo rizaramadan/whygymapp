@@ -127,7 +127,7 @@ export class FoController {
     //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
     if (weekendOnly) {
       const jakartaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-      if (![0, 6].includes(jakartaTime.getDay())) {
+      if (![0, 5, 6].includes(jakartaTime.getDay())) {
         return {
           status: null,
           message: 'Member is only allowed to check in on weekend',
