@@ -176,7 +176,7 @@ export class MemberExtendController {
     };
   }
 
-  @Get('payment/:referenceId/failed')
+  @Get('payment/:referenceId/fail')
   @Render('member-extend/failed')
   async paymentFailed(@Param('referenceId') referenceId: string) {
     const failureData = await this.memberExtendService.handlePaymentFailure(referenceId);

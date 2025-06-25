@@ -326,7 +326,7 @@ export class MemberExtendService {
       success: false,
       message: 'Payment failed. Please try again or contact support.',
       referenceId,
-      supportContact: 'support@whygym.com'
+      supportContact: 'gymmin.whygym@gmail.com'
     };
   }
 
