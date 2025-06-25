@@ -2812,3 +2812,43 @@ export async function getExtensionOrderExtraTime(client: Client): Promise<getExt
     });
 }
 
+export const getPendingExtensionOrdersQuery = `-- name: getPendingExtensionOrders :many
+WITH completed AS (select distinct reference_id
+                   from whygym.extension_orders_status_log
+                   where extension_order_status = 'get-payment-invoice-response'
+                     and ((additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' = 'PAID'
+                     and created_at > (current_date - interval '2 days')
+               )
+SELECT distinct o.member_email,
+                ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' as payment_status,
+                ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'paymentUrl' as payment_url,
+                o.created_at
+        from whygym.extension_orders_status_log l
+         inner join whygym.extension_orders o on l.reference_id = o.reference_id
+         where l.reference_id not in (select reference_id from completed)
+            and ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' = 'PENDING'
+            and l.created_at > (current_date - interval '2 days')`;
+
+export interface getPendingExtensionOrdersRow {
+    memberEmail: string;
+    paymentStatus: string | null;
+    paymentUrl: string | null;
+    createdAt: Date | null;
+}
+
+export async function getPendingExtensionOrders(client: Client): Promise<getPendingExtensionOrdersRow[]> {
+    const result = await client.query({
+        text: getPendingExtensionOrdersQuery,
+        values: [],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            memberEmail: row[0],
+            paymentStatus: row[1],
+            paymentUrl: row[2],
+            createdAt: row[3]
+        };
+    });
+}
+
