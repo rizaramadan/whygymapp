@@ -679,4 +679,5 @@ SELECT distinct o.member_email,
          inner join whygym.extension_orders o on l.reference_id = o.reference_id
          where l.reference_id not in (select reference_id from completed)
             and ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' = 'PENDING'
-            and l.created_at > (current_date - interval '2 days');
+            and l.created_at > (current_date - interval '2 days')
+         order by o.created_at DESC;
