@@ -275,4 +275,14 @@ export class FoController {
     const breakdown = await this.membersService.getActiveMemberBreakdown();
     return { breakdown };
   }
+
+  @Get('pending-extension-orders')
+  @Roles('front-officer')
+  @Render('fo/pending-extension-orders')
+  async getPendingExtensionOrders() {
+    const orders = await this.foService.getPendingExtensionOrders();
+    return {
+      orders,
+    };
+  }
 }

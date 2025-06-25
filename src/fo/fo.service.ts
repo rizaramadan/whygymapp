@@ -16,6 +16,8 @@ import {
   turnOnExtend30,
   turnOnExtend60,
   getConfig,
+  getPendingExtensionOrders,
+  getPendingExtensionOrdersRow,
 } from 'db/src/query_sql';
 
 @Injectable()
@@ -79,5 +81,9 @@ export class FoService {
       key: 'getCheckExpireDate',
     });
     return config?.valueBoolean ?? true; //default is true
+  }
+
+  async getPendingExtensionOrders(): Promise<getPendingExtensionOrdersRow[]> {
+    return await getPendingExtensionOrders(this.pool);
   }
 }
