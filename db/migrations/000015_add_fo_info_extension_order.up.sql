@@ -1,0 +1,1 @@
+ALTER TABLE whygym.extension_orders ADD COLUMN additional_data jsonb DEFAULT '{}';

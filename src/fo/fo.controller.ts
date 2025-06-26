@@ -1,8 +1,9 @@
-import { Controller, Get, Render, Post, Param, Query, Body } from '@nestjs/common';
+import { Controller, Get, Render, Post, Param, Query, Body, Request } from '@nestjs/common';
 import { Roles } from 'src/roles/decorators/roles.decorator';
 import { FoService } from './fo.service';
 import Sqids from 'sqids';
 import { MembersService } from 'src/members/members.service';
+import { User } from 'src/users/users.service';
 
 interface AdditionalData {
   picUrl: string | undefined;
@@ -284,5 +285,16 @@ export class FoController {
     return {
       orders,
     };
+  }
+
+  @Get('check-extension-order/:orderId/log/:logId')
+  @Roles('front-officer')
+  async checkExtensionOrder(
+    @Request() req: { user: User },
+    @Param('orderId') orderId: number,
+    @Param('logId') logId: number
+  ) {
+    const paymentUrl = await this.foService.addFoExtensionOrder(orderId, logId, req.user.fullName || req.user.email);
+    return `<script>window.location.href="${paymentUrl}"</script>`;
   }
 }

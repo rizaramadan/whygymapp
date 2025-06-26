@@ -674,10 +674,20 @@ WITH completed AS (select distinct reference_id
 SELECT distinct o.member_email,
                 ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' as payment_status,
                 ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'paymentUrl' as payment_url,
-                o.created_at
+                o.created_at,
+                o.reference_id,
+                l.id as log_id,
+                o.id as extension_order_id
         from whygym.extension_orders_status_log l
          inner join whygym.extension_orders o on l.reference_id = o.reference_id
          where l.reference_id not in (select reference_id from completed)
             and ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' = 'PENDING'
             and l.created_at > (current_date - interval '2 days')
          order by o.created_at DESC;
+
+-- name: getCheckExtensionOrder :one
+select 
+    ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'paymentUrl' as payment_url
+FROM whygym.extension_orders_status_log l
+where l.id = $1
+limit 1;

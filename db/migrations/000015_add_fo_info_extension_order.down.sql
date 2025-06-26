@@ -1,0 +1,1 @@
+ALTER TABLE whygym.extension_orders DROP COLUMN additional_data; 

@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.4 (Homebrew)
--- Dumped by pg_dump version 17.4 (Homebrew)
+-- Dumped from database version 17.5 (Homebrew)
+-- Dumped by pg_dump version 17.5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -161,7 +161,8 @@ CREATE TABLE whygym.extension_orders (
     duration_days integer NOT NULL,
     status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    additional_data jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -1113,14 +1114,6 @@ ALTER TABLE ONLY whygym.extension_orders
 
 ALTER TABLE ONLY whygym.order_extra_time
     ADD CONSTRAINT fk_member_id FOREIGN KEY (member_id) REFERENCES whygym.members(id);
-
-
---
--- Name: order_extra_time fk_order_reference_id; Type: FK CONSTRAINT; Schema: whygym; Owner: postgres
---
-
-ALTER TABLE ONLY whygym.order_extra_time
-    ADD CONSTRAINT fk_order_reference_id FOREIGN KEY (order_reference_id) REFERENCES whygym.orders(reference_id);
 
 
 --

@@ -32,10 +32,14 @@
                 <div class="space-y-2" id="orders-list-container">
                     {{#each orders}}
                     <div class="flex items-center p-3 rounded-lg border border-green-100 hover:border-green-300 transition-colors duration-200 bg-green-50/30">
-                        <div class="flex-1 min-w-0 grid grid-cols-4 gap-4 items-center">
+                        <div class="flex-1 min-w-0 grid grid-cols-5 gap-4 items-center">
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Member Email</p>
                                 <p class="text-sm font-medium text-green-900">{{this.memberEmail}}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Reference ID</p>
+                                <p class="text-sm font-medium text-green-900">{{this.referenceId}}</p>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-gray-500">Payment Status</p>
@@ -49,10 +53,11 @@
                                 <p class="text-sm font-medium text-gray-500">Created At</p>
                                 <p class="text-sm font-medium text-green-900">{{formatDate this.createdAt}}</p>
                             </div>
+                            
                             <div class="flex flex-col space-y-2">
                                 {{#if this.paymentUrl}}
                                 <div class="flex items-center gap-2">
-                                    <a href="{{this.paymentUrl}}" target="_blank" rel="noopener noreferrer" 
+                                    <a href="/fo/check-extension-order/{{this.extensionOrderId}}/log/{{this.logId}}" target="_blank" rel="noopener noreferrer" 
                                     class="px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors">
                                         Open Payment Page
                                     </a>

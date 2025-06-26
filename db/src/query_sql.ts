@@ -2822,7 +2822,10 @@ WITH completed AS (select distinct reference_id
 SELECT distinct o.member_email,
                 ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'status' as payment_status,
                 ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'paymentUrl' as payment_url,
-                o.created_at
+                o.created_at,
+                o.reference_id,
+                l.id as log_id,
+                o.id as extension_order_id
         from whygym.extension_orders_status_log l
          inner join whygym.extension_orders o on l.reference_id = o.reference_id
          where l.reference_id not in (select reference_id from completed)
@@ -2835,6 +2838,9 @@ export interface getPendingExtensionOrdersRow {
     paymentStatus: string | null;
     paymentUrl: string | null;
     createdAt: Date | null;
+    referenceId: string;
+    logId: number;
+    extensionOrderId: number;
 }
 
 export async function getPendingExtensionOrders(client: Client): Promise<getPendingExtensionOrdersRow[]> {
@@ -2848,8 +2854,41 @@ export async function getPendingExtensionOrders(client: Client): Promise<getPend
             memberEmail: row[0],
             paymentStatus: row[1],
             paymentUrl: row[2],
-            createdAt: row[3]
+            createdAt: row[3],
+            referenceId: row[4],
+            logId: row[5],
+            extensionOrderId: row[6]
         };
     });
+}
+
+export const getCheckExtensionOrderQuery = `-- name: getCheckExtensionOrder :one
+select 
+    ((l.additional_info ->> 'response')::jsonb ->> 'data')::jsonb ->> 'paymentUrl' as payment_url
+FROM whygym.extension_orders_status_log l
+where l.id = $1
+limit 1`;
+
+export interface getCheckExtensionOrderArgs {
+    id: number;
+}
+
+export interface getCheckExtensionOrderRow {
+    paymentUrl: string | null;
+}
+
+export async function getCheckExtensionOrder(client: Client, args: getCheckExtensionOrderArgs): Promise<getCheckExtensionOrderRow | null> {
+    const result = await client.query({
+        text: getCheckExtensionOrderQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        paymentUrl: row[0]
+    };
 }
 

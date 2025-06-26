@@ -18,7 +18,10 @@ import {
   getConfig,
   getPendingExtensionOrders,
   getPendingExtensionOrdersRow,
+  getCheckExtensionOrder,
 } from 'db/src/query_sql';
+import { addFoExtensionOrder, addFoExtensionOrderRow } from 'db/volatile/fo/fo-query_sql';
+
 
 @Injectable()
 export class FoService {
@@ -85,5 +88,15 @@ export class FoService {
 
   async getPendingExtensionOrders(): Promise<getPendingExtensionOrdersRow[]> {
     return await getPendingExtensionOrders(this.pool);
+  }
+
+  async addFoExtensionOrder(orderId: number, logId: number, frontOfficer: string): Promise<string | null> {
+    const order = await getCheckExtensionOrder(this.pool, { id: logId });
+    if (!order) {
+      return null;
+    }
+    const fo = `"${frontOfficer}"`;
+    await addFoExtensionOrder(this.pool, { id: orderId, frontOfficer: fo });
+    return order.paymentUrl;
   }
 }
