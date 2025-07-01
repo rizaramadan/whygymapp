@@ -229,7 +229,7 @@ export class OrdersService {
     user: User,
     potentialGroupData: getPotentialGroupDataRow[],
   ): Promise<CheckoutResponse> {
-    const order = await this.getOrderByReferenceId(referenceId);
+    let order = await this.getOrderByReferenceId(referenceId);
     if (!order) {
       throw new Error('Order not found');
     }
@@ -348,6 +348,8 @@ export class OrdersService {
       order,
       paymentGatewayFee,
     );
+
+    console.log("process payment paymentDetails 352", paymentDetails);
 
     const url = process.env.ME_API_URL || 'https://whygym.mvp.my.id';
 
