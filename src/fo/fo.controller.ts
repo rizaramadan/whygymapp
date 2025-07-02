@@ -144,7 +144,7 @@ export class FoController {
     //get member expire date
     const duration = await this.membersService.getMemberDurationData(memberFromDb.id);
     let expireDate = memberFromDb.startDate || new Date();
-    expireDate.setDate(expireDate.getDate() + duration);
+    expireDate.setDate(expireDate.getDate() + duration + 1);
 
 
     //call member service to create visit
