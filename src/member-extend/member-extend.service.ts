@@ -250,7 +250,24 @@ export class MemberExtendService {
         referenceId: referenceId,
         status: 'paid'
       });
-      
+
+      const expireDate = await this.isMemberExpired(extensionOrder.memberId);
+      const isMemberExpire = expireDate < new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+
+      if(isMemberExpire) {
+        //since member is expired, add extra time since expired to today's date
+        //diff expireDate and today's date
+        const diff = new Date().getTime() - expireDate.getTime();
+        const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        await addExtraTime(this.pool, {
+          memberId: extensionOrder.memberId,
+          extraTime: diffDays,
+          reason: `gap filling ${diffDays} days`,
+          orderReferenceId: referenceId,
+          createdBy: extensionOrder.memberId
+        });
+      }
+
       await addExtraTime(this.pool, {
         memberId: extensionOrder.memberId,
         extraTime: extensionOrder.durationDays,
@@ -258,25 +275,39 @@ export class MemberExtendService {
         orderReferenceId: referenceId,
         createdBy: extensionOrder.memberId
       });
-
+        
       switch (extensionOrder.durationDays) {
         case 90:
-          await addExtraTime(this.pool, {
-            memberId: extensionOrder.memberId,
-            extraTime: 30,
-            reason: `EXTRA 30 days from Extension order (${extensionOrder.durationDays} days)`,
-            orderReferenceId: referenceId,
-            createdBy: extensionOrder.memberId
-          });
+          if(!isMemberExpire) {
+            await addExtraTime(this.pool, {
+              memberId: extensionOrder.memberId,
+              extraTime: 30,
+              reason: `EXTRA 30 days from Extension order (${extensionOrder.durationDays} days)`,
+              orderReferenceId: referenceId,
+              createdBy: extensionOrder.memberId
+            });
+          }
           break;
         case 180:
           await addExtraTime(this.pool, {
             memberId: extensionOrder.memberId,
-            extraTime: 60,
-            reason: `EXTRA 60 days from Extension order (${extensionOrder.durationDays} days)`,
+            extraTime: 30,
+            reason: `EXTRA 30 days from Extension order (${extensionOrder.durationDays} days)`,
             orderReferenceId: referenceId,
             createdBy: extensionOrder.memberId
           });
+
+          if(!isMemberExpire) {
+            await addExtraTime(this.pool, {
+              memberId: extensionOrder.memberId,
+              extraTime: 60,
+              reason: `EXTRA 60 days from Extension order (${extensionOrder.durationDays} days)`,
+              orderReferenceId: referenceId,
+              createdBy: extensionOrder.memberId
+            });
+          }
+          break;
+        case 360:
           await addExtraTime(this.pool, {
             memberId: extensionOrder.memberId,
             extraTime: 30,
@@ -284,27 +315,34 @@ export class MemberExtendService {
             orderReferenceId: referenceId,
             createdBy: extensionOrder.memberId
           });
-          break;
-        case 360:
-          await addExtraTime(this.pool, {
-            memberId: extensionOrder.memberId,
-            extraTime: 90,
-            reason: `EXTRA 90 days from Extension order (${extensionOrder.durationDays} days)`,
-            orderReferenceId: referenceId,
-            createdBy: extensionOrder.memberId
-          });
-          await addExtraTime(this.pool, {
-            memberId: extensionOrder.memberId,
-            extraTime: 60,
-            reason: `EXTRA 60 days from Extension order (${extensionOrder.durationDays} days)`,
-            orderReferenceId: referenceId,
-            createdBy: extensionOrder.memberId
-          });
+          
+          if(!isMemberExpire) {
+            await addExtraTime(this.pool, {
+              memberId: extensionOrder.memberId,
+              extraTime: 90,
+              reason: `EXTRA 90 days from Extension order (${extensionOrder.durationDays} days)`,
+              orderReferenceId: referenceId,
+              createdBy: extensionOrder.memberId
+            });
+          }
           break;
       }
     }
     
     return invoiceStatus;
+  }
+
+
+  async isMemberExpired(memberId: number): Promise<Date> {
+    const member = await this.memberService.getMemberById(memberId);
+    if (!member) {
+      throw new Error('Member not found');
+    }
+
+    const duration = await this.memberService.getMemberDurationData(member.id);
+    let expireDate = member.startDate || new Date();
+    expireDate.setDate(expireDate.getDate() + duration + 1);
+    return expireDate;
   }
 
   async handlePaymentSuccess(referenceId: string): Promise<any> {
