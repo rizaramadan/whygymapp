@@ -19,6 +19,7 @@ import {
   getPendingExtensionOrders,
   getPendingExtensionOrdersRow,
   getCheckExtensionOrder,
+  setVoucherGiven,
 } from 'db/src/query_sql';
 import { addFoExtensionOrder, addFoExtensionOrderRow } from 'db/volatile/fo/fo-query_sql';
 
@@ -98,5 +99,10 @@ export class FoService {
     const fo = `"${frontOfficer}"`;
     await addFoExtensionOrder(this.pool, { id: orderId, frontOfficer: fo });
     return order.paymentUrl;
+  }
+
+  async setVoucherGiven(memberId: number) {
+    const response = await setVoucherGiven(this.pool, { id: memberId });
+    return response;
   }
 }

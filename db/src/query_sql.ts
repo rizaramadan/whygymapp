@@ -2174,6 +2174,7 @@ select m.email,
        g.count,
        m.start_date,
        m.id,
+       m.additional_data->>'voucherGiven' as voucher_given,
        e.total_extra,
        case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting,
        coalesce(m.additional_data->>'wa', m.phone_number) as tel,
@@ -2194,6 +2195,7 @@ export interface getActiveMemberBreakdownRow {
     count: string | null;
     startDate: Date | null;
     id: number;
+    voucherGiven: string | null;
     totalExtra: string | null;
     weekSetting: string;
     tel: string | null;
@@ -2216,10 +2218,11 @@ export async function getActiveMemberBreakdown(client: Client): Promise<getActiv
             count: row[5],
             startDate: row[6],
             id: row[7],
-            totalExtra: row[8],
-            weekSetting: row[9],
-            tel: row[10],
-            fullname: row[11]
+            voucherGiven: row[8],
+            totalExtra: row[9],
+            weekSetting: row[10],
+            tel: row[11],
+            fullname: row[12]
         };
     });
 }
@@ -2889,6 +2892,36 @@ export async function getCheckExtensionOrder(client: Client, args: getCheckExten
     const row = result.rows[0];
     return {
         paymentUrl: row[0]
+    };
+}
+
+export const setVoucherGivenQuery = `-- name: setVoucherGiven :one
+update whygym.members 
+set updated_at = now(),
+    additional_data = jsonb_set(additional_data::jsonb, '{voucherGiven}'::text[], '"true"'::jsonb)
+where id = $1
+returning id`;
+
+export interface setVoucherGivenArgs {
+    id: number;
+}
+
+export interface setVoucherGivenRow {
+    id: number;
+}
+
+export async function setVoucherGiven(client: Client, args: setVoucherGivenArgs): Promise<setVoucherGivenRow | null> {
+    const result = await client.query({
+        text: setVoucherGivenQuery,
+        values: [args.id],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
     };
 }
 

@@ -277,6 +277,13 @@ export class FoController {
     return { breakdown };
   }
 
+  @Get('give-voucher/:memberId')
+  @Roles('front-officer')
+  async giveVoucher(@Param('memberId') memberId: number) {
+    const response = await this.foService.setVoucherGiven(memberId);
+    return '<script>window.location.href="/fo/active-member-breakdown"</script>';
+  }
+
   @Get('pending-extension-orders')
   @Roles('front-officer')
   @Render('fo/pending-extension-orders')

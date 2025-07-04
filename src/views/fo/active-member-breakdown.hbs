@@ -37,9 +37,9 @@
                         <table class="min-w-full divide-y divide-green-100">
                             <thead class="bg-green-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Voucher</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Email</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Gender</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Promo Type</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Group Type</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Duration</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Start Date</th>
@@ -53,9 +53,18 @@
                             <tbody class="bg-white divide-y divide-green-100">
                                 {{#each breakdown}}
                                 <tr class="hover:bg-green-50 transition-colors duration-200">
+                                    {{#if voucherGiven}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            Voucher Given
+                                        </td>
+                                    {{else}}
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <a href="/fo/give-voucher/{{id}}" class="inline-block px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors duration-200">Set Voucher Given</a>
+                                        </td>
+                                    {{/if}}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{email}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{gender}}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{promoType}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{groupType}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{duration}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{extractDate startDate}}</td>

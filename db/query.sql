@@ -504,6 +504,7 @@ select m.email,
        g.count,
        m.start_date,
        m.id,
+       m.additional_data->>'voucherGiven' as voucher_given,
        e.total_extra,
        case when m.additional_data->>'weekendOnly' = 'true' THEN 'weekend Only' ELSE 'full week' END as week_setting,
        coalesce(m.additional_data->>'wa', m.phone_number) as tel,
@@ -691,3 +692,10 @@ select
 FROM whygym.extension_orders_status_log l
 where l.id = $1
 limit 1;
+
+-- name: setVoucherGiven :one
+update whygym.members 
+set updated_at = now(),
+    additional_data = jsonb_set(additional_data::jsonb, '{voucherGiven}'::text[], '"true"'::jsonb)
+where id = $1
+returning id;

@@ -36,4 +36,3 @@ export async function addFoExtensionOrder(client: Client, args: addFoExtensionOr
         referenceId: row[1]
     };
 }
-
