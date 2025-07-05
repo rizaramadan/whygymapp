@@ -73,3 +73,4 @@ playwright/.cache/
 # Keep approved snapshots
 !test/regression/approvals/
 !test/regression/**/approvals/
+/docs/ignore*
