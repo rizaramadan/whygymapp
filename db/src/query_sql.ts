@@ -2925,3 +2925,34 @@ export async function setVoucherGiven(client: Client, args: setVoucherGivenArgs)
     };
 }
 
+export const updateOrderPriceQuery = `-- name: updateOrderPrice :one
+UPDATE whygym.orders
+SET updated_at = now(),
+    price = $2
+WHERE reference_id = $1
+returning id`;
+
+export interface updateOrderPriceArgs {
+    referenceId: string;
+    price: string;
+}
+
+export interface updateOrderPriceRow {
+    id: number;
+}
+
+export async function updateOrderPrice(client: Client, args: updateOrderPriceArgs): Promise<updateOrderPriceRow | null> {
+    const result = await client.query({
+        text: updateOrderPriceQuery,
+        values: [args.referenceId, args.price],
+        rowMode: "array"
+    });
+    if (result.rows.length !== 1) {
+        return null;
+    }
+    const row = result.rows[0];
+    return {
+        id: row[0]
+    };
+}
+

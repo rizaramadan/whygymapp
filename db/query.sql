@@ -699,3 +699,10 @@ set updated_at = now(),
     additional_data = jsonb_set(additional_data::jsonb, '{voucherGiven}'::text[], '"true"'::jsonb)
 where id = $1
 returning id;
+
+-- name: updateOrderPrice :one
+UPDATE whygym.orders
+SET updated_at = now(),
+    price = $2
+WHERE reference_id = $1
+returning id;

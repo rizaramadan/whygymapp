@@ -200,4 +200,39 @@ export class MemberPricingService {
 
     return total / parseInt(process.env.PRICE_DIVISOR ?? '1');
   }
+
+  getPriceUsed(memberData: MemberData[]): number {
+    const priceType = 'promo';
+
+    //extract if member is single, duo, or group
+    //if member is more than 5, then single is used
+
+    //numbers female members
+    const femaleMembers = memberData.filter(
+      (member) => member.gender === 'female',
+    ).length;
+
+    const groupType =
+      memberData.length === 1 ? 'single' : femaleMembers >= 5 ? 'group' : 'duo';
+      
+
+    let priceUsed = 0;
+
+    memberData.forEach((curr) => {
+      const gender = curr.gender || 'female';
+      const duration = curr.duration || '360';
+
+      if (
+        !MemberPricingService.priceMap[priceType]?.[groupType]?.[gender]?.[
+          duration
+        ]
+      ) {
+        throw new Error('Invalid price parameters');
+      }
+
+      priceUsed = MemberPricingService.priceMap[priceType][groupType][gender][duration];
+    });
+
+    return priceUsed;
+  }
 }

@@ -25,6 +25,7 @@ import {
   getOrderAndPrivateCoachingByReferenceIdRow,
   getOrderAndPrivateCoachingByReferenceIdArgs,
   getPaymentUrlByReferenceIdArgs,
+  updateOrderPrice,
 } from '../../db/src/query_sql';
 import {
   setOrderInvoiceResponseArgs,
@@ -405,6 +406,13 @@ export class OrdersService {
 
     const totalPrice =
       this.memberPricingService.calculateTotalPrice(memberData);
+
+    const priceUsed = this.memberPricingService.getPriceUsed(memberData);
+
+    await updateOrderPrice(this.pool, {
+      referenceId,
+      price: String(priceUsed),
+    });
 
     order.price = String(totalPrice);
     // end of tightly coupled part 2 of 3
