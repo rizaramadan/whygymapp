@@ -2956,3 +2956,47 @@ export async function updateOrderPrice(client: Client, args: updateOrderPriceArg
     };
 }
 
+export const addBonusMembershipIfEligibleQuery = `-- name: addBonusMembershipIfEligible :many
+WITH the_members AS (
+    select part_id from whygym.order_groups where main_reference_id = $1
+),
+extra_added AS (
+    select member_id,reason from whygym.order_extra_time where reason like 'bonus membership%'
+                                                         and member_id in (select part_id from the_members)
+ ),
+data as (
+    select m.id, email, additional_data->>'duration' as duration,
+    case additional_data->>'duration' when '180' then 30 when '360' then 60 end as extra,
+    o.reference_id
+    from whygym.members m
+        left join whygym.orders o on m.id = o.member_id and o.order_status like 'complete%' and o.private_coaching_id is null
+    where membership_status = 'active' and additional_data->>'duration' != '90' and member_id in (select part_id from the_members)
+        and m.id not in (select member_id from extra_added) and m.created_at > '2025-06-01'
+)
+insert into whygym.order_extra_time (member_id, extra_time, reason, order_reference_id, created_by)
+select id, extra, 'bonus membership ' || duration, reference_id, 415 from data
+returning id, reason`;
+
+export interface addBonusMembershipIfEligibleArgs {
+    mainReferenceId: string;
+}
+
+export interface addBonusMembershipIfEligibleRow {
+    id: number;
+    reason: string | null;
+}
+
+export async function addBonusMembershipIfEligible(client: Client, args: addBonusMembershipIfEligibleArgs): Promise<addBonusMembershipIfEligibleRow[]> {
+    const result = await client.query({
+        text: addBonusMembershipIfEligibleQuery,
+        values: [args.mainReferenceId],
+        rowMode: "array"
+    });
+    return result.rows.map(row => {
+        return {
+            id: row[0],
+            reason: row[1]
+        };
+    });
+}
+

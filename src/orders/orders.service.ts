@@ -26,6 +26,7 @@ import {
   getOrderAndPrivateCoachingByReferenceIdArgs,
   getPaymentUrlByReferenceIdArgs,
   updateOrderPrice,
+  addBonusMembershipIfEligible,
 } from '../../db/src/query_sql';
 import {
   setOrderInvoiceResponseArgs,
@@ -623,6 +624,11 @@ export class OrdersService {
         this.pool,
         args,
       );
+
+      await addBonusMembershipIfEligible(this.pool, {
+        mainReferenceId: referenceId,
+      });
+
       return result;
     }
   }
