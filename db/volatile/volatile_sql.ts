@@ -28,22 +28,6 @@ export interface UpdateMemberAdditionalDataRow {
     email: string | null;
 }
 
-export async function updateMemberAdditionalData(client: Client, args: UpdateMemberAdditionalDataArgs): Promise<UpdateMemberAdditionalDataRow | null> {
-    const result = await client.query({
-        text: updateMemberAdditionalDataQuery,
-        values: [args.id, args.email, args.emailPic, args.duration, args.gender],
-        rowMode: "array"
-    });
-    if (result.rows.length !== 1) {
-        return null;
-    }
-    const row = result.rows[0];
-    return {
-        id: row[0],
-        email: row[1]
-    };
-}
-
 export const createDuoPrivateCoachingOrderQuery = `-- name: CreateDuoPrivateCoachingOrder :many
 WITH im AS (
     INSERT INTO whygym.private_coaching (email, member_id, coach_type, number_of_sessions, status, additional_data)

@@ -169,9 +169,9 @@ export class MembersController {
     await this.membersService.updateMemberAdditionalData(
       parseInt(id),
       req.user.email,
-      `"${applicationData.emailPic}"`,
-      `"${applicationData.duration}"`,
-      `"${applicationData.gender}"`,
+      applicationData.emailPic,
+      applicationData.duration,
+      applicationData.gender,
     );
 
     return '<script>window.location.href = "/user-dashboard";</script>';

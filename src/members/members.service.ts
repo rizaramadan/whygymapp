@@ -40,11 +40,14 @@ import {
   getAccountingDataPrivateCoachingRow,
   getAccountingDataPrivateCoaching,
 } from 'db/src/query_sql';
+
 import {
-  updateMemberAdditionalData,
   addOrUpdateMemberPicUrl,
   addOrUpdateMemberPicUrlRow,
+  UpdateMemberAdditionalDataArgs,
 } from 'db/volatile/volatile_sql';
+
+import { updateMemberAdditionalData } from 'db/volatile/update-members/update-members_sql';
 import { Pool } from 'pg';
 import { MembershipApplicationDto } from './dto/membership-application.dto';
 import { User } from 'src/users/users.service';
@@ -214,13 +217,17 @@ export class MembersService {
       return null;
     }
 
-    const result = await updateMemberAdditionalData(this.pool, {
+    const dataArgs: UpdateMemberAdditionalDataArgs = {
       id,
       email,
-      emailPic,
-      duration,
-      gender,
-    });
+      emailPic: `"${emailPic}"`,
+      duration: `"${duration}"`,
+      gender: `"${gender}"`
+    }
+
+    console.log("228 dataArgs", dataArgs);
+
+    const result = await updateMemberAdditionalData(this.pool, dataArgs);
 
     const priceType = 'normal';
     const theDuration = duration as '90' | '180' | '360';
