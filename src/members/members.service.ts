@@ -225,7 +225,6 @@ export class MembersService {
       gender: `"${gender}"`
     }
 
-    console.log("228 dataArgs", dataArgs);
 
     const result = await updateMemberAdditionalData(this.pool, dataArgs);
 

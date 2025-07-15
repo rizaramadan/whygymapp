@@ -1328,7 +1328,7 @@ WITH data AS (
     select distinct og.main_reference_id
     from whygym.order_groups og
         inner join whygym.orders o on og.main_reference_id = o.reference_id
-    where o.price > 1 AND (o.order_status = 'waiting payment method' OR o.order_status = 'waiting invoice status' OR (o.order_status = 'complete' AND o.updated_at::date = current_date))
+    where o.price > 1 AND ((o.order_status = 'waiting payment method' AND o.created_at > (current_date - interval '4 days')) OR o.order_status = 'waiting invoice status' OR (o.order_status = 'complete' AND o.updated_at::date = current_date))
 
 )
 SELECT o.id, o.price, o.reference_id, o.member_id, o.order_status, o.additional_info, m.email, m.nickname, m.additional_data
