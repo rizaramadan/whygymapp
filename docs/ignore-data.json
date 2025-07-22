@@ -1,38 +1,19 @@
 {
-  "invoice_request": {
-    "title": "Membership payment duration 90",
-    "amount": 3564000,
-    "description": "Membership payment for namiramalica@gmail.com duration 90",
-    "customerEmail": "namiramalica@gmail.com",
-    "invoiceDuration": 3600,
-    "customerFullName": "namiramalica@gmail.com",
-    "failureRedirectUrl": "https://whygym.mvp.my.id/orders/payment/b5e0c9d0-8952-4e45-a3f6-033f5bfef51d/fail",
-    "paymentChannelCode": "QRIS",
-    "successRedirectUrl": "https://whygym.mvp.my.id/orders/payment/b5e0c9d0-8952-4e45-a3f6-033f5bfef51d/success"
+  "emailPic": "liza.ichi@gmail.com",
+  "fullName": "Liza Ichiana Nizar",
+  "gender": "female",
+  "address": "Bumi Menteng Asri Bogor",
+  "identityNumber": "3271045304900004",
+  "healthCondition": "",
+  "duration": "90",
+  "wa": "085697181846",
+  "parentInfo": null,
+  "agreements": {
+    "terms": true,
+    "risk": true,
+    "data": true,
+    "rules": true
   },
-  "invoice_response": {
-    "data": {
-      "id": "cmanmrkyk03tvs601d5jkhzf0",
-      "title": "Membership payment duration 90",
-      "total": 3590735,
-      "amount": 3564000,
-      "paidAt": "2025-05-14T07:40:36.318Z",
-      "status": "PAID",
-      "orderId": "cmanmrkpp000l01s6f18behl9",
-      "publicId": "QQXYD37RGY1T",
-      "createdAt": "2025-05-14T07:39:53.673Z",
-      "updatedAt": "2025-05-14T07:40:36.326Z",
-      "paymentUrl": "https://checkout.xendit.co/web/682448c9b5b8a9d67b56296e",
-      "description": "Membership payment for namiramalica@gmail.com duration 90",
-      "expiredDate": "2025-05-14T08:39:53.673Z",
-      "customerEmail": "namiramalica@gmail.com",
-      "paymentMethod": "QR_CODE",
-      "paymentChannel": "QRIS",
-      "customerFullName": "namiramalica@gmail.com",
-      "paymentGatewayFee": 26735
-    },
-    "status": true,
-    "message": "ok",
-    "statusCode": 200
-  }
+  "frontOfficer": "Fuad",
+  "weekendOnly": false
 }
