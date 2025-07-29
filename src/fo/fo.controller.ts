@@ -4,6 +4,7 @@ import { FoService } from './fo.service';
 import Sqids from 'sqids';
 import { MembersService } from 'src/members/members.service';
 import { User } from 'src/users/users.service';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 interface AdditionalData {
   picUrl: string | undefined;
@@ -303,5 +304,95 @@ export class FoController {
   ) {
     const paymentUrl = await this.foService.addFoExtensionOrder(orderId, logId, req.user.fullName || req.user.email);
     return `<script>window.location.href="${paymentUrl}"</script>`;
+  }
+
+  @Post('scanner-api')
+  @Public()
+  async scannerPostApi(@Body('barcode') barcode: string) {
+    //barcode data will be https://whygym.mvp.my.id/fo?i=abc123, extract the i value if start with https://whygym.mvp.my.id/fo?i=
+    const id = barcode.split('whygym.mvp.my.id/fo?i=')[1];
+    const sqids = new Sqids({
+      alphabet: process.env.ALPHABET_ID || 'abcdefghijklmnopqrstuvwxyz',
+    });
+    const memberId = sqids.decode(id);
+    const memberFromDb = await this.membersService.getMemberById(memberId[0]);
+
+    if (!memberFromDb) {
+      return {
+        status: null,
+        message: 'Member not found',
+      };
+    }
+
+    //check if member additionalData weekendOnly is true
+    const weekendOnly = memberFromDb.additionalData?.weekendOnly;
+    //if weekendOnly is True, then if today is not friday, saturday, sunday, then return error
+    if (weekendOnly) {
+      const jakartaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+      if (![0, 5, 6].includes(jakartaTime.getDay())) {
+        return {
+          status: null,
+          message: 'Member is only allowed to check in on weekend',
+        };
+      }
+    }
+
+    const member = {
+      email: memberFromDb.email || '',
+      picUrl: (memberFromDb.additionalData as AdditionalData).picUrl || '',
+    };
+
+    //get member expire date
+    const duration = await this.membersService.getMemberDurationData(memberFromDb.id);
+    let expireDate = memberFromDb.startDate || new Date();
+    expireDate.setDate(expireDate.getDate() + duration + 1);
+
+
+    //call member service to create visit
+    const visit = await this.membersService.createVisit(
+      member.email,
+      member.picUrl,
+    );
+
+    // Mock weekly visits data
+    const weeklyVisits = await this.membersService.getWeeklyVisitsByEmail(
+      member.email,
+    );
+
+    const monthlyVisits = await this.membersService.getMonthlyVisitsByEmail(
+      member.email,
+    );
+
+    if (!visit) {
+      return {
+        status: null,
+        message: 'Failed to create visit',
+      };
+    }
+
+    if (await this.foService.getCheckExpireDate()) {
+      //if expire date is in the past, then return error
+      if (expireDate < new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))) {
+        return {
+          status: null,
+          message: 'Member is expired',
+          fullName: memberFromDb.additionalData?.fullName,
+          expireDate: expireDate,
+          email: visit.email
+        };
+      }
+    }
+
+    return {
+      status: 'success',
+      email: visit.email,
+      picUrl: visit.picUrl,
+      checkInTime: visit.checkInTime,
+      visitCode: visit.visitCode,
+      weeklyVisits: weeklyVisits,
+      monthlyVisits: monthlyVisits,
+      expireDate: expireDate,
+      fullName: memberFromDb.additionalData?.fullName,
+    };
   }
 }
