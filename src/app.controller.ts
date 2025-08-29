@@ -41,7 +41,7 @@ export class AppController {
 
   @Get('/')
   getHello() {
-    return '<script>window.location.href="/auth/login"</script>';
+    return '<script>window.location.href="https://whygym.id"</script>';
   }
 
   @Get('/user-dashboard')
