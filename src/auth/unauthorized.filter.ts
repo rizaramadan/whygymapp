@@ -26,7 +26,7 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
       //return response.redirect('/auth/login');
       const returnUrl = encodeURIComponent(request.url);
       console.log(returnUrl);
-      return response.redirect(`/auth/login?returnUrl=${returnUrl}`);
+      return response.redirect(`https://whygym.id`);
     }
 
     // For API requests, return the standard 401 response
