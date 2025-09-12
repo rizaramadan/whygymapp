@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Countdown</title>
+   <style>
+       * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+       }
+
+
+       body {
+           background-color: #ffffff;
+           font-family: Arial, sans-serif;
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           min-height: 100vh;
+           overflow: hidden;
+       }
+
+
+       .countdown-container {
+           text-align: center;
+           padding: 2rem;
+       }
+
+
+       .countdown-number {
+           font-size: 8rem;
+           font-weight: bold;
+           color: #333;
+           margin-bottom: 1rem;
+           transition: all 0.3s ease;
+       }
+
+
+       .countdown-text {
+           font-size: 1.5rem;
+           color: #666;
+           margin-bottom: 2rem;
+       }
+
+
+       .loading-bar {
+           width: 300px;
+           height: 4px;
+           background-color: #f0f0f0;
+           border-radius: 2px;
+           margin: 0 auto;
+           overflow: hidden;
+           position: relative;
+       }
+
+
+       .loading-progress {
+           height: 100%;
+           background-color: #333;
+           border-radius: 2px;
+           position: absolute;
+           top: 0;
+           left: 0;
+           width: 30%;
+           animation: loading 1.5s ease-in-out infinite;
+       }
+
+
+       @keyframes loading {
+           0% {
+               left: -30%;
+           }
+           100% {
+               left: 100%;
+           }
+       }
+
+
+       /* Responsive design */
+       @media (max-width: 768px) {
+           .countdown-number {
+               font-size: 6rem;
+           }
+          
+           .countdown-text {
+               font-size: 1.2rem;
+           }
+          
+           .loading-bar {
+               width: 250px;
+           }
+       }
+
+
+       @media (max-width: 480px) {
+           .countdown-number {
+               font-size: 4rem;
+           }
+          
+           .countdown-text {
+               font-size: 1rem;
+           }
+          
+           .loading-bar {
+               width: 200px;
+           }
+       }
+   </style>
+</head>
+<body>
+   <div class="countdown-container">
+       <div class="countdown-number" id="countdown">5</div>
+       <div class="countdown-text">Calculate Score</div>
+       <div class="loading-bar">
+           <div class="loading-progress" id="progress"></div>
+       </div>
+   </div>
+
+
+   <script>
+       let countdown = 5;
+       const countdownElement = document.getElementById('countdown');
+       const progressElement = document.getElementById('progress');
+       const totalTime = 5000; // 5 seconds in milliseconds
+       const interval = 100; // Update every 100ms for smooth progress bar
+       const steps = totalTime / interval;
+       let currentStep = 0;
+
+
+       const timer = setInterval(() => {
+           countdown--;
+           currentStep++;
+          
+           // Update countdown number
+           countdownElement.textContent = countdown;
+          
+           // Update progress bar
+           const progress = (currentStep / steps) * 100;
+           progressElement.style.width = progress + '%';
+          
+           // Add animation effect
+           countdownElement.style.transform = 'scale(1.1)';
+           setTimeout(() => {
+               countdownElement.style.transform = 'scale(1)';
+           }, 100);
+          
+           if (countdown <= 0) {
+               clearInterval(timer);
+               // Redirect to the specified URL
+               window.location.href = 'https://www.ngeshare.id/pretest-not-eligible?referrer=pretest';
+           }
+       }, 1000);
+   </script>
+</body>
+</html>
+
+
+

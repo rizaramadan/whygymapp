@@ -44,6 +44,16 @@ export class AppController {
     return '<script>window.location.href="https://whygym.id"</script>';
   }
 
+
+  @Get('/pretest')
+  @Public()
+  @Render('pretest')
+  getPretest() {
+    return {};
+  }
+
+
+
   @Get('/user-dashboard')
   @Render('user-dashboard')
   async dashboard(@Request() req: { user: User }) {
